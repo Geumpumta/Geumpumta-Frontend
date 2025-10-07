@@ -9,10 +9,43 @@ class LoginScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
-          child: Text(
-            'This is Login Page',
-            style: TextStyle(color: Colors.black, fontSize: 20),
-          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset(
+                'assets/image/login/main_logo.png',
+              ),
+              const SizedBox(
+                height: 100,
+              ),
+              Image.asset(
+                'assets/image/login/main_img.png',
+              ),
+              const SizedBox(
+                height: 60,
+              ),
+              GestureDetector(
+                onTap: (){
+                  print('카카오 로그인. 서버 연결 시 service 파일 연결');
+                },
+                child: Image.asset(
+                  'assets/image/login/kakao_login_icon.png'
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              GestureDetector(
+                onTap: (){
+                  print('구글 로그인. 서버 연결 시 service 파일 연결');
+                },
+                child: Image.asset(
+                    'assets/image/login/google_login_icon.png'
+                ),
+              ),
+            ],
+          )
         ),
       ),
     );

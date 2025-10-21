@@ -6,12 +6,14 @@ class CustomInput extends StatelessWidget {
     required this.title,
     required this.value,
     required this.onChanged,
+    this.controller,
     this.hintText,
   });
 
   final String title;
   final String value;
   final String? hintText;
+  final TextEditingController? controller;
   final ValueChanged<String> onChanged;
 
   @override
@@ -29,7 +31,7 @@ class CustomInput extends StatelessWidget {
           ),),
           TextField(
             onChanged: onChanged,
-            controller: TextEditingController(text: value),
+            controller: controller,
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: TextStyle(

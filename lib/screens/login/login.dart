@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geumpumta/routes/app_routes.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -27,7 +28,7 @@ class LoginScreen extends StatelessWidget {
               ),
               GestureDetector(
                 onTap: (){
-                  print('카카오 로그인. 서버 연결 시 service 파일 연결');
+                  Navigator.pushNamed(context, AppRoutes.signin1);
                 },
                 child: Image.asset(
                   'assets/image/login/kakao_login_icon.png'

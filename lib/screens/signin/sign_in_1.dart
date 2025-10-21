@@ -55,6 +55,7 @@ class _SignIn1ScreenState extends ConsumerState<SignIn1Screen> {
                     hintText: '20000000',
                     controller: studentIdController,
                     onChanged: (v) => signInNotifier.setStep1(v, signIn.email),
+                    inputType: InputType.number,
                     value: signIn.studentId,
                   ),
                   CustomInput(
@@ -63,13 +64,14 @@ class _SignIn1ScreenState extends ConsumerState<SignIn1Screen> {
                     controller: emailController,
                     onChanged: (v) =>
                         signInNotifier.setStep1(signIn.studentId, v),
+                    inputType: InputType.email,
                     value: signIn.email,
                   ),
                 ],
               ),
               CustomButton(
                 buttonText: '인증',
-                onActive: signIn.isStep1Filled,
+                onActive: signIn.isStep1Filled && studentIdController.text.isNotEmpty && emailController.text.isNotEmpty,
                 onPressed: () => Navigator.pushNamed(context, '/signin2'),
               ),
             ],

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/provider/auth/auth_provider.dart';
 import 'package:geumpumta/screens/login/login.dart';
 import 'package:geumpumta/screens/main/main.dart';
+import 'package:geumpumta/routes/app_routes.dart';
 
 void main() {
   runApp(
@@ -18,9 +19,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
+      theme: ThemeData(useMaterial3: false),
       debugShowCheckedModeBanner: false,
-      home: MyHomePage(),
+      home: const MyHomePage(),
+      routes: AppRoutes.routes,
     );
   }
 }

@@ -71,7 +71,7 @@ add_dependencies(flutter flutter_assemble)
 
 # === Flutter tool backend ===
 # _phony_ is a non-existent file to force this command to run every time,
-# since currently there's no way to get a full input/output list from the
+# since currently there's no way to get a full custom_input/output list from the
 # flutter tool.
 add_custom_command(
   OUTPUT ${FLUTTER_LIBRARY} ${FLUTTER_LIBRARY_HEADERS}

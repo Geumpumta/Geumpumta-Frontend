@@ -30,16 +30,47 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: '통계'),
-          BottomNavigationBarItem(icon: Icon(Icons.emoji_events), label: '랭킹'),
-          BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: '더보기'),
-        ],
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 8,
+              offset: const Offset(0, -2),
+            ),
+          ],
+          color: Colors.white,
+        ),
+        child: BottomNavigationBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_filled, size: 30),
+              label: '홈',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.show_chart_rounded, size: 30),
+              label: '통계',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.emoji_events_rounded, size: 30),
+              label: '랭킹',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.menu_rounded, size: 30),
+              label: '전체',
+            ),
+          ],
+        ),
       ),
     );
   }

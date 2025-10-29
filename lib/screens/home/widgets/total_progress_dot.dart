@@ -30,18 +30,15 @@ class _TotalProgressDotState extends State<TotalProgressDot> {
       SizeOption.big,
     ];
 
-    return Container(
-      padding: const EdgeInsets.only(top: 30),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        spacing: 15,
-        children: List.generate(dotPattern.length, (index) {
-          return CustomDot(
-            size: dotPattern[index],
-            isActivate: index < activeCount,
-          );
-        }),
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      spacing: 15,
+      children: List.generate(dotPattern.length, (index) {
+        return CustomDot(
+          size: dotPattern[index],
+          isActivate: index < activeCount,
+        );
+      }),
     );
   }
 }

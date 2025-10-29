@@ -1,18 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:geumpumta/screens/home/home.dart';
 
-class MainScreen extends StatelessWidget {
+import '../ranking/ranking.dart';
+
+class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _pages = const [
+    HomeScreen(),
+    // StatsScreen(),
+    RankingScreen(),
+    // MoreScreen(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Center(
-          child: Text(
-            'This is Main Screen',
-            style: TextStyle(color: Colors.black, fontSize: 20),
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 8,
+              offset: const Offset(0, -2),
+            ),
+          ],
+          color: Colors.white,
+        ),
+        child: BottomNavigationBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_filled, size: 30),
+              label: '홈',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.show_chart_rounded, size: 30),
+              label: '통계',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.emoji_events_rounded, size: 30),
+              label: '랭킹',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.menu_rounded, size: 30),
+              label: '전체',
+            ),
+          ],
         ),
       ),
     );

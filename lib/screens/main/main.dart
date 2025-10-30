@@ -17,6 +17,8 @@ class _MainScreenState extends State<MainScreen> {
     HomeScreen(),
     // StatsScreen(),
     RankingScreen(),
+    RankingScreen(),
+    RankingScreen(),
     // MoreScreen(),
   ];
 

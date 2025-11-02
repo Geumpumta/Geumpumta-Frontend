@@ -37,51 +37,34 @@ class _PerDayOrWeekOrMonthState extends State<PerDayOrWeekOrMonth> {
       width: double.infinity,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          TextButton(
-            style: TextButton.styleFrom(
-              overlayColor: Colors.transparent,
-              splashFactory: NoSplash.splashFactory,
-            ),
-            onPressed: () {
+          CustomSelectButton(
+            onClick: () {
               setState(() {
                 _selectedOption = PeriodOption.daily;
               });
             },
-            child: CustomSelectButton(
-              text: '일간',
-              isActive: _selectedOption == PeriodOption.daily,
-            ),
+            text: '일간',
+            isActive: _selectedOption == PeriodOption.daily,
           ),
-          TextButton(
-            style: TextButton.styleFrom(
-              overlayColor: Colors.transparent,
-              splashFactory: NoSplash.splashFactory,
-            ),
-            onPressed: () {
+          CustomSelectButton(
+            onClick: () {
               setState(() {
                 _selectedOption = PeriodOption.weekly;
               });
             },
-            child: CustomSelectButton(
-              text: '주간',
-              isActive: _selectedOption == PeriodOption.weekly,
-            ),
+            text: '주간',
+            isActive: _selectedOption == PeriodOption.weekly,
           ),
-          TextButton(
-            style: TextButton.styleFrom(
-              overlayColor: Colors.transparent,
-              splashFactory: NoSplash.splashFactory,
-            ),
-            onPressed: () {
+          CustomSelectButton(
+            onClick: () {
               setState(() {
                 _selectedOption = PeriodOption.monthly;
               });
             },
-            child: CustomSelectButton(
-              text: '월간',
-              isActive: _selectedOption == PeriodOption.monthly,
-            ),
+            text: '월간',
+            isActive: _selectedOption == PeriodOption.monthly,
           ),
         ],
       ),

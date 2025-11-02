@@ -18,9 +18,11 @@ class CustomSelectButton extends StatelessWidget {
       style: TextButton.styleFrom(
         overlayColor: Colors.transparent,
         splashFactory: NoSplash.splashFactory,
+        padding: EdgeInsets.zero,
       ),
       onPressed: onClick,
       child: Container(
+        height: double.infinity,
         width: 90,
         alignment: Alignment.center,
         padding: EdgeInsets.symmetric(vertical: 12, horizontal: 20),

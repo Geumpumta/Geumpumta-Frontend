@@ -29,7 +29,7 @@ class _PerDayOrWeekOrMonthState extends State<PerDayOrWeekOrMonth> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 60,
+      height: 50,
       padding: EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(width: 1, color: Color(0xFFD9D9D9))),
@@ -37,7 +37,7 @@ class _PerDayOrWeekOrMonthState extends State<PerDayOrWeekOrMonth> {
       width: double.infinity,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           CustomSelectButton(
             onClick: () {

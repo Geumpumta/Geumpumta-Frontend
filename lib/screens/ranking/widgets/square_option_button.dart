@@ -5,10 +5,12 @@ class SquareOptionButton extends StatelessWidget {
     super.key,
     required this.text,
     required this.isActive,
+    required this.onSelect,
   });
 
   final String text;
   final bool isActive;
+  final VoidCallback onSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,7 @@ class SquareOptionButton extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
       ),
-      onPressed: () {},
+      onPressed: onSelect,
       child: Text(
         text,
         style: TextStyle(

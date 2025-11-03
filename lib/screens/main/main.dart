@@ -30,24 +30,28 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isRankingPage = _selectedIndex == 2;
+
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: Container(
         padding: EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30),
-            topRight: Radius.circular(30),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x14000000),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
-          ],
-          color: Colors.white,
-        ),
+        decoration: isRankingPage
+            ? const BoxDecoration(color: Colors.white)
+            : BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x14000000),
+                    blurRadius: 8,
+                    offset: Offset(0, -2),
+                  ),
+                ],
+                color: Colors.white,
+              ),
         child: BottomNavigationBar(
           backgroundColor: Colors.transparent,
           elevation: 0,

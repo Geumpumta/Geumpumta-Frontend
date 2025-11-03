@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:geumpumta/screens/ranking/ranking.dart';
 import 'package:geumpumta/screens/ranking/widgets/custom_period_picker.dart';
+import 'package:geumpumta/screens/ranking/widgets/ranking_bar.dart';
 import 'package:geumpumta/screens/ranking/widgets/square_option_button.dart';
+
+import '../../../models/dummy_ranking_data.dart';
 
 enum GroupOption { personal, department }
 
@@ -12,6 +15,21 @@ extension GroupOptionExtension on GroupOption {
         return '개인';
       case GroupOption.department:
         return '학과';
+    }
+  }
+}
+
+enum DifferenceOption { up, maintain, down }
+
+extension DifferenceOptionExtension on DifferenceOption {
+  Image get icons {
+    switch (this) {
+      case DifferenceOption.up:
+        return Image.asset('assets/image/ranking/up_icon.png');
+      case DifferenceOption.down:
+        return Image.asset('assets/image/ranking/down_icon.png');
+      case DifferenceOption.maintain:
+        return Image.asset('assets/image/ranking/maintain_icon.png');
     }
   }
 }
@@ -33,6 +51,7 @@ class _RankingBoardState extends State<RankingBoard> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: MediaQuery.of(context).size.height,
       color: Color(0xFFFFFFFF),
       width: double.infinity,
       child: Column(
@@ -46,7 +65,7 @@ class _RankingBoardState extends State<RankingBoard> {
               children: [
                 SquareOptionButton(
                   text: '개인',
-                  isActive: _selectedGroup==GroupOption.personal,
+                  isActive: _selectedGroup == GroupOption.personal,
                   onSelect: () {
                     setState(() {
                       _selectedGroup = GroupOption.personal;
@@ -55,7 +74,8 @@ class _RankingBoardState extends State<RankingBoard> {
                 ),
                 SquareOptionButton(
                   text: '학과',
-                    isActive: _selectedGroup==GroupOption.department,                  onSelect: () {
+                  isActive: _selectedGroup == GroupOption.department,
+                  onSelect: () {
                     setState(() {
                       _selectedGroup = GroupOption.department;
                     });
@@ -75,6 +95,20 @@ class _RankingBoardState extends State<RankingBoard> {
               ],
             ),
           ),
+          Expanded(
+            child: ListView(
+              children: dummyRankingList.map((data) {
+                return RankingBar(
+                  ranking: data.ranking,
+                  differenceOption: data.differenceOption,
+                  imgUrl: data.imgUrl,
+                  nickname: data.nickname,
+                  recordedTime: data.recordedTime,
+                );
+              }).toList(),
+            ),
+          )
+
         ],
       ),
     );

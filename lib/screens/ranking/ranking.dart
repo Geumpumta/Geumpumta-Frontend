@@ -50,7 +50,7 @@ class _RankingScreenState extends State<RankingScreen> {
               });
             },
           ),
-          RankingBoard(periodOption: _selectedPeriodOption),
+          Expanded(child: RankingBoard(periodOption: _selectedPeriodOption)),
         ],
       ),
     );

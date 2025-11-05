@@ -4,7 +4,7 @@ import 'package:geumpumta/screens/more/widgets/profile_section.dart';
 import 'package:geumpumta/screens/more/widgets/notice_section.dart';
 import 'package:geumpumta/screens/more/widgets/menu_section.dart';
 import 'package:geumpumta/screens/more/widgets/logout_button.dart';
-import 'package:geumpumta/screens/more/widgets/placeholder_screen.dart';
+import 'package:geumpumta/routes/app_routes.dart';
 import 'package:geumpumta/service/auth_service.dart';
 
 class MoreScreen extends ConsumerWidget {
@@ -96,11 +96,10 @@ class MoreScreen extends ConsumerWidget {
   }
 
   void _navigateToPlaceholder(BuildContext context, String title) {
-    Navigator.push(
+    Navigator.pushNamed(
       context,
-      MaterialPageRoute(
-        builder: (context) => PlaceholderScreen(title: title),
-      ),
+      AppRoutes.placeholder,
+      arguments: {'title': title},
     );
   }
 

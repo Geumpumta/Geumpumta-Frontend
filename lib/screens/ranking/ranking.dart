@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geumpumta/models/department.dart';
+import 'package:geumpumta/screens/ranking/widgets/detail_ranking.dart';
 import 'package:geumpumta/screens/ranking/widgets/per_day_or_week_or_month.dart';
 import 'package:geumpumta/screens/ranking/widgets/ranking_board.dart';
 import 'package:geumpumta/screens/ranking/widgets/ranking_my_info.dart';
@@ -51,6 +52,10 @@ class _RankingScreenState extends State<RankingScreen> {
             },
           ),
           Expanded(child: RankingBoard(periodOption: _selectedPeriodOption)),
+          DetailRanking(
+            nickname: '미누리',
+            recordedTime: Duration(hours: 22, minutes: 19, seconds: 39),
+          ),
         ],
       ),
     );

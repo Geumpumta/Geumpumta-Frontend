@@ -68,6 +68,50 @@ Future<void> _saveTokens(String accessToken, String refreshToken) async {
 }
 
 Future<void> logout(WidgetRef ref) async {
-  await _storage.deleteAll();
-  ref.read(authProvider.notifier).state = false;
+  try {
+    // 서버에 로그아웃 요청 (선택사항)
+    final accessToken = await _storage.read(key: "accessToken");
+    if (accessToken != null) {
+      try {
+        await _dio.post(
+          "/api/auth/logout",
+          options: Options(headers: {"Authorization": "Bearer $accessToken"}),
+        );
+      } catch (e) {
+        // 서버 요청 실패해도 로컬 로그아웃은 진행
+        print("로그아웃 서버 요청 실패: $e");
+      }
+    }
+    
+    // 로컬 저장소 삭제
+    await _storage.deleteAll();
+    // 인증 상태 변경
+    ref.read(authProvider.notifier).state = false;
+  } catch (e) {
+    print("로그아웃 실패: $e");
+    rethrow;
+  }
+}
+
+Future<void> deleteAccount(WidgetRef ref) async {
+  try {
+    final accessToken = await _storage.read(key: "accessToken");
+    if (accessToken == null) {
+      throw Exception("인증 토큰이 없습니다.");
+    }
+
+    // 서버에 회원탈퇴 요청
+    await _dio.delete(
+      "/api/user/me",
+      options: Options(headers: {"Authorization": "Bearer $accessToken"}),
+    );
+
+    // 로컬 저장소 삭제
+    await _storage.deleteAll();
+    // 인증 상태 변경
+    ref.read(authProvider.notifier).state = false;
+  } catch (e) {
+    print("회원탈퇴 실패: $e");
+    rethrow;
+  }
 }

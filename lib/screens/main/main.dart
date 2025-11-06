@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:geumpumta/screens/home/home.dart';
 
+import '../more/more.dart';
 import '../ranking/ranking.dart';
+import '../stats/stats.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,11 +17,9 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _pages = const [
     HomeScreen(),
-    // StatsScreen(),
+    StatsScreen(),
     RankingScreen(),
-    RankingScreen(),
-    RankingScreen(),
-    // MoreScreen(),
+    MoreScreen(),
   ];
 
   void _onItemTapped(int index) {

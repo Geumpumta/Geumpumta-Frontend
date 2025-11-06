@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:geumpumta/screens/ranking/widgets/ranking_board.dart';
 
+import 'details_in_modal.dart';
+
 class RankingBar extends StatefulWidget {
   const RankingBar({
     super.key,
@@ -81,7 +83,22 @@ class _RankingBarState extends State<RankingBar> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: () {},
+            onPressed: () {
+              showModalBottomSheet(
+                backgroundColor: Color(0xFFFFFFFF),
+                context: context,
+                isScrollControlled: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (context) {
+                  return DetailsInModal(
+                    nickname: widget.nickname,
+                    recordedTime: widget.recordedTime,
+                  );
+                },
+              );
+            },
             child: Text('상세보기', style: TextStyle(fontSize: 14)),
           ),
         ],

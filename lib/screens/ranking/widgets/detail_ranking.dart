@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geumpumta/screens/ranking/widgets/details_in_modal.dart';
 
 class DetailRanking extends StatefulWidget {
   const DetailRanking({
@@ -79,55 +80,14 @@ class _DetailRankingState extends State<DetailRanking> {
           TextButton(
             onPressed: () {
               showModalBottomSheet(
+                backgroundColor: Color(0xFFFFFFFF),
                 context: context,
                 isScrollControlled: true,
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 builder: (context) {
-                  return Container(
-                    padding: const EdgeInsets.all(20),
-                    height: MediaQuery.of(context).size.height * 0.8,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Center(
-                          child: Container(
-                            width: 40,
-                            height: 4,
-                            margin: const EdgeInsets.only(bottom: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[400],
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                        ),
-                        const Text(
-                          '내 순위 상세 보기',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: const [
-                            Text('이번 주 순위 변화', style: TextStyle(fontSize: 16)),
-                            Icon(Icons.trending_up, color: Colors.green),
-                          ],
-                        ),
-                        const Divider(height: 30),
-                        const Text(
-                          '이번 주 상위 랭커들과의 비교:',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                        ),
-                        const SizedBox(height: 10),
-                        const Text('- 평균 학습 시간보다 2시간 길어요.'),
-                        const Text('- 전체 순위 상위 3%에 속합니다.'),
-                      ],
-                    ),
-                  );
+                  return DetailsInModal(nickname: widget.nickname, recordedTime: widget.recordedTime);
                 },
               );
             },

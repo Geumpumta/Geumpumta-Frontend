@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:geumpumta/screens/more/widgets/profile_edit_screen.dart';
+import 'package:geumpumta/routes/app_routes.dart';
 
 /// 프로필 섹션 위젯
 /// 더보기 페이지의 프로필 정보를 표시하는 위젯
@@ -82,11 +82,9 @@ class ProfileSection extends StatelessWidget {
               size: 24,
             ),
             onPressed: () {
-              Navigator.push(
+              Navigator.pushNamed(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const ProfileEditScreen(),
-                ),
+                AppRoutes.profileEdit,
               );
             },
           ),

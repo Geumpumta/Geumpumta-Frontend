@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geumpumta/widgets/section_title/section_title.dart';
 import 'package:geumpumta/widgets/menu_item/menu_item.dart';
-import 'package:geumpumta/screens/more/widgets/placeholder_screen.dart';
+import 'package:geumpumta/routes/app_routes.dart';
 
 class NoticeSection extends StatelessWidget {
   const NoticeSection({
@@ -22,11 +22,10 @@ class NoticeSection extends StatelessWidget {
             title: '공지사항',
             showMoreButton: true,
             onMorePressed: () {
-              Navigator.push(
+              Navigator.pushNamed(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const PlaceholderScreen(title: '공지사항 전체보기'),
-                ),
+                AppRoutes.placeholder,
+                arguments: {'title': '공지사항 전체보기'},
               );
             },
           ),
@@ -35,11 +34,10 @@ class NoticeSection extends StatelessWidget {
                 title: notice,
                 textColor: const Color(0xFF333333),
                 onTap: () {
-                  Navigator.push(
+                  Navigator.pushNamed(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => PlaceholderScreen(title: notice),
-                    ),
+                    AppRoutes.placeholder,
+                    arguments: {'title': notice},
                   );
                 },
               )),

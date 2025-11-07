@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:geumpumta/screens/home/home.dart';
 
+import '../more/more.dart';
 import '../ranking/ranking.dart';
+import '../stats/stats.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,9 +17,9 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _pages = const [
     HomeScreen(),
-    // StatsScreen(),
+    StatsScreen(),
     RankingScreen(),
-    // MoreScreen(),
+    MoreScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -28,24 +30,28 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isRankingPage = _selectedIndex == 2;
+
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: Container(
         padding: EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30),
-            topRight: Radius.circular(30),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x14000000),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
-          ],
-          color: Colors.white,
-        ),
+        decoration: isRankingPage
+            ? const BoxDecoration(color: Colors.white)
+            : BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x14000000),
+                    blurRadius: 8,
+                    offset: Offset(0, -2),
+                  ),
+                ],
+                color: Colors.white,
+              ),
         child: BottomNavigationBar(
           backgroundColor: Colors.transparent,
           elevation: 0,

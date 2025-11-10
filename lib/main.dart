@@ -4,8 +4,13 @@ import 'package:geumpumta/provider/auth/auth_provider.dart';
 import 'package:geumpumta/screens/login/login.dart';
 import 'package:geumpumta/screens/main/main.dart';
 import 'package:geumpumta/routes/app_routes.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 
 void main() {
+  KakaoSdk.init(
+    nativeAppKey: '9b7cb6ea8a8134ca72c2278c49dcaab2',
+  );
+
   runApp(
     const ProviderScope(
       child: MyApp(),

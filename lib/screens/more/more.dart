@@ -5,13 +5,16 @@ import 'package:geumpumta/screens/more/widgets/notice_section.dart';
 import 'package:geumpumta/screens/more/widgets/menu_section.dart';
 import 'package:geumpumta/screens/more/widgets/logout_button.dart';
 import 'package:geumpumta/routes/app_routes.dart';
-import 'package:geumpumta/service/auth_service.dart';
+import 'package:geumpumta/service/auth/auth_service.dart';
+import 'package:geumpumta/viewmodel/auth/auth_viewmodel.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -104,6 +107,7 @@ class MoreScreen extends ConsumerWidget {
   }
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.watch(authViewModelProvider);
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -134,7 +138,7 @@ class MoreScreen extends ConsumerWidget {
               onPressed: () async {
                 Navigator.of(context).pop();
                 try {
-                  await logout(ref);
+                  await viewModel.logout();
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -170,6 +174,8 @@ class MoreScreen extends ConsumerWidget {
   }
 
   void _showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
+    final viewModel = ref.watch(authViewModelProvider);
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -259,7 +265,9 @@ class MoreScreen extends ConsumerWidget {
 
                 if (confirmed == true) {
                   try {
-                    await deleteAccount(ref);
+                    final prefs = await SharedPreferences.getInstance();
+                    final accessToken = prefs.getString('accessToken')??'';
+                    await viewModel.deleteAccount(accessToken);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

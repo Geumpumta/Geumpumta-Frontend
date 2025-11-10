@@ -3,7 +3,7 @@ import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http/http.dart' as http;
 
 class OAuthService {
-  final String baseUrl = 'https://your-backend-api.com'; 
+  final String baseUrl = 'https://geumpumta.shop:8080';
 
   Future<Map<String, dynamic>?> socialLogin(String provider) async {
     try {

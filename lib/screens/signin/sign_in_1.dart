@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geumpumta/viewmodel/email/email_viewmodel.dart';
 import '../../provider/signin/signin_provider.dart';
 import '../../widgets/back_and_progress/back_and_progress.dart';
 import '../../widgets/custom_button/custom_button.dart';
@@ -27,6 +28,7 @@ class _SignIn1ScreenState extends ConsumerState<SignIn1Screen> {
   Widget build(BuildContext context) {
     final signIn = ref.watch(signUpProvider);
     final signInNotifier = ref.read(signUpProvider.notifier);
+    final emailViewModel = ref.watch(emailViewModelProvider.notifier);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -72,7 +74,9 @@ class _SignIn1ScreenState extends ConsumerState<SignIn1Screen> {
               CustomButton(
                 buttonText: '인증',
                 onActive: signIn.isStep1Filled && studentIdController.text.isNotEmpty && emailController.text.isNotEmpty,
-                onPressed: () => Navigator.pushNamed(context, '/signin2'),
+                onPressed: () => {
+                  emailViewModel.sendEmailVerification(context, emailController.value.text)
+                },
               ),
             ],
           ),

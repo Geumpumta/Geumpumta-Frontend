@@ -19,7 +19,7 @@ class AuthViewModel extends ChangeNotifier {
     await _login('google');
   }
 
-  Future<void> _login(String provider) async {
+  Future<bool> _login(String provider) async {
     try {
       isLoading = true;
       notifyListeners();
@@ -27,16 +27,14 @@ class AuthViewModel extends ChangeNotifier {
       final success = await _repo.loginWithProvider(provider);
       if (success) {
         print('$provider 로그인 성공!');
-        final prefs = await SharedPreferences.getInstance();
-        print('AccessToken: ${prefs.getString('accessToken')}');
-        print('RefreshToken: ${prefs.getString('refreshToken')}');
-
-        // TODO: 로그인 후 라우팅 or 사용자 정보 요청
+        return true;
       } else {
         print('$provider 로그인 실패');
+        return false;
       }
     } catch (e) {
       print('$provider 로그인 중 오류: $e');
+      return false;
     } finally {
       isLoading = false;
       notifyListeners();

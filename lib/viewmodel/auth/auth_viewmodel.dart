@@ -11,12 +11,12 @@ class AuthViewModel extends ChangeNotifier {
   final AuthRepository _repo = AuthRepository();
   bool isLoading = false;
 
-  Future<void> loginWithKakao() async {
-    await _login('kakao');
+  Future<bool> loginWithKakao() async {
+    return await _login('kakao');
   }
 
-  Future<void> loginWithGoogle() async {
-    await _login('google');
+  Future<bool> loginWithGoogle() async {
+    return await _login('google');
   }
 
   Future<bool> _login(String provider) async {

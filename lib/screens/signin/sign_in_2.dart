@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/provider/signin/signin_provider.dart';
-import 'package:geumpumta/widgets/custom_input/custom_input.dart';
-import '../../viewmodel/email/email_viewmodel.dart';
+import 'package:geumpumta/viewmodel/email/email_viewmodel.dart';
 import '../../widgets/back_and_progress/back_and_progress.dart';
 import '../../widgets/custom_button/custom_button.dart';
+import '../../widgets/custom_input/custom_input.dart';
 
 class SignIn2Screen extends ConsumerStatefulWidget {
   const SignIn2Screen({super.key});
@@ -15,16 +16,11 @@ class SignIn2Screen extends ConsumerStatefulWidget {
 
 class _SignIn2ScreenState extends ConsumerState<SignIn2Screen> {
   final codeController = TextEditingController();
-  bool isActive = false;
+  bool isCodeValid = false;
 
-  @override
-  void initState() {
-    super.initState();
-    codeController.addListener(() {
-      setState(() {
-        isActive = codeController.text.isNotEmpty;
-      });
-    });
+  bool _validateCode(String code) {
+    final regex = RegExp(r'^\d{6}$');
+    return regex.hasMatch(code);
   }
 
   @override
@@ -76,18 +72,30 @@ class _SignIn2ScreenState extends ConsumerState<SignIn2Screen> {
                     value: codeController.text,
                     controller: codeController,
                     hintText: '123456',
-                    onChanged: (v) => codeController.text = v,
+                    onChanged: (v) {
+                      final valid = _validateCode(v);
+                      setState(() {
+                        isCodeValid = valid;
+                      });
+                    },
                     inputType: InputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(6),
+                    ],
+                    errorText: codeController.text.isEmpty || isCodeValid
+                        ? null
+                        : '인증번호는 6자리 숫자여야 합니다.',
                   ),
                 ],
               ),
               CustomButton(
                 buttonText: '확인',
-                onActive: isActive,
+                onActive: isCodeValid,
                 onPressed: () => emailViewModel.verifyCode(
                   context,
                   signUpState.email,
-                  codeController.text,
+                  codeController.text.trim(),
                 ),
               ),
             ],

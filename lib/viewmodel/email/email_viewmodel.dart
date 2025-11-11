@@ -58,19 +58,23 @@ class EmailViewmodel extends StateNotifier<AsyncValue<void>> {
     try {
       final response = await _repo.verifyCode(email, code);
       state = AsyncData(response);
+      if(response){
+        await Flushbar(
+          message: '인증 성공!',
+          backgroundColor: Colors.green.shade600,
+          flushbarPosition: FlushbarPosition.TOP,
+          margin: const EdgeInsets.all(10),
+          borderRadius: BorderRadius.circular(10),
+          duration: const Duration(seconds: 2),
+          icon: const Icon(Icons.check_circle, color: Colors.white),
+        ).show(context);
 
-      await Flushbar(
-        message: '인증 성공!',
-        backgroundColor: Colors.green.shade600,
-        flushbarPosition: FlushbarPosition.TOP,
-        margin: const EdgeInsets.all(10),
-        borderRadius: BorderRadius.circular(10),
-        duration: const Duration(seconds: 2),
-        icon: const Icon(Icons.check_circle, color: Colors.white),
-      ).show(context);
-
-      Navigator.pushNamed(context, '/signin3');
-      return true;
+        Navigator.pushNamed(context, '/signin3');
+        return true;
+      }
+      else{
+        throw Exception('인증 코드가 올바르지 않습니다.');
+      }
     } catch (e, st) {
       state = AsyncError(e, st);
 

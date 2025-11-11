@@ -107,7 +107,7 @@ class MoreScreen extends ConsumerWidget {
   }
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(authViewModelProvider);
+    final viewModel = ref.watch(authViewModelProvider.notifier);
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -174,7 +174,7 @@ class MoreScreen extends ConsumerWidget {
   }
 
   void _showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
-    final viewModel = ref.watch(authViewModelProvider);
+    final viewModel = ref.watch(authViewModelProvider.notifier);
 
     showDialog(
       context: context,

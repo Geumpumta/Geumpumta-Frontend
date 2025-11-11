@@ -1,54 +1,66 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../repository/auth/auth_repository.dart';
+import '../../viewmodel/user/user_viewmodel.dart';
+import '../../routes/app_routes.dart';
 
 final authViewModelProvider =
-ChangeNotifierProvider<AuthViewModel>((ref) => AuthViewModel());
+StateNotifierProvider<AuthViewModel, bool>((ref) => AuthViewModel(ref));
 
-class AuthViewModel extends ChangeNotifier {
+class AuthViewModel extends StateNotifier<bool> {
+  final Ref ref;
   final AuthRepository _repo = AuthRepository();
-  bool isLoading = false;
 
-  Future<bool> loginWithKakao() async {
-    return await _login('kakao');
+  AuthViewModel(this.ref) : super(false);
+
+  Future<void> loginWithKakao(BuildContext context) async {
+    await _login(context, 'kakao');
   }
 
-  Future<bool> loginWithGoogle() async {
-    return await _login('google');
+  Future<void> loginWithGoogle(BuildContext context) async {
+    await _login(context, 'google');
   }
 
-  Future<bool> _login(String provider) async {
+  Future<bool> _login(BuildContext context, String provider) async {
     try {
-      isLoading = true;
-      notifyListeners();
+      state = true;
 
-      final success = await _repo.loginWithProvider(provider);
-      if (success) {
-        print('$provider 로그인 성공!');
+      final isLogined = await _repo.loginWithProvider(provider);
+      if (isLogined) {
+        await ref.read(userViewModelProvider.notifier).loadUserProfile();
+
+        final userState = ref.read(userViewModelProvider);
+        userState.when(
+          data: (user) {
+            if (user.userRole == 'GUEST') {
+              Navigator.pushNamed(context, AppRoutes.signin1);
+            } else {
+              Navigator.pushNamed(context, AppRoutes.main);
+            }
+          },
+          loading: () => debugPrint('프로필 로딩중'),
+          error: (e, _) => debugPrint('프로필 로드 실패: $e'),
+        );
+
         return true;
       } else {
-        print('$provider 로그인 실패');
+        debugPrint('$provider 로그인 실패');
         return false;
       }
-    } catch (e) {
-      print('$provider 로그인 중 오류: $e');
+    } catch (e, st) {
+      debugPrint('$provider 로그인 중 오류: $e\n$st');
       return false;
     } finally {
-      isLoading = false;
-      notifyListeners();
+      state = false;
     }
   }
 
   Future<void> logout() async {
     await _repo.logout();
-    print('로그아웃 완료');
+    debugPrint('로그아웃 완료');
   }
-
 
   Future<void> deleteAccount(String accessToken) async {
-    print('계정 삭제');
+    debugPrint('계정 삭제');
   }
-
 }

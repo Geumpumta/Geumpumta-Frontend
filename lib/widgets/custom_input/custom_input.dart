@@ -12,6 +12,8 @@ class CustomInput extends StatelessWidget {
     this.controller,
     this.hintText,
     this.inputType = InputType.text,
+    this.inputFormatters,
+    this.errorText,
   });
 
   final String title;
@@ -20,26 +22,30 @@ class CustomInput extends StatelessWidget {
   final TextEditingController? controller;
   final ValueChanged<String> onChanged;
   final InputType inputType;
+  final String? errorText;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
     TextInputType keyboardType;
-    List<TextInputFormatter>? formatters;
+    List<TextInputFormatter> formatters = [];
 
     switch (inputType) {
       case InputType.number:
         keyboardType = TextInputType.number;
-        formatters = [FilteringTextInputFormatter.digitsOnly];
+        formatters.add(FilteringTextInputFormatter.digitsOnly);
         break;
       case InputType.email:
         keyboardType = TextInputType.emailAddress;
-        formatters = [];
         break;
       case InputType.text:
       default:
         keyboardType = TextInputType.text;
-        formatters = [];
         break;
+    }
+
+    if (inputFormatters != null) {
+      formatters.addAll(inputFormatters!);
     }
 
     return Container(
@@ -62,9 +68,8 @@ class CustomInput extends StatelessWidget {
             inputFormatters: formatters,
             decoration: InputDecoration(
               hintText: hintText,
-              hintStyle: const TextStyle(
-                color: Color(0xFFBDBDBD),
-              ),
+              errorText: errorText,
+              hintStyle: const TextStyle(color: Color(0xFFBDBDBD)),
               enabledBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: Color(0xFFBDBDBD)),
               ),

@@ -1,36 +1,35 @@
 class UserDataDto {
-  final String email;
-  final String schoolEmail;
-  final String userRole;
-  final String name;
-  final String nickName;
-  final String profilePictureUrl;
-  final String OAuthProvider;
-  final String studentId;
-  final String department;
+  final String? email;
+  final String? schoolEmail;
+  final String? userRole;
+  final String? name;
+  final String? nickName;
+  final String? profilePictureUrl;
+  final String? OAuthProvider;
+  final String? studentId;
+  final String? department;
 
   UserDataDto({
-    required this.email,
-    required this.schoolEmail,
-    required this.userRole,
-    required this.name,
-    required this.nickName,
-    required this.profilePictureUrl,
-    required this.OAuthProvider,
-    required this.studentId,
-    required this.department,
+    this.email,
+    this.schoolEmail,
+    this.userRole,
+    this.name,
+    this.nickName,
+    this.profilePictureUrl,
+    this.OAuthProvider,
+    this.studentId,
+    this.department,
   });
 
-  factory UserDataDto.fromJson(Map<String, dynamic> json)=>
-      UserDataDto(
-          email: json['email'],
-          schoolEmail: json['schoolEmail'],
-          userRole: json['userRole'],
-          name: json['name'],
-          nickName: json['nickName'],
-          profilePictureUrl: json['profilePictureUrl'],
-          OAuthProvider: json['OAthProvider'],
-          studentId: json['studentId'],
-          department: json['department'],
-      );
+  factory UserDataDto.fromJson(Map<String, dynamic> json) => UserDataDto(
+    email: json['email'] as String?,
+    schoolEmail: json['schoolEmail'] as String?,
+    userRole: json['userRole'] as String?,
+    name: json['name'] as String?,
+    nickName: json['nickName'] as String?,
+    profilePictureUrl: json['profilePictureUrl'] as String?,
+    OAuthProvider: json['OAuthProvider'] as String?,
+    studentId: json['studentId'] as String?,
+    department: json['department'] as String?,
+  );
 }

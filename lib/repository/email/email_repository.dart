@@ -25,7 +25,8 @@ class EmailRepository {
         VerifyCodeRequestDto(email: email, code: code),
       );
       return response.data.isVerified;
-    } catch (e) {
+    } catch (e,st) {
+      print('[UserRepository] 오류 발생: $e\n$st');
       return false;
     }
   }

@@ -7,5 +7,7 @@ class VerifyCodeResponseDto {
   VerifyCodeResponseDto({required this.success, required this.data});
 
   factory VerifyCodeResponseDto.fromJson(Map<String, dynamic> json) =>
-      VerifyCodeResponseDto(success: json['success'], data: json['data']);
+      VerifyCodeResponseDto(
+          success: json['success'] == true || json['success'] == 'true',
+          data: VerifyDataDto.fromJson(json['data']));
 }

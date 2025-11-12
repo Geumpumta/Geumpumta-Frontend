@@ -29,4 +29,19 @@ class AuthRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
   }
+
+  Future<void> updateTokens(
+    String newAccessToken, [
+    String? newRefreshToken,
+  ]) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setString('accessToken', newAccessToken);
+
+    if (newRefreshToken != null) {
+      await prefs.setString('refreshToken', newRefreshToken);
+    }
+
+    print('토큰 갱신 완료: AccessToken 업데이트됨');
+  }
 }

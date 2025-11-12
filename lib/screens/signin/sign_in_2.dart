@@ -1,20 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:geumpumta/widgets/custom_input/custom_input.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geumpumta/provider/signin/signin_provider.dart';
+import 'package:geumpumta/viewmodel/email/email_viewmodel.dart';
 import '../../widgets/back_and_progress/back_and_progress.dart';
 import '../../widgets/custom_button/custom_button.dart';
+import '../../widgets/custom_input/custom_input.dart';
 
-class SignIn2Screen extends StatefulWidget {
+class SignIn2Screen extends ConsumerStatefulWidget {
   const SignIn2Screen({super.key});
 
   @override
-  State<SignIn2Screen> createState() => _SignIn2ScreenState();
+  ConsumerState<SignIn2Screen> createState() => _SignIn2ScreenState();
 }
 
-class _SignIn2ScreenState extends State<SignIn2Screen> {
-  String code = '';
+class _SignIn2ScreenState extends ConsumerState<SignIn2Screen> {
+  final codeController = TextEditingController();
+  bool isCodeValid = false;
+
+  bool _validateCode(String code) {
+    final regex = RegExp(r'^\d{6}$');
+    return regex.hasMatch(code);
+  }
+
+  @override
+  void dispose() {
+    codeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final emailViewModel = ref.watch(emailViewModelProvider.notifier);
+    final signUpState = ref.watch(signUpProvider);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -50,17 +69,34 @@ class _SignIn2ScreenState extends State<SignIn2Screen> {
                   ),
                   CustomInput(
                     title: '인증번호',
-                    value: code,
+                    value: codeController.text,
+                    controller: codeController,
                     hintText: '123456',
-                    onChanged: (v) => setState(() => code = v),
+                    onChanged: (v) {
+                      final valid = _validateCode(v);
+                      setState(() {
+                        isCodeValid = valid;
+                      });
+                    },
                     inputType: InputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(6),
+                    ],
+                    errorText: codeController.text.isEmpty || isCodeValid
+                        ? null
+                        : '인증번호는 6자리 숫자여야 합니다.',
                   ),
                 ],
               ),
               CustomButton(
                 buttonText: '확인',
-                onActive: code.isNotEmpty,
-                onPressed: () => Navigator.pushNamed(context, '/signin3'),
+                onActive: isCodeValid,
+                onPressed: () => emailViewModel.verifyCode(
+                  context,
+                  signUpState.email,
+                  codeController.text.trim(),
+                ),
               ),
             ],
           ),

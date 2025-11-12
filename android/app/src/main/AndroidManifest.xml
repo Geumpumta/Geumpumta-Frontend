@@ -58,30 +58,8 @@
 
                 <!-- "kakao${YOUR_NATIVE_APP_KEY}://oauth" 형식의 앱 실행 스킴 설정 -->
                 <!-- 카카오 로그인 리다이렉트 URI -->
-                <data android:scheme="kakao${YOUR_NATIVE_APP_KEY}" android:host="oauth"/>
-            </intent-filter>
-        </activity>
-
-        <!-- 카카오톡 공유, 카카오톡 메시지 커스텀 URL 스킴 설정 -->
-        <activity
-            android:name=".MainActivity"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
-            android:exported="true"
-            android:hardwareAccelerated="true"
-            android:launchMode="singleTop"
-            android:theme="@style/LaunchTheme"
-            android:windowSoftInputMode="adjustResize">
-            <!-- 생략 -->
-
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <!-- 카카오톡 공유, 카카오톡 메시지 -->
                 <data android:host="kakaolink"
-                    android:scheme="kakao9b7cb6ea8a8134ca72c2278c49dcaab2" />
-            </intent-filter>
+                    android:scheme="kakao9b7cb6ea8a8134ca72c2278c49dcaab2" />            </intent-filter>
         </activity>
 
     </application>

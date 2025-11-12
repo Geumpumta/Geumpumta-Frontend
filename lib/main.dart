@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/provider/auth/auth_provider.dart';
 import 'package:geumpumta/screens/login/login.dart';
@@ -6,18 +7,13 @@ import 'package:geumpumta/screens/main/main.dart';
 import 'package:geumpumta/routes/app_routes.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 
-void main() {
-  KakaoSdk.init(
-    nativeAppKey: '9b7cb6ea8a8134ca72c2278c49dcaab2',
-  );
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+  KakaoSdk.init(nativeAppKey: dotenv.env['KAKAO_NATIVE_APP_KEY']!);
 
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: MyApp()));
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

@@ -81,6 +81,7 @@ flutter:
    - assets/image/signin/
    - assets/image/home/
    - assets/image/ranking/
+   - .env
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

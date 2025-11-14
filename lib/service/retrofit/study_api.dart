@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:geumpumta/models/dto/common/common_dto.dart';
+import 'package:geumpumta/models/dto/study/end_study_request_dto.dart';
 import 'package:geumpumta/models/dto/study/send_heart_beat_request_dto.dart';
 import 'package:geumpumta/models/dto/study/send_heart_beat_response_dto.dart';
 import 'package:geumpumta/models/dto/study/start_study_time_request_dto.dart';
@@ -25,5 +27,5 @@ abstract class StudyApi {
   );
 
   @POST('/api/v1/study/end')
-  Future<>
+  Future<CommonDto> endStudy(@Body() EndStudyRequestDto request);
 }

@@ -9,6 +9,8 @@ import 'package:retrofit/retrofit.dart';
 import '../../models/dto/study/get_study_time_response_dto.dart';
 import '../../models/dto/study/start_study_time_response_dto.dart';
 
+part 'study_api.g.dart';
+
 @RestApi()
 abstract class StudyApi {
   factory StudyApi(Dio dio, {String baseUrl}) = _StudyApi;

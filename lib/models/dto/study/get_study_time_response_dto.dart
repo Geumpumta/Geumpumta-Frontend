@@ -1,10 +1,10 @@
 class StudyTimeData {
-  final String totalStudySession;
+  final int totalStudySession;
 
   StudyTimeData({required this.totalStudySession});
 
   factory StudyTimeData.fromJson(Map<String, dynamic> json) =>
-      StudyTimeData(totalStudySession: json['totalStudySession']);
+      StudyTimeData(totalStudySession: json['totalStudySession'] as int);
 }
 
 class GetStudyTimeResponseDto {
@@ -22,6 +22,6 @@ class GetStudyTimeResponseDto {
       GetStudyTimeResponseDto(
         success: json['success'] == 'true' || json['success'] == true,
         data: StudyTimeData.fromJson(json['data']),
-        message: json['message'],
+        message: json['message'] as String?,
       );
 }

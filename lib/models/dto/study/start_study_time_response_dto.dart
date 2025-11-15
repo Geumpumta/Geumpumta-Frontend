@@ -13,16 +13,19 @@ class StudyTimeData {
 class StartStudyTimeResponseDto {
   final bool success;
   final StudyTimeData data;
+  final String? message;
 
   StartStudyTimeResponseDto({
     required this.success,
     required this.data,
+    this.message,
   });
 
   factory StartStudyTimeResponseDto.fromJson(Map<String, dynamic> json) {
     return StartStudyTimeResponseDto(
       success: json['success'] == true || json['success'].toString() == 'true',
       data: StudyTimeData.fromJson(json['data']),
+      message: json['message'],
     );
   }
 }

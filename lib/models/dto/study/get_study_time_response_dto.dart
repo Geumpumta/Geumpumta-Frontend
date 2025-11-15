@@ -10,12 +10,18 @@ class StudyTimeData {
 class GetStudyTimeResponseDto {
   final bool success;
   final StudyTimeData data;
+  final String? message;
 
-  GetStudyTimeResponseDto({required this.success, required this.data});
+  GetStudyTimeResponseDto({
+    required this.success,
+    required this.data,
+    this.message,
+  });
 
   factory GetStudyTimeResponseDto.fromJson(Map<String, dynamic> json) =>
       GetStudyTimeResponseDto(
         success: json['success'] == 'true' || json['success'] == true,
         data: StudyTimeData.fromJson(json['data']),
+        message: json['message'],
       );
 }

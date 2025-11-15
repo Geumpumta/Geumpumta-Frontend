@@ -5,7 +5,7 @@ import 'package:geumpumta/models/dto/study/start_study_time_request_dto.dart';
 import 'package:geumpumta/provider/repository_provider.dart';
 import 'package:geumpumta/repository/study/study_repository.dart';
 
-final StudyViewmodelProivder =
+final studyViewmodelProvider =
     StateNotifierProvider<StudyViewmodel, AsyncValue<dynamic>>((ref) {
       final repo = ref.watch(studyRepositoryProvider);
       return StudyViewmodel(ref, repo);

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/repository/email/email_repository.dart';
+import 'package:geumpumta/repository/rank/rank_repository.dart';
 
 import '../repository/auth/auth_repository.dart';
 import '../repository/user/user_repository.dart';
@@ -18,4 +19,9 @@ final userRepositoryProvider = Provider<UserRepository>((ref) {
 final emailRepositoryProvider = Provider<EmailRepository>((ref){
   final api = ref.watch(emailApiProvider);
   return EmailRepository(emailApi: api);
+});
+
+final rankRepositoryProvider = Provider<RankRepository>((ref){
+  final api = ref.watch(rankApiProvider);
+  return RankRepository(rankApi: api);
 });

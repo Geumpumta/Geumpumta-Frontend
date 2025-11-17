@@ -19,7 +19,7 @@ class RankDepartmentViewmodel
 
   RankDepartmentViewmodel(this.ref, this.repository):super(const AsyncData(null));
 
-  Future<void> getWeeklyDepartmentRanking(DateTime date) async{
+  Future<void> getWeeklyDepartmentRanking(DateTime? date) async{
     state = AsyncLoading();
     try{
       final response = await repository.getWeeklyDepartmentRanking(date);
@@ -30,7 +30,7 @@ class RankDepartmentViewmodel
     }
   }
 
-  Future<void> getDailyDepartmentRanking(DateTime date) async{
+  Future<void> getDailyDepartmentRanking(DateTime? date) async{
     state = AsyncLoading();
     try{
       final response = await repository.getDailyDepartmentRanking(date);
@@ -41,7 +41,7 @@ class RankDepartmentViewmodel
     }
   }
 
-  Future<void> getMonthlyDepartmentRanking(DateTime date) async{
+  Future<void> getMonthlyDepartmentRanking(DateTime? date) async{
     state = AsyncLoading();
     try{
       final response = await repository.getMonthlyDepartmentRanking(date);

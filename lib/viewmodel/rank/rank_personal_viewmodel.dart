@@ -19,7 +19,7 @@ class RankPersonalViewmodel
 
   RankPersonalViewmodel(this.ref, this.repository):super(const AsyncData(null));
 
-  Future<void> getWeeklyPersonalRanking(DateTime date) async{
+  Future<void> getWeeklyPersonalRanking(DateTime? date) async{
     state = AsyncLoading();
     try{
       final response = await repository.getWeeklyPersonalRanking(date);
@@ -30,7 +30,7 @@ class RankPersonalViewmodel
     }
   }
 
-  Future<void> getDailyPersonalRanking(DateTime date) async{
+  Future<void> getDailyPersonalRanking(DateTime? date) async{
     state = AsyncLoading();
     try{
       final response = await repository.getDailyPersonalRanking(date);
@@ -41,7 +41,7 @@ class RankPersonalViewmodel
     }
   }
 
-  Future<void> getMonthlyPersonalRanking(DateTime date) async{
+  Future<void> getMonthlyPersonalRanking(DateTime? date) async{
     state = AsyncLoading();
     try{
       final response = await repository.getMonthlyPersonalRanking(date);

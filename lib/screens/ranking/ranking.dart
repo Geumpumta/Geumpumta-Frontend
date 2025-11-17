@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/department.dart';
 import 'package:geumpumta/screens/ranking/widgets/detail_ranking.dart';
 import 'package:geumpumta/screens/ranking/widgets/per_day_or_week_or_month.dart';
 import 'package:geumpumta/screens/ranking/widgets/ranking_board.dart';
 import 'package:geumpumta/screens/ranking/widgets/ranking_my_info.dart';
+import 'package:geumpumta/viewmodel/rank/rank_department_viewmodel.dart';
+import 'package:geumpumta/viewmodel/rank/rank_personal_viewmodel.dart';
 import 'package:geumpumta/widgets/text_header/text_header.dart';
 
 enum PeriodOption { daily, weekly, monthly }
@@ -21,18 +24,65 @@ extension PeriodOptionExtension on PeriodOption {
   }
 }
 
-class RankingScreen extends StatefulWidget {
+class RankingScreen extends ConsumerStatefulWidget {
   const RankingScreen({super.key});
 
   @override
-  State<RankingScreen> createState() => _RankingScreenState();
+  ConsumerState<RankingScreen> createState() => _RankingScreenState();
 }
 
-class _RankingScreenState extends State<RankingScreen> {
+class _RankingScreenState extends ConsumerState<RankingScreen> {
   PeriodOption _selectedPeriodOption = PeriodOption.daily;
 
   @override
+  void initState(){
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final notifier = ref.read(rankPersonalViewModelProvider.notifier);
+      notifier.getDailyPersonalRanking(DateTime.now());
+    });
+
+  }
+
+
+  @override
   Widget build(BuildContext context) {
+    final personalViewModel = ref.watch(rankPersonalViewModelProvider.notifier);
+    final departmentViewModel = ref.watch(rankDepartmentViewModelProvider.notifier);
+
+    void fetchDepartmentRanking(PeriodOption option) {
+      final now = DateTime.now();
+
+      switch (option) {
+        case PeriodOption.daily:
+          departmentViewModel.getDailyDepartmentRanking(now);
+          break;
+        case PeriodOption.weekly:
+          departmentViewModel.getWeeklyDepartmentRanking(now);
+          break;
+        case PeriodOption.monthly:
+          departmentViewModel.getMonthlyDepartmentRanking(now);
+          break;
+      }
+    }
+
+    void fetchPersonalRanking(PeriodOption option) {
+      final now = DateTime.now();
+
+      switch (option) {
+        case PeriodOption.daily:
+          personalViewModel.getDailyPersonalRanking(now);
+          break;
+        case PeriodOption.weekly:
+          personalViewModel.getWeeklyPersonalRanking(now);
+          break;
+        case PeriodOption.monthly:
+          personalViewModel.getMonthlyPersonalRanking(now);
+          break;
+      }
+    }
+
     return SafeArea(
       child: Column(
         children: [

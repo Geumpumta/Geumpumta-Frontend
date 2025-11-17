@@ -21,10 +21,11 @@ class _RankApi implements RankApi {
 
   @override
   Future<GetDepartmentRankingResponseDto> getWeeklyDepartmentRanking(
-    String date,
+    String? date,
   ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{r'date': date};
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<GetDepartmentRankingResponseDto>(
@@ -50,10 +51,11 @@ class _RankApi implements RankApi {
 
   @override
   Future<GetDepartmentRankingResponseDto> getMonthlyDepartmentRanking(
-    String date,
+    String? date,
   ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{r'date': date};
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<GetDepartmentRankingResponseDto>(
@@ -79,10 +81,11 @@ class _RankApi implements RankApi {
 
   @override
   Future<GetDepartmentRankingResponseDto> getDailyDepartmentRanking(
-    String date,
+    String? date,
   ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{r'date': date};
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<GetDepartmentRankingResponseDto>(
@@ -108,10 +111,11 @@ class _RankApi implements RankApi {
 
   @override
   Future<GetPersonalRankingResponseDto> getWeeklyPersonalRanking(
-    String date,
+    String? date,
   ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{r'date': date};
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<GetPersonalRankingResponseDto>(
@@ -137,10 +141,11 @@ class _RankApi implements RankApi {
 
   @override
   Future<GetPersonalRankingResponseDto> getMonthlyPersonalRanking(
-    String date,
+    String? date,
   ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{r'date': date};
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<GetPersonalRankingResponseDto>(
@@ -166,10 +171,11 @@ class _RankApi implements RankApi {
 
   @override
   Future<GetPersonalRankingResponseDto> getDailyPersonalRanking(
-    String date,
+    String? date,
   ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{r'date': date};
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<GetPersonalRankingResponseDto>(

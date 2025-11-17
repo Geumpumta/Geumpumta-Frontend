@@ -7,9 +7,9 @@ class RankRepository {
 
   RankRepository({required this.rankApi});
 
-  Future<GetDepartmentRankingResponseDto> getWeeklyDepartmentRanking(DateTime date)async{
+  Future<GetDepartmentRankingResponseDto> getWeeklyDepartmentRanking(DateTime? date)async{
     try {
-      final response = await rankApi.getWeeklyDepartmentRanking(date.toIso8601String());
+      final response = await rankApi.getWeeklyDepartmentRanking(date?.toIso8601String());
       if (!response.success) throw Exception('주간 학과별 랭킹 정보 조회 실패 : ${response.message}');
       return response;
     } catch (e,st) {
@@ -18,9 +18,9 @@ class RankRepository {
     }
   }
 
-  Future<GetDepartmentRankingResponseDto> getMonthlyDepartmentRanking(DateTime date)async{
+  Future<GetDepartmentRankingResponseDto> getMonthlyDepartmentRanking(DateTime? date)async{
     try {
-      final response = await rankApi.getMonthlyDepartmentRanking(date.toIso8601String());
+      final response = await rankApi.getMonthlyDepartmentRanking(date?.toIso8601String());
       if (!response.success) throw Exception('월간 학과별 랭킹 정보 조회 실패 : ${response.message}');
       return response;
     } catch (e,st) {
@@ -29,9 +29,9 @@ class RankRepository {
     }
   }
 
-  Future<GetDepartmentRankingResponseDto> getDailyDepartmentRanking(DateTime date)async{
+  Future<GetDepartmentRankingResponseDto> getDailyDepartmentRanking(DateTime? date)async{
     try {
-      final response = await rankApi.getDailyDepartmentRanking(date.toIso8601String());
+      final response = await rankApi.getDailyDepartmentRanking(date?.toIso8601String());
       if (!response.success) throw Exception('일간 학과별 랭킹 정보 조회 실패 : ${response.message}');
       return response;
     } catch (e,st) {
@@ -40,9 +40,9 @@ class RankRepository {
     }
   }
 
-  Future<GetPersonalRankingResponseDto> getWeeklyPersonalRanking(DateTime date)async{
+  Future<GetPersonalRankingResponseDto> getWeeklyPersonalRanking(DateTime? date)async{
     try {
-      final response = await rankApi.getWeeklyPersonalRanking(date.toIso8601String());
+      final response = await rankApi.getWeeklyPersonalRanking(date?.toIso8601String());
       if (!response.success) throw Exception('주간 개인별 랭킹 정보 조회 실패 : ${response.message}');
       return response;
     } catch (e,st) {

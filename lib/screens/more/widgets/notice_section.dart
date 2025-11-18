@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:geumpumta/widgets/section_title/section_title.dart';
-import 'package:geumpumta/widgets/menu_item/menu_item.dart';
 import 'package:geumpumta/routes/app_routes.dart';
+import 'package:geumpumta/widgets/section_title/section_title.dart';
 
 class NoticeSection extends StatelessWidget {
   const NoticeSection({
@@ -13,35 +12,72 @@ class NoticeSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SectionTitle(
-            title: '공지사항',
-            showMoreButton: true,
-            onMorePressed: () {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionTitle(
+          title: '공지사항',
+          showMoreButton: true,
+          onMorePressed: () {
+            Navigator.pushNamed(
+              context,
+              AppRoutes.placeholder,
+              arguments: {'title': '공지사항 전체보기'},
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        ...notices.map(
+          (notice) => _NoticeItem(
+            title: notice,
+            onTap: () {
               Navigator.pushNamed(
                 context,
                 AppRoutes.placeholder,
-                arguments: {'title': '공지사항 전체보기'},
+                arguments: {'title': notice},
               );
             },
           ),
-          const SizedBox(height: 12),
-          ...notices.map((notice) => MenuItem(
-                title: notice,
-                textColor: const Color(0xFF333333),
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    AppRoutes.placeholder,
-                    arguments: {'title': notice},
-                  );
-                },
-              )),
-        ],
+        ),
+      ],
+    );
+  }
+}
+
+class _NoticeItem extends StatelessWidget {
+  const _NoticeItem({
+    required this.title,
+    required this.onTap,
+  });
+
+  final String title;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF555555),
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              color: Color(0xFFCCCCCC),
+              size: 18,
+            ),
+          ],
+        ),
       ),
     );
   }

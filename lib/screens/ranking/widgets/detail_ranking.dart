@@ -6,10 +6,12 @@ class DetailRanking extends StatefulWidget {
     super.key,
     required this.nickname,
     required this.recordedTime,
+    required this.imageUrl,
   });
 
   final String nickname;
   final Duration recordedTime;
+  final String imageUrl;
 
   @override
   State<DetailRanking> createState() => _DetailRankingState();
@@ -49,10 +51,13 @@ class _DetailRankingState extends State<DetailRanking> {
           Row(
             spacing: 10,
             children: [
-              Image.asset(
-                'assets/image/login/main_img.png',
-                width: 40,
-                height: 40,
+              ClipOval(
+                child: Image.network(
+                  widget.imageUrl,
+                  height: 40,
+                  width: 40,
+                  fit: BoxFit.cover,
+                ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,7 +73,8 @@ class _DetailRankingState extends State<DetailRanking> {
                   ),
                   Text(
                     formattedDuration,
-                    style: TextStyle(color: Color(0xFF0BAEFF),
+                    style: TextStyle(
+                      color: Color(0xFF0BAEFF),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -87,7 +93,10 @@ class _DetailRankingState extends State<DetailRanking> {
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 builder: (context) {
-                  return DetailsInModal(nickname: widget.nickname, recordedTime: widget.recordedTime);
+                  return DetailsInModal(
+                    nickname: widget.nickname,
+                    recordedTime: widget.recordedTime,
+                  );
                 },
               );
             },

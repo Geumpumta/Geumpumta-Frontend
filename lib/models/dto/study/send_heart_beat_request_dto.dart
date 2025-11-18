@@ -1,16 +1,16 @@
 class SendHeartBeatRequestDto {
   final int sessionId;
-  final String ssid;
-  final String bssid;
+  final String gatewayIp;
+  final String clientIp;
 
   SendHeartBeatRequestDto(
-      {required this.sessionId, required this.ssid, required this.bssid});
+      {required this.sessionId, required this.gatewayIp, required this.clientIp});
 
   Map<String, dynamic> toJson() {
     return {
       "sessionId": sessionId.toString(),
-      "ssid": ssid,
-      "bssid": bssid,
+      "gatewayIp": gatewayIp,
+      "clientIp": clientIp,
     };
   }
 }

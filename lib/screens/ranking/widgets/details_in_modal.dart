@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geumpumta/models/entity/stats/daily_statistics.dart';
 import 'package:geumpumta/screens/stats/widgets/continuous_study_section.dart';
 import 'package:geumpumta/screens/stats/widgets/usage_time_chart_section.dart';
 
@@ -78,9 +79,9 @@ class DetailsInModal extends StatelessWidget {
             ],
           ),
           SizedBox(height: 30),
-          ContinuousStudySection(),
+          const ContinuousStudySection(),
           SizedBox(height: 30),
-          UsageTimeChartSection(),
+          const UsageTimeChartSection(slots: <DailySlot>[]),
         ],
       ),
     );

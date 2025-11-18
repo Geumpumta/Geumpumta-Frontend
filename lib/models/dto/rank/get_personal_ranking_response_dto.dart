@@ -2,13 +2,13 @@ class PersonalRankingDataItem {
   final int userId;
   final int totalMillis;
   final int rank;
-  final String username;
+  final String? username;
 
   PersonalRankingDataItem({
     required this.userId,
     required this.totalMillis,
     required this.rank,
-    required this.username,
+    this.username,
   });
 
   factory PersonalRankingDataItem.fromJson(Map<String, dynamic> json) =>

@@ -1,3 +1,5 @@
+import 'package:geumpumta/models/department.dart';
+
 class User {
   final String? name;
   final String? nickName;
@@ -7,7 +9,7 @@ class User {
   final String? profileImage;
   final String? oAuthProvider;
   final String? studentId;
-  final String? department;
+  final Department department;
   final int? totalMillis;
 
   User({
@@ -32,7 +34,7 @@ class User {
     String? profileImage,
     String? oAuthProvider,
     String? studentId,
-    String? department,
+    Department? department,
     int? totalMillis,
   }) {
     return User(

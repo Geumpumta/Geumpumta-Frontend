@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/screens/stats/widgets/contribution_grass.dart';
+import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 
-class ContinuousStudySection extends StatelessWidget {
-  const ContinuousStudySection({
-    super.key,
-    this.streakDays = 7,
-  });
+class ContinuousStudySection extends ConsumerWidget {
+  const ContinuousStudySection({super.key, this.manualStreakDays});
 
-  final int streakDays;
+  final int? manualStreakDays;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final streakAsync = manualStreakDays != null
+        ? AsyncValue<int>.data(manualStreakDays!)
+        : ref.watch(currentStreakProvider);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -33,10 +36,11 @@ class ContinuousStudySection extends StatelessWidget {
           const ContributionGrass(),
           const SizedBox(height: 16),
           Center(
-            child: Column(
+            child: streakAsync.when(
+              data: (streak) => Column(
               children: [
                 Text(
-                  '$streakDays일',
+                    '$streak일',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -52,6 +56,33 @@ class ContinuousStudySection extends StatelessWidget {
                   ),
                 ),
               ],
+              ),
+              loading: () => const SizedBox(
+                height: 40,
+                child: Center(
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+              error: (_, __) => Column(
+                children: const [
+                  Text(
+                    '--일',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF333333),
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    '연속 공부',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF666666),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

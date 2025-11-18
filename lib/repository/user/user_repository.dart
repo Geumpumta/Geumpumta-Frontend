@@ -27,7 +27,6 @@ class UserRepository {
         department: dto.department,
       );
     } catch (e, st) {
-      print('[UserRepository] 오류 발생: $e\n$st');
       rethrow;
     }
   }
@@ -45,11 +44,13 @@ class UserRepository {
           department: department,
         ),
       );
-      _authRepository.updateTokens(response.data.accessToken,response.data.refreshToken);
-
+      _authRepository.updateTokens(
+        response.data.accessToken,
+        response.data.refreshToken,
+      );
     } catch (e, st) {
-      print('[UserRepository] 오류 발생: $e\n$st');
       rethrow;
     }
   }
+
 }

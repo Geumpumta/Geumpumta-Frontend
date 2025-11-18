@@ -1,5 +1,7 @@
+import 'package:geumpumta/models/department.dart';
+
 class DepartmentRankingDataItem {
-  final String departmentName;
+  final Department departmentName;
   final int totalMillis;
   final int rank;
 
@@ -11,7 +13,7 @@ class DepartmentRankingDataItem {
 
   factory DepartmentRankingDataItem.fromJson(Map<String, dynamic> json) =>
       DepartmentRankingDataItem(
-        departmentName: json['departmentName'],
+        departmentName: DepartmentParser.fromKorean(json['department']),
         totalMillis: json['totalMillis'] as int,
         rank: json['rank'] as int,
       );

@@ -79,19 +79,19 @@ class StudyViewmodel extends StateNotifier<AsyncValue<dynamic>> {
     final networkInfo = NetworkInfo();
 
     try {
-      final bssid = await networkInfo.getWifiBSSID();
       final gatewayIp = await networkInfo.getWifiGatewayIP();
-      print('bssid : $bssid, gatewayIp : $gatewayIp');
+      final ip = await networkInfo.getWifiIP();
+      print('gatewayIp : $gatewayIp, ip : $ip');
 
       return {
-        "bssid": bssid,
         "gatewayIp": gatewayIp,
+        "ip" : ip,
       };
     } catch (e, st) {
       print("WIFI error: $e\n$st");
       return {
-        "bssid": null,
         "gatewayIp": null,
+        "ip" : null,
       };
     }
   }

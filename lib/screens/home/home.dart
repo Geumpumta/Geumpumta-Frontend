@@ -76,12 +76,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   DateTime now = DateTime.now();
 
                   final wifiData = await studyViewModel.getWIFIInfo();
+                  print('wifiDataData : : :: : ${wifiData['gatewayIp']}');
 
                   final res = await studyViewModel.startStudyTime(
                     StartStudyTimeRequestDto(
                       startTime: now,
                       gatewayIp: wifiData['gatewayIp'] ?? '',
-                      bssid: wifiData['bssid'] ?? '',
+                      clientIp: wifiData['ip']??'',
+
                     ),
                   );
 

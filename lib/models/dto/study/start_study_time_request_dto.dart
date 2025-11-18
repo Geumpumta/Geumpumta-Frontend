@@ -1,19 +1,19 @@
 class StartStudyTimeRequestDto {
   final DateTime startTime;
   final String gatewayIp;
-  final String bssid;
+  final String clientIp;
 
   StartStudyTimeRequestDto({
     required this.startTime,
     required this.gatewayIp,
-    required this.bssid,
+    required this.clientIp,
   });
 
   Map<String, dynamic> toJson() {
     return {
       "startTime": startTime.toIso8601String(),
-      "ssid": gatewayIp,
-      "bssid": bssid,
+      "gatewayIp": gatewayIp,
+      "clientIp":clientIp,
     };
   }
 }

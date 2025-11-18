@@ -12,6 +12,8 @@ import 'package:geumpumta/screens/home/widgets/total_progress_dot.dart';
 import 'package:geumpumta/viewmodel/study/study_viewmodel.dart';
 import 'package:geumpumta/widgets/top_logo_bar/top_logo_bar.dart';
 
+import '../../provider/userState/user_info_state.dart';
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -76,10 +78,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final response = await ref.read(studyViewmodelProvider).getStudyTime();
     if (response == null) return;
 
+    final totalMillis = response.data.totalStudySession;
+
     setState(() {
-      _timerDuration =
-          Duration(milliseconds: response.data.totalStudySession);
+      _timerDuration = Duration(milliseconds: totalMillis);
     });
+
+    ref.read(userInfoStateProvider.notifier).updateTotalMillis(totalMillis);
   }
 
   @override

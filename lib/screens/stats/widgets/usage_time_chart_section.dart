@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:geumpumta/models/entity/stats/daily_statistics.dart';
 import 'package:geumpumta/screens/stats/widgets/daily_usage_chart.dart';
 
 class UsageTimeChartSection extends StatelessWidget {
   const UsageTimeChartSection({
     super.key,
     this.title = '오늘의 사용 시간 그래프',
+    required this.slots,
   });
 
   final String title;
+  final List<DailySlot> slots;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +33,7 @@ class UsageTimeChartSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const DailyUsageChart(),
+          DailyUsageChart(slots: slots),
         ],
       ),
     );

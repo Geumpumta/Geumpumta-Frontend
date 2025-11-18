@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../repository/auth/auth_repository.dart';
 import '../../viewmodel/user/user_viewmodel.dart';
 import '../../routes/app_routes.dart';
@@ -27,6 +28,10 @@ class AuthViewModel extends StateNotifier<bool> {
 
       final isLogined = await _repo.loginWithProvider(provider);
       if (isLogined) {
+
+        final prefs = await SharedPreferences.getInstance();
+        final accessToken = prefs.getString('accessToken');
+        print(accessToken);
         await ref.read(userViewModelProvider.notifier).loadUserProfile();
 
         final userState = ref.read(userViewModelProvider);

@@ -2,6 +2,7 @@ import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geumpumta/models/dto/user/get_user_info_response_dto.dart';
 
 import '../../models/entity/user/user.dart';
 import '../../provider/repository_provider.dart';
@@ -19,13 +20,15 @@ class UserViewModel extends StateNotifier<AsyncValue<User>> {
 
   UserViewModel(this._repo) : super(const AsyncLoading());
 
-  Future<void> loadUserProfile() async {
+  Future<User?> loadUserProfile() async {
     state = const AsyncLoading();
     try {
       final user = await _repo.getUserProfile();
       state = AsyncData(user);
+      return user;
     } catch (e, st) {
       state = AsyncError(e, st);
+      return null;
     }
   }
 

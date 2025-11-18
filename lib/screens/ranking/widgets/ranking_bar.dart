@@ -47,11 +47,13 @@ class _RankingBarState extends State<RankingBar> {
                 widget.ranking.toString(),
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
               ),
-              Image.network(
-                widget.imgUrl,
-                height: 40,
-                width: 40,
-                fit: BoxFit.cover,
+              ClipOval(
+                child: Image.network(
+                  widget.imgUrl,
+                  height: 40,
+                  width: 40,
+                  fit: BoxFit.cover,
+                ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

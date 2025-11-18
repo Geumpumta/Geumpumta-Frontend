@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geumpumta/widgets/section_title/section_title.dart';
 import 'package:geumpumta/widgets/menu_item/menu_item.dart';
-import 'package:geumpumta/screens/more/widgets/placeholder_screen.dart';
 
 class MenuSection extends StatelessWidget {
   const MenuSection({
@@ -19,21 +18,20 @@ class MenuSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SectionTitle(title: title),
-          const SizedBox(height: 12),
-          ...items.map((item) => MenuItem(
-                title: item.title,
-                textColor: itemTextColor ?? item.textColor,
-                iconColor: itemIconColor ?? item.iconColor,
-                onTap: item.onTap,
-              )),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionTitle(title: title),
+        const SizedBox(height: 12),
+        ...items.map(
+          (item) => MenuItem(
+            title: item.title,
+            textColor: itemTextColor ?? item.textColor,
+            iconColor: itemIconColor ?? item.iconColor,
+            onTap: item.onTap,
+          ),
+        ),
+      ],
     );
   }
 }

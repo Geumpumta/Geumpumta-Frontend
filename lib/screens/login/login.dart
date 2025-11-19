@@ -47,6 +47,20 @@ class LoginScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+
+              const SizedBox(height: 20),
+
+              GestureDetector(
+                onTap: isLoading
+                    ? null
+                    : () => authViewModel.loginWithApple(context),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Image.asset('assets/image/login/apple_login_icon.png'),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

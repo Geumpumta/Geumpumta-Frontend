@@ -22,6 +22,10 @@ class AuthViewModel extends StateNotifier<bool> {
     await _login(context, 'google');
   }
 
+  Future<void> loginWithApple(BuildContext context) async {
+    await _login(context, 'apple');
+  }
+
   Future<bool> _login(BuildContext context, String provider) async {
     try {
       state = true;

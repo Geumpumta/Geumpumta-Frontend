@@ -38,8 +38,8 @@ dependencies:
   shared_preferences: ^2.5.3
   dio: ^5.9.0
   flutter_launcher_icons: ^0.14.4
-  flutter_web_auth_2: 3.0.0
-  uni_links: ^0.5.1
+  flutter_web_auth_2: ^4.1.0
+  app_links: ^6.4.1
   flutter_secure_storage: ^9.0.0
   percent_indicator: ^4.2.5
   image_picker: ^1.0.7
@@ -108,6 +108,11 @@ flutter:
         - asset: assets/fonts/SCDream9.otf
           weight: 900
 
+flutter_launcher_icons:
+  image_path: "assets/image/app_icon.png"
+
+  android: true
+  ios: true
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

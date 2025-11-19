@@ -28,7 +28,6 @@ class UserRepository {
         department: DepartmentParser.fromKorean(dto.department),
       );
     } catch (e, st) {
-      print('[UserRepository] 오류 발생: $e\n$st');
       rethrow;
     }
   }
@@ -51,8 +50,8 @@ class UserRepository {
         response.data.refreshToken,
       );
     } catch (e, st) {
-      print('[UserRepository] 오류 발생: $e\n$st');
       rethrow;
     }
   }
+
 }

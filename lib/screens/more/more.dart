@@ -5,7 +5,6 @@ import 'package:geumpumta/screens/more/widgets/notice_section.dart';
 import 'package:geumpumta/screens/more/widgets/menu_section.dart';
 import 'package:geumpumta/screens/more/widgets/logout_button.dart';
 import 'package:geumpumta/routes/app_routes.dart';
-import 'package:geumpumta/service/auth/auth_service.dart';
 import 'package:geumpumta/viewmodel/auth/auth_viewmodel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,31 +19,28 @@ class MoreScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0BAEFF)),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        titleSpacing: 20,
         title: const Text(
           '더보기',
           style: TextStyle(
-            color: Color(0xFF0BAEFF),
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+            color: Color(0xFF333333),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 8),
             const ProfileSection(),
             const SizedBox(height: 32),
-            
             const NoticeSection(),
             const SizedBox(height: 28),
-            
             MenuSection(
               title: '서비스 이용',
               items: [
@@ -59,7 +55,6 @@ class MoreScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 28),
-            
             MenuSection(
               title: '약관 및 정책',
               items: [
@@ -74,7 +69,6 @@ class MoreScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 28),
-            
             MenuSection(
               title: '계정 관리',
               items: [
@@ -87,7 +81,6 @@ class MoreScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 40),
-            
             LogoutButton(
               onPressed: () => _showLogoutDialog(context, ref),
             ),

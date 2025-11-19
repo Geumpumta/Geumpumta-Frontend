@@ -13,17 +13,11 @@ class StatsScreen extends StatefulWidget {
 class _StatsScreenState extends State<StatsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  int _selectedTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _tabController.addListener(() {
-      setState(() {
-        _selectedTabIndex = _tabController.index;
-      });
-    });
   }
 
   @override
@@ -39,16 +33,15 @@ class _StatsScreenState extends State<StatsScreen>
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0BAEFF)),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        titleSpacing: 16,
         title: const Text(
           '통계',
           style: TextStyle(
-            color: Color(0xFF0BAEFF),
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+            color: Color(0xFF333333),
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
         ),
         bottom: PreferredSize(

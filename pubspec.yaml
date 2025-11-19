@@ -108,6 +108,11 @@ flutter:
         - asset: assets/fonts/SCDream9.otf
           weight: 900
 
+flutter_launcher_icons:
+  image_path: "assets/image/app_icon.png"
+
+  android: true
+  ios: true
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

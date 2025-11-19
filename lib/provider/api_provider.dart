@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/service/retrofit/daily_statistics_api.dart';
 import 'package:geumpumta/service/retrofit/email_api.dart';
+import 'package:geumpumta/service/retrofit/rank_api.dart';
 import 'package:geumpumta/service/retrofit/grass_statistics_api.dart';
 import 'package:geumpumta/service/retrofit/monthly_statistics_api.dart';
 import 'package:geumpumta/service/retrofit/profile_api.dart';
@@ -15,12 +16,17 @@ final userApiProvider = Provider<UserApi>((ref) {
   return UserApi(dio);
 });
 
-final emailApiProvider = Provider<EmailApi>((ref){
+final emailApiProvider = Provider<EmailApi>((ref) {
   final dio = ref.watch(dioProvider);
   return EmailApi(dio);
 });
 
-final studyApiProvider = Provider<StudyApi>((ref){
+final rankApiProvider = Provider<RankApi>((ref) {
+  final dio = ref.watch(dioProvider);
+  return RankApi(dio);
+});
+
+final studyApiProvider = Provider<StudyApi>((ref) {
   final dio = ref.watch(dioProvider);
   return StudyApi(dio);
 });

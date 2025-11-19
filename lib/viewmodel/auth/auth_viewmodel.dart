@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../provider/userState/user_info_state.dart';
 import '../../repository/auth/auth_repository.dart';
 import '../../viewmodel/user/user_viewmodel.dart';
 import '../../routes/app_routes.dart';
@@ -36,20 +37,20 @@ class AuthViewModel extends StateNotifier<bool> {
         final prefs = await SharedPreferences.getInstance();
         final accessToken = prefs.getString('accessToken');
         print(accessToken);
-        await ref.read(userViewModelProvider.notifier).loadUserProfile();
 
-        final userState = ref.read(userViewModelProvider);
-        userState.when(
-          data: (user) {
-            if (user.userRole == 'GUEST') {
-              Navigator.pushNamed(context, AppRoutes.signin1);
-            } else {
-              Navigator.pushNamed(context, AppRoutes.main);
-            }
-          },
-          loading: () => debugPrint('프로필 로딩중'),
-          error: (e, _) => debugPrint('프로필 로드 실패: $e'),
-        );
+        final userInfo = await ref.read(userViewModelProvider.notifier).loadUserProfile();
+
+        ref.read(userInfoStateProvider.notifier).setUser(userInfo!);
+
+        final savedUser = ref.read(userInfoStateProvider);
+        if (savedUser != null) {
+          if (savedUser.userRole == "GUEST") {
+            Navigator.pushNamed(context, AppRoutes.signin1);
+          } else {
+            Navigator.pushNamed(context, AppRoutes.main);
+          }
+        }
+
 
         return true;
       } else {

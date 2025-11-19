@@ -1,3 +1,4 @@
+import 'package:geumpumta/models/department.dart';
 import 'package:geumpumta/models/dto/user/complete_registration_request_dto.dart';
 import 'package:geumpumta/repository/auth/auth_repository.dart';
 
@@ -24,7 +25,7 @@ class UserRepository {
         profileImage: dto.profilePictureUrl,
         oAuthProvider: dto.OAuthProvider,
         studentId: dto.studentId,
-        department: dto.department,
+        department: DepartmentParser.fromKorean(dto.department),
       );
     } catch (e, st) {
       rethrow;

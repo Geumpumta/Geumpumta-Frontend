@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:geumpumta/screens/ranking/widgets/ranking_board.dart';
 
 import 'details_in_modal.dart';
 
@@ -7,14 +6,12 @@ class RankingBar extends StatefulWidget {
   const RankingBar({
     super.key,
     required this.ranking,
-    required this.differenceOption,
     required this.imgUrl,
     required this.nickname,
     required this.recordedTime,
   });
 
   final int ranking;
-  final DifferenceOption differenceOption;
   final String imgUrl;
   final String nickname;
   final Duration recordedTime;
@@ -50,8 +47,14 @@ class _RankingBarState extends State<RankingBar> {
                 widget.ranking.toString(),
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
               ),
-              widget.differenceOption.icons,
-              Image.asset(widget.imgUrl, height: 40, width: 40),
+              ClipOval(
+                child: Image.network(
+                  widget.imgUrl,
+                  height: 40,
+                  width: 40,
+                  fit: BoxFit.cover,
+                ),
+              ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

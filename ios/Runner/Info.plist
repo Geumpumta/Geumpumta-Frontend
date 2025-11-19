@@ -32,17 +32,13 @@
 				<string>kakao9b7cb6ea8a8134ca72c2278c49dcaab2</string>
 			</array>
 			<key>GIDClientID</key>
-            <string>87871580593-2rpnk45aabktrgcigtkbt6rn1kvspvtb.apps.googleusercontent.com</string>
+			<string>87871580593-2rpnk45aabktrgcigtkbt6rn1kvspvtb.apps.googleusercontent.com</string>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>프로필 사진을 촬영하기 위해 카메라 접근 권한이 필요합니다.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>프로필 사진을 변경하기 위해 사진 라이브러리 접근 권한이 필요합니다.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

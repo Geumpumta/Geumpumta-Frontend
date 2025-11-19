@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geumpumta/models/department.dart';
 import 'package:geumpumta/routes/app_routes.dart';
 import 'package:geumpumta/viewmodel/user/user_viewmodel.dart';
 
@@ -13,7 +14,7 @@ class ProfileSection extends ConsumerWidget {
     return userState.when(
       data: (user) => _ProfileSectionContent(
         nickname: user.nickName ?? '닉네임',
-        department: user.department ?? '학과 정보 없음',
+        department: user.department.koreanName ?? '학과 정보 없음',
         profileImageUrl: user.profileImage,
       ),
       loading: () => const _ProfileSectionSkeleton(),

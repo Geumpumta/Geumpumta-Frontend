@@ -52,6 +52,7 @@ dependencies:
   another_flushbar: ^1.12.32
   flutter_dotenv: ^6.0.0
   network_info_plus: ^7.0.0
+  flutter_svg: ^2.2.2
 
 dev_dependencies:
   flutter_test:

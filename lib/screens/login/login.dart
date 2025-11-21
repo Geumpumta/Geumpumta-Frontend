@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geumpumta/viewmodel/auth/auth_viewmodel.dart';
 
 class LoginScreen extends ConsumerWidget {
@@ -17,10 +18,13 @@ class LoginScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/image/login/main_logo.png'),
-              const SizedBox(height: 100),
-              Image.asset('assets/image/login/main_img.png'),
+              SvgPicture.asset('assets/image/login/main_logo.svg'),
               const SizedBox(height: 60),
+              Image.asset(
+                'assets/image/login/main_img.png',
+                filterQuality: FilterQuality.high,
+              ),
+              const SizedBox(height: 80),
 
               GestureDetector(
                 onTap: isLoading

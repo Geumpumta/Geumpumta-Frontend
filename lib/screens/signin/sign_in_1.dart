@@ -45,6 +45,7 @@ class _SignIn1ScreenState extends ConsumerState<SignIn1Screen> {
     final emailViewModel = ref.watch(emailViewModelProvider.notifier);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(

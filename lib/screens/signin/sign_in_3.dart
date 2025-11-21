@@ -31,6 +31,7 @@ class _SignIn3ScreenState extends ConsumerState<SignIn3Screen> {
     final signUpState = ref.watch(signUpProvider);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(

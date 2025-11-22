@@ -9,7 +9,7 @@ StateNotifierProvider<UserInfoNotifier, User?>(
 class UserInfoNotifier extends StateNotifier<User?> {
   UserInfoNotifier() : super(null);
 
-  void setUser(User user) {
+  void setUser(User? user) {
     state = user;
   }
 

@@ -57,7 +57,7 @@ class AuthViewModel extends StateNotifier<bool> {
 
       final jsonString = jsonEncode(userInfo.toJson());
       await prefs.setString('userInfo', jsonString);
-      print("userInfo 저장 완료: $jsonString");
+      debugPrint("userInfo 저장 완료: $jsonString");
 
       if (userInfo.userRole == "GUEST") {
         Navigator.pushNamed(context, AppRoutes.signin1);

@@ -131,7 +131,7 @@ class MoreScreen extends ConsumerWidget {
               onPressed: () async {
                 Navigator.of(context).pop();
                 try {
-                  await viewModel.logout();
+                  await viewModel.logout(context);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(

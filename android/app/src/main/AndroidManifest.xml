@@ -46,20 +46,23 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <!-- 카카오 로그인 커스텀 URL 스킴 설정 -->
+        <!-- 카카오 로그인 리다이렉트 -->
         <activity
-            android:name="com.kakao.sdk.flutter.AuthCodeCustomTabsActivity"
-            android:exported="true">
-            <intent-filter android:label="flutter_web_auth">
+            android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <!-- "kakao${YOUR_NATIVE_APP_KEY}://oauth" 형식의 앱 실행 스킴 설정 -->
-                <!-- 카카오 로그인 리다이렉트 URI -->
-                <data android:host="kakaolink"
-                    android:scheme="kakao9b7cb6ea8a8134ca72c2278c49dcaab2" />            </intent-filter>
+                <data
+                    android:scheme="kakao9b7cb6ea8a8134ca72c2278c49dcaab2"
+                    android:host="oauth" />
+            </intent-filter>
         </activity>
+
 
     </application>
     <!-- Required to query activities that can process text, see:

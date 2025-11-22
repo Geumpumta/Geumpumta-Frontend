@@ -25,6 +25,32 @@ class User {
     this.totalMillis = 0,
   });
 
+  factory User.fromJson(Map<String, dynamic> json) => User(
+    name: json['name'],
+    nickName: json['nickName'],
+    email: json['email'],
+    schoolEmail: json['schoolEmail'],
+    userRole: json['userRole'],
+    profileImage: json['profileImage'],
+    oAuthProvider: json['oAuthProvider'],
+    studentId: json['studentId'],
+    department: DepartmentParser.fromKorean(json['department']),
+    totalMillis: json['totalMillis'],
+  );
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'nickName': nickName,
+    'email': email,
+    'schoolEmail': schoolEmail,
+    'userRole': userRole,
+    'profileImage': profileImage,
+    'oAuthProvider': oAuthProvider,
+    'studentId': studentId,
+    'department': department.koreanName,
+    'totalMillis': totalMillis,
+  };
+
   User copyWith({
     String? name,
     String? nickName,

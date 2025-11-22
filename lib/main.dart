@@ -1,19 +1,47 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/provider/auth/auth_provider.dart';
+import 'package:geumpumta/provider/userState/user_info_state.dart';
 import 'package:geumpumta/screens/login/login.dart';
 import 'package:geumpumta/screens/main/main.dart';
 import 'package:geumpumta/routes/app_routes.dart';
-import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart' as kakao;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geumpumta/models/entity/user/user.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
-  KakaoSdk.init(nativeAppKey: dotenv.env['KAKAO_NATIVE_APP_KEY']!);
 
-  runApp(const ProviderScope(child: MyApp()));
+  final prefs = await SharedPreferences.getInstance();
+  final userString = prefs.getString('userInfo');
+
+  User? initialUser;
+  if (userString != null) {
+    initialUser = User.fromJson(jsonDecode(userString));
+  }
+
+  await dotenv.load(fileName: ".env");
+  kakao.KakaoSdk.init(nativeAppKey: dotenv.env['KAKAO_NATIVE_APP_KEY']!);
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        userInfoStateProvider.overrideWith(
+              (ref) {
+            final notifier = UserInfoNotifier();
+            if (initialUser != null) notifier.setUser(initialUser);
+            return notifier;
+          },
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -34,10 +62,12 @@ class MyHomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isLoggedIn = ref.watch(authProvider);
+    final user = ref.watch(userInfoStateProvider);
 
-    return isLoggedIn ? const MainScreen() : const LoginScreen();
-    // return const MainScreen(); // 이거 주석 해제하시면 메인 페이지로 바로 이동합니당
-    // return const 페이지(); // 이렇게 생성해서 바로 연결되도록 하세요!
+    if (user?.userRole == 'USER') {
+      return const MainScreen();
+    } else {
+      return const LoginScreen();
+    }
   }
 }

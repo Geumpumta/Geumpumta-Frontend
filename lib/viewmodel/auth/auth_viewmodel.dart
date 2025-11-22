@@ -8,8 +8,9 @@ import '../../repository/auth/auth_repository.dart';
 import '../../viewmodel/user/user_viewmodel.dart';
 import '../../routes/app_routes.dart';
 
-final authViewModelProvider =
-StateNotifierProvider<AuthViewModel, bool>((ref) => AuthViewModel(ref));
+final authViewModelProvider = StateNotifierProvider<AuthViewModel, bool>(
+  (ref) => AuthViewModel(ref),
+);
 
 class AuthViewModel extends StateNotifier<bool> {
   final Ref ref;
@@ -43,8 +44,9 @@ class AuthViewModel extends StateNotifier<bool> {
       final accessToken = prefs.getString('accessToken');
       print("로그인 후 accessToken: $accessToken");
 
-      final userInfo =
-      await ref.read(userViewModelProvider.notifier).loadUserProfile();
+      final userInfo = await ref
+          .read(userViewModelProvider.notifier)
+          .loadUserProfile();
 
       if (userInfo == null) {
         debugPrint("유저 정보 로드 실패");
@@ -64,7 +66,6 @@ class AuthViewModel extends StateNotifier<bool> {
       }
 
       return true;
-
     } catch (e, st) {
       debugPrint('$provider 로그인 중 오류: $e\n$st');
       return false;
@@ -73,10 +74,11 @@ class AuthViewModel extends StateNotifier<bool> {
     }
   }
 
-  Future<void> logout() async {
+  Future<void> logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('userInfo');
     ref.read(userInfoStateProvider.notifier).clear();
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 
   Future<void> deleteAccount(String accessToken) async {

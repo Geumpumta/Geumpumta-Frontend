@@ -7,8 +7,11 @@ import '../../widgets/back_and_progress/back_and_progress.dart';
 import '../../widgets/custom_button/custom_button.dart';
 import '../../widgets/custom_input/custom_input.dart';
 
+final isVerifyingProvider = StateProvider<bool>((ref) => false);
+
 class SignIn2Screen extends ConsumerStatefulWidget {
   const SignIn2Screen({super.key});
+
 
   @override
   ConsumerState<SignIn2Screen> createState() => _SignIn2ScreenState();
@@ -92,13 +95,22 @@ class _SignIn2ScreenState extends ConsumerState<SignIn2Screen> {
               ),
               CustomButton(
                 buttonText: '확인',
-                onActive: isCodeValid,
-                onPressed: () => emailViewModel.verifyCode(
-                  context,
-                  signUpState.email,
-                  codeController.text.trim(),
-                ),
+                onActive: isCodeValid && !ref.watch(isVerifyingProvider),
+                onPressed: () async {
+                  ref.read(isVerifyingProvider.notifier).state = true;
+
+                  try {
+                    await emailViewModel.verifyCode(
+                      context,
+                      signUpState.email,
+                      codeController.text.trim(),
+                    );
+                  } finally {
+                    ref.read(isVerifyingProvider.notifier).state = false;
+                  }
+                },
               ),
+
             ],
           ),
         ),

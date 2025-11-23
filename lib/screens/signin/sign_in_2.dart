@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geumpumta/provider/signin/signin_provider.dart';
 import 'package:geumpumta/viewmodel/email/email_viewmodel.dart';
+import '../../provider/signin/signin_provider.dart';
 import '../../widgets/back_and_progress/back_and_progress.dart';
 import '../../widgets/custom_button/custom_button.dart';
 import '../../widgets/custom_input/custom_input.dart';
+import '../../widgets/loading_dialog/loading_dialog.dart';
+import '../../widgets/error_dialog/error_dialog.dart';
+
+final isVerifyingProvider = StateProvider<bool>((ref) => false);
 
 class SignIn2Screen extends ConsumerStatefulWidget {
   const SignIn2Screen({super.key});
@@ -31,10 +35,12 @@ class _SignIn2ScreenState extends ConsumerState<SignIn2Screen> {
 
   @override
   Widget build(BuildContext context) {
-    final emailViewModel = ref.watch(emailViewModelProvider.notifier);
+    final emailViewModel = ref.watch(emailViewModelProvider);
     final signUpState = ref.watch(signUpProvider);
+    final isVerifying = ref.watch(isVerifyingProvider);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
@@ -89,14 +95,43 @@ class _SignIn2ScreenState extends ConsumerState<SignIn2Screen> {
                   ),
                 ],
               ),
+
               CustomButton(
                 buttonText: '확인',
-                onActive: isCodeValid,
-                onPressed: () => emailViewModel.verifyCode(
-                  context,
-                  signUpState.email,
-                  codeController.text.trim(),
-                ),
+                onActive: isCodeValid && !isVerifying,
+                onPressed: () async {
+                  ref.read(isVerifyingProvider.notifier).state = true;
+
+                  LoadingDialog.show(context);
+
+                  try {
+                    final result = await emailViewModel.verifyCode(
+                      signUpState.email,
+                      codeController.text.trim(),
+                    );
+
+                    LoadingDialog.hide(context);
+
+                    if (result) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("인증 성공!"),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+
+                      Navigator.pushNamed(context, '/signin3');
+                    } else {
+                      ErrorDialog.show(context, "인증번호가 올바르지 않습니다.");
+                    }
+
+                  } catch (e) {
+                    LoadingDialog.hide(context);
+                    ErrorDialog.show(context, "인증 오류: $e");
+                  } finally {
+                    ref.read(isVerifyingProvider.notifier).state = false;
+                  }
+                },
               ),
             ],
           ),

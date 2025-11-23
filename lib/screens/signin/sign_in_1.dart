@@ -1,11 +1,14 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/viewmodel/email/email_viewmodel.dart';
+import 'package:geumpumta/widgets/error_dialog/error_dialog.dart';
 import '../../provider/signin/signin_provider.dart';
 import '../../widgets/back_and_progress/back_and_progress.dart';
 import '../../widgets/custom_button/custom_button.dart';
 import '../../widgets/custom_input/custom_input.dart';
+import '../../widgets/loading_dialog/loading_dialog.dart';
 
 class SignIn1Screen extends ConsumerStatefulWidget {
   const SignIn1Screen({super.key});
@@ -42,9 +45,11 @@ class _SignIn1ScreenState extends ConsumerState<SignIn1Screen> {
   Widget build(BuildContext context) {
     final signIn = ref.watch(signUpProvider);
     final signInNotifier = ref.read(signUpProvider.notifier);
-    final emailViewModel = ref.watch(emailViewModelProvider.notifier);
+    final emailViewModel = ref.watch(emailViewModelProvider);
+
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
@@ -106,13 +111,35 @@ class _SignIn1ScreenState extends ConsumerState<SignIn1Screen> {
               CustomButton(
                 buttonText: '인증',
                 onActive: isStudentIdValid && isEmailValid,
-                onPressed: () {
-                  emailViewModel.sendEmailVerification(
-                    context,
-                    emailController.text.trim(),
-                  );
-                },
+                  onPressed: () async {
+                    LoadingDialog.show(context);
+
+                    try {
+                      await emailViewModel.sendEmailVerification(emailController.text.trim());
+
+                      LoadingDialog.hide(context);
+
+                      Flushbar(
+                        message: "인증 메일을 전송했어요!",
+                        backgroundColor: Colors.green.shade600,
+                        flushbarPosition: FlushbarPosition.TOP,
+                        margin: const EdgeInsets.all(10),
+                        borderRadius: BorderRadius.circular(10),
+                        duration: const Duration(seconds: 2),
+                        icon: const Icon(Icons.check_circle, color: Colors.white),
+                      ).show(context);
+
+                      Navigator.pushNamed(context, '/signin2', arguments: emailController.text.trim());
+
+                    } catch (e) {
+                      LoadingDialog.hide(context);
+                      ErrorDialog.show(context, "메일 전송 실패: $e");
+                    }
+                  }
+
+
               ),
+
             ],
           ),
         ),

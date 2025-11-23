@@ -18,6 +18,15 @@ class SignIn3Screen extends ConsumerStatefulWidget {
 class _SignIn3ScreenState extends ConsumerState<SignIn3Screen> {
   final TextEditingController _searchController = TextEditingController();
   String department = Department.none.koreanName;
+  String _searchText = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() => _searchText = _searchController.text.trim());
+    });
+  }
 
   @override
   void dispose() {
@@ -25,12 +34,14 @@ class _SignIn3ScreenState extends ConsumerState<SignIn3Screen> {
     super.dispose();
   }
 
+
   @override
   Widget build(BuildContext context) {
     final userViewmodel = ref.watch(userViewModelProvider.notifier);
     final signUpState = ref.watch(signUpProvider);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
@@ -60,6 +71,7 @@ class _SignIn3ScreenState extends ConsumerState<SignIn3Screen> {
                   ),
                   Expanded(
                     child: DepartmentScrollDown(
+                      searchText: _searchText,
                       onDepartmentSelected: (dept) {
                         print('선택된 학과: ${dept.koreanName}');
                         setState(() {

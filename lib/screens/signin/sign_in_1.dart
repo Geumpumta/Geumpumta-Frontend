@@ -43,6 +43,8 @@ class _SignIn1ScreenState extends ConsumerState<SignIn1Screen> {
     final signIn = ref.watch(signUpProvider);
     final signInNotifier = ref.read(signUpProvider.notifier);
     final emailViewModel = ref.watch(emailViewModelProvider.notifier);
+    final isSending = ref.watch(isSendingProvider);
+
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -106,12 +108,16 @@ class _SignIn1ScreenState extends ConsumerState<SignIn1Screen> {
               ),
               CustomButton(
                 buttonText: '인증',
-                onActive: isStudentIdValid && isEmailValid,
-                onPressed: () {
-                  emailViewModel.sendEmailVerification(
+                onActive: isStudentIdValid && isEmailValid && !isSending,
+                onPressed: () async {
+                  ref.read(isSendingProvider.notifier).state = true;
+
+                  await emailViewModel.sendEmailVerification(
                     context,
                     emailController.text.trim(),
                   );
+
+                  ref.read(isSendingProvider.notifier).state = false;
                 },
               ),
             ],

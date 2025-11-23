@@ -10,6 +10,9 @@ StateNotifierProvider<EmailViewmodel, AsyncValue<void>>((ref) {
   return EmailViewmodel(ref, repo);
 });
 
+final isSendingProvider = StateProvider<bool>((ref) => false);
+
+
 class EmailViewmodel extends StateNotifier<AsyncValue<void>> {
   final Ref ref;
   final EmailRepository _repo;

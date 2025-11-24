@@ -4,7 +4,9 @@ import 'package:geumpumta/models/entity/stats/grass_statistics.dart';
 import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 
 class ContributionGrass extends ConsumerStatefulWidget {
-  const ContributionGrass({super.key});
+  const ContributionGrass({super.key, this.targetUserId});
+
+  final int? targetUserId;
 
   @override
   ConsumerState<ContributionGrass> createState() => _ContributionGrassState();
@@ -52,7 +54,10 @@ class _ContributionGrassState extends ConsumerState<ContributionGrass> {
     final formatted = _formatDateForApi(_currentMonth);
     ref
         .read(grassStatsViewModelProvider.notifier)
-        .loadGrassStatistics(date: formatted);
+        .loadGrassStatistics(
+          date: formatted,
+          targetUserId: widget.targetUserId,
+        );
   }
 
   @override

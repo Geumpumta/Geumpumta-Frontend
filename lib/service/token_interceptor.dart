@@ -2,6 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TokenInterceptor extends Interceptor {
+  final Dio dio;
+
+  TokenInterceptor(this.dio);
+
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     final prefs = await SharedPreferences.getInstance();
@@ -10,45 +14,51 @@ class TokenInterceptor extends Interceptor {
     if (accessToken != null && accessToken.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $accessToken';
     } else {
-      print('⚠Access Token not found, skipping Authorization header.');
+      print('Access Token not found, skipping Authorization header.');
     }
 
-    super.onRequest(options, handler);
+    handler.next(options);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 401) {
-      print('Token expired — trying to refresh...');
+      print('Access token expired, refreshing...');
 
       final prefs = await SharedPreferences.getInstance();
       final refreshToken = prefs.getString('refreshToken');
 
-      if (refreshToken != null) {
-        try {
-          final dio = Dio();
-          final res = await dio.post(
-            'https://geumpumta.shop:8080/auth/token/refresh',
-            data: {'refreshToken': refreshToken},
-          );
+      if (refreshToken == null) {
+        print('No refresh token found → cannot refresh');
+        return handler.next(err);
+      }
 
-          if (res.statusCode == 200 && res.data['accessToken'] != null) {
-            final newAccessToken = res.data['accessToken'];
-            await prefs.setString('accessToken', newAccessToken);
-            print('Access Token refreshed!');
+      try {
+        final res = await dio.post(
+          '/auth/token/refresh',
+          data: {'refreshToken': refreshToken},
+        );
 
-            final retryRequest = err.requestOptions;
-            retryRequest.headers['Authorization'] = 'Bearer $newAccessToken';
+        final newAccessToken = res.data['accessToken'];
 
-            final response = await dio.fetch(retryRequest);
-            return handler.resolve(response);
-          }
-        } catch (e) {
-          print('Failed to refresh token: $e');
+        if (newAccessToken != null) {
+          await prefs.setString('accessToken', newAccessToken);
+          print('Access Token refreshed!');
+
+          final retryRequest = err.requestOptions;
+          retryRequest.headers['Authorization'] = 'Bearer $newAccessToken';
+
+          final retryResponse = await dio.fetch(retryRequest);
+
+          return handler.resolve(retryResponse);
+        } else {
+          print("refresh API did not return accessToken");
         }
+      } catch (e) {
+        print('Token refresh failed: $e');
       }
     }
 
-    super.onError(err, handler);
+    handler.next(err);
   }
 }

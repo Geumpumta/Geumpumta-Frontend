@@ -15,12 +15,11 @@ final studyViewmodelProvider = Provider<StudyViewmodel>((ref) {
   return StudyViewmodel(ref, repo);
 });
 
-
 class StudyViewmodel extends StateNotifier<AsyncValue<dynamic>> {
   final Ref ref;
   final StudyRepository repo;
 
-  StudyViewmodel(this.ref, this.repo):super(const AsyncData(null));
+  StudyViewmodel(this.ref, this.repo) : super(const AsyncData(null));
 
   Future<GetStudyTimeResponseDto?> getStudyTime() async {
     try {
@@ -35,9 +34,27 @@ class StudyViewmodel extends StateNotifier<AsyncValue<dynamic>> {
     return null;
   }
 
-  Future<StartStudyTimeResponseDto?> startStudyTime(StartStudyTimeRequestDto dto) async {
+  Future<StartStudyTimeResponseDto?> startStudyTime(
+      StartStudyTimeRequestDto dto) async {
+
     try {
       final response = await repo.startStudyTime(dto);
+
+      return response;
+    } catch (e, st) {
+      print('[StudyViewmodel] 예외 발생: $e\n$st');
+
+      return null;
+    }
+  }
+
+
+
+  Future<SendHeartBeatResponseDto?> sendHeartBeat(
+    SendHeartBeatRequestDto dto,
+  ) async {
+    try {
+      final response = await repo.sendHeartBeat(dto);
       if (!response.success) {
         throw Exception(response.message);
       }
@@ -48,28 +65,14 @@ class StudyViewmodel extends StateNotifier<AsyncValue<dynamic>> {
     return null;
   }
 
-
-  Future<SendHeartBeatResponseDto?> sendHeartBeat(SendHeartBeatRequestDto dto) async{
-    try{
-      final response = await repo.sendHeartBeat(dto);
-      if (!response.success) {
-        throw Exception(response.message);
-      }
-      return response;
-    }catch (e, st) {
-      print('[StudyViewmodel] 오류 발생: $e\n$st');
-    }
-    return null;
-  }
-
   Future<CommonDto?> endStudyTime(EndStudyRequestDto dto) async {
-    try{
+    try {
       final response = await repo.endStudyTime(dto);
       if (!response.success) {
         throw Exception(response.message);
       }
       return response;
-    }catch (e, st) {
+    } catch (e, st) {
       print('[StudyViewmodel] 오류 발생: $e\n$st');
     }
     return null;
@@ -83,18 +86,10 @@ class StudyViewmodel extends StateNotifier<AsyncValue<dynamic>> {
       final ip = await networkInfo.getWifiIP();
       print('gatewayIp : $gatewayIp, ip : $ip');
 
-      return {
-        "gatewayIp": gatewayIp,
-        "ip" : ip,
-      };
+      return {"gatewayIp": gatewayIp, "ip": ip};
     } catch (e, st) {
       print("WIFI error: $e\n$st");
-      return {
-        "gatewayIp": null,
-        "ip" : null,
-      };
+      return {"gatewayIp": null, "ip": null};
     }
   }
-
-
 }

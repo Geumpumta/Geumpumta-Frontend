@@ -4,15 +4,20 @@ import 'package:geumpumta/screens/stats/widgets/contribution_grass.dart';
 import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 
 class ContinuousStudySection extends ConsumerWidget {
-  const ContinuousStudySection({super.key, this.manualStreakDays});
+  const ContinuousStudySection({
+    super.key,
+    this.manualStreakDays,
+    this.targetUserId,
+  });
 
   final int? manualStreakDays;
+  final int? targetUserId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final streakAsync = manualStreakDays != null
         ? AsyncValue<int>.data(manualStreakDays!)
-        : ref.watch(currentStreakProvider);
+        : ref.watch(currentStreakProvider(targetUserId));
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -33,7 +38,7 @@ class ContinuousStudySection extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const ContributionGrass(),
+          ContributionGrass(targetUserId: targetUserId),
           const SizedBox(height: 16),
           Center(
             child: streakAsync.when(

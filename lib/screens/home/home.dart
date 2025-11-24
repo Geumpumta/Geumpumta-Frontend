@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/dto/study/end_study_request_dto.dart';
@@ -11,6 +10,8 @@ import 'package:geumpumta/screens/home/widgets/start_and_stop_btn.dart';
 import 'package:geumpumta/screens/home/widgets/total_progress_dot.dart';
 import 'package:geumpumta/viewmodel/study/study_viewmodel.dart';
 import 'package:geumpumta/widgets/top_logo_bar/top_logo_bar.dart';
+import 'package:geumpumta/widgets/error_dialog/error_dialog.dart';
+import 'package:geumpumta/widgets/loading_dialog/loading_dialog.dart';
 
 import '../../provider/userState/user_info_state.dart';
 
@@ -65,12 +66,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
 
     if (res == null || !res.success) {
-      await Flushbar(
-        message: res?.message ?? "하트비트 전송 실패: 세션 만료 가능성",
-        backgroundColor: Colors.red.shade700,
-        flushbarPosition: FlushbarPosition.TOP,
-        duration: const Duration(seconds: 2),
-      ).show(context);
+      ErrorDialog.show(
+        context,
+        res?.message ?? "하트비트 전송 실패: 세션 만료 가능성",
+      );
     }
   }
 
@@ -118,59 +117,68 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 isTimerRunning: _isTimerRunning,
 
                 onStart: () async {
-                  final now = DateTime.now();
+                  LoadingDialog.show(context);
 
-                  final wifi = await vm.getWIFIInfo();
+                  try {
+                    final now = DateTime.now();
+                    final wifi = await vm.getWIFIInfo();
 
-                  final res = await vm.startStudyTime(
-                    StartStudyTimeRequestDto(
-                      startTime: now,
-                      gatewayIp: wifi['gatewayIp'] ?? '',
-                      clientIp: wifi['ip'] ?? '',
-                    ),
-                  );
+                    final res = await vm.startStudyTime(
+                      StartStudyTimeRequestDto(
+                        startTime: now,
+                        gatewayIp: wifi['gatewayIp'] ?? '',
+                        clientIp: wifi['ip'] ?? '',
+                      ),
+                    );
 
-                  if (res == null || !res.success) {
-                    await Flushbar(
-                      message: res?.message ?? "시작 실패",
-                      backgroundColor: Colors.red.shade700,
-                      flushbarPosition: FlushbarPosition.TOP,
-                      duration: const Duration(seconds: 2),
-                    ).show(context);
-                    return;
+                    LoadingDialog.hide(context);
+
+                    if (res == null || !res.success) {
+                      ErrorDialog.show(context, res?.message ?? "시작 실패");
+                      return;
+                    }
+
+                    _sessionId = res.data?.studySessionId??-1;
+
+                    setState(() => _isTimerRunning = true);
+                    _startLocalTimer();
+                    _startHeartBeat();
+
+                  } catch (e) {
+                    LoadingDialog.hide(context);
+                    ErrorDialog.show(context, "시작 실패: $e");
                   }
-
-                  _sessionId = res.data.studySessionId;
-
-                  setState(() => _isTimerRunning = true);
-                  _startLocalTimer();
-
-                  _startHeartBeat();
                 },
 
                 onStop: () async {
-                  final res = await vm.endStudyTime(
-                    EndStudyRequestDto(
-                      studySessionId: _sessionId,
-                      endTime: DateTime.now(),
-                    ),
-                  );
+                  LoadingDialog.show(context);
 
-                  if (res == null || !res.success) {
-                    await Flushbar(
-                      message: res?.message ?? "종료 실패",
-                      backgroundColor: Colors.red.shade700,
-                      flushbarPosition: FlushbarPosition.TOP,
-                    ).show(context);
-                    return;
+                  try {
+                    final res = await vm.endStudyTime(
+                      EndStudyRequestDto(
+                        studySessionId: _sessionId,
+                        endTime: DateTime.now(),
+                      ),
+                    );
+
+                    LoadingDialog.hide(context);
+
+                    if (res == null || !res.success) {
+                      ErrorDialog.show(context, res?.message ?? "종료 실패");
+                      return;
+                    }
+
+                    setState(() => _isTimerRunning = false);
+                    _stopLocalTimer();
+                    _stopHeartBeat();
+
+                    await _refreshFromServer();
+                    _sessionId = 0;
+
+                  } catch (e) {
+                    LoadingDialog.hide(context);
+                    ErrorDialog.show(context, "종료 실패: $e");
                   }
-
-                  setState(() => _isTimerRunning = false);
-                  _stopLocalTimer();
-                  _stopHeartBeat();
-
-                  await _refreshFromServer();
-                  _sessionId = 0;
                 },
               ),
             ],

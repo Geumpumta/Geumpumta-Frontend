@@ -39,7 +39,7 @@ final grassStatisticsProvider =
   return repo.fetchGrassStatistics(date: formattedMonth);
 });
 
-final currentStreakProvider = FutureProvider<int>((ref) async {
+final currentStreakProvider = FutureProvider.family<int, int?>((ref, targetUserId) async {
   final repo = ref.watch(grassStatisticsRepositoryProvider);
   final today = DateTime.now();
   final currentMonth = DateTime(today.year, today.month, 1);
@@ -50,11 +50,15 @@ final currentStreakProvider = FutureProvider<int>((ref) async {
   );
 
   final entries = <GrassEntry>[];
-  final current =
-      await repo.fetchGrassStatistics(date: _formatMonth(currentMonth));
+  final current = await repo.fetchGrassStatistics(
+    date: _formatMonth(currentMonth),
+    targetUserId: targetUserId,
+  );
   entries.addAll(current.entries);
-  final prev =
-      await repo.fetchGrassStatistics(date: _formatMonth(previousMonth));
+  final prev = await repo.fetchGrassStatistics(
+    date: _formatMonth(previousMonth),
+    targetUserId: targetUserId,
+  );
   entries.addAll(prev.entries);
 
   final byDate = <String, int>{
@@ -63,6 +67,14 @@ final currentStreakProvider = FutureProvider<int>((ref) async {
 
   int streak = 0;
   DateTime cursor = DateTime(today.year, today.month, today.day);
+  final todayLevel = byDate[_formatDate(cursor)] ?? 0;
+  
+  // 오늘 날짜는 level이 0이어도 어제까지의 연속일수를 유지해야 함
+  // 오늘 날짜를 체크할 때 level이 0이면 streak을 증가시키지 않고 어제로 넘어감
+  if (todayLevel > 0) {
+    streak++;
+  }
+  cursor = cursor.subtract(const Duration(days: 1));
 
   while (true) {
     final level = byDate[_formatDate(cursor)] ?? 0;

@@ -1,10 +1,13 @@
 import 'dart:io';
 
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geumpumta/provider/userState/user_info_state.dart';
 import 'package:geumpumta/repository/profile/profile_repository.dart';
 import 'package:geumpumta/viewmodel/user/profile_edit_viewmodel.dart';
 import 'package:geumpumta/viewmodel/user/user_viewmodel.dart';
+import 'package:geumpumta/widgets/text_header/text_header.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ProfileEditScreen extends ConsumerStatefulWidget {
@@ -52,6 +55,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   void _updateSaveButtonState() {
+    // 닉네임이 수정되었고 중복 확인 후 사용 가능한 경우, 또는 이미지가 변경된 경우 저장 가능
     final nicknameValid = _nicknameEdited && (_isNicknameAvailable == true);
     final imageChanged = _photoChanged;
     setState(() {
@@ -60,7 +64,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   Future<void> _pickImage() async {
-    final messenger = ScaffoldMessenger.of(context);
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
@@ -73,14 +76,19 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      messenger.showSnackBar(
-        SnackBar(content: Text('이미지 선택 중 오류가 발생했습니다: $e')),
-      );
+      await Flushbar(
+        message: '이미지 선택 중 오류가 발생했습니다: $e',
+        backgroundColor: Colors.red.shade700,
+        flushbarPosition: FlushbarPosition.TOP,
+        margin: const EdgeInsets.all(10),
+        borderRadius: BorderRadius.circular(10),
+        duration: const Duration(seconds: 2),
+        icon: const Icon(Icons.error_outline, color: Colors.white),
+      ).show(context);
     }
   }
 
   Future<void> _uploadImage(File file) async {
-    final messenger = ScaffoldMessenger.of(context);
     setState(() {
       _isUploadingImage = true;
     });
@@ -96,9 +104,15 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       _updateSaveButtonState();
     } catch (e) {
       if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(content: Text('이미지 업로드에 실패했습니다: $e')),
-        );
+        await Flushbar(
+          message: '이미지 업로드에 실패했습니다: $e',
+          backgroundColor: Colors.red.shade700,
+          flushbarPosition: FlushbarPosition.TOP,
+          margin: const EdgeInsets.all(10),
+          borderRadius: BorderRadius.circular(10),
+          duration: const Duration(seconds: 2),
+          icon: const Icon(Icons.error_outline, color: Colors.white),
+        ).show(context);
       }
     } finally {
       if (mounted) {
@@ -110,18 +124,23 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   Future<void> _checkDuplication() async {
-    final messenger = ScaffoldMessenger.of(context);
     final nickname = _nicknameController.text.trim();
     if (nickname.isEmpty) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('닉네임을 입력해주세요.')),
-      );
+      await Flushbar(
+        message: '닉네임을 입력해주세요.',
+        backgroundColor: Colors.orange.shade700,
+        flushbarPosition: FlushbarPosition.TOP,
+        margin: const EdgeInsets.all(10),
+        borderRadius: BorderRadius.circular(10),
+        duration: const Duration(seconds: 2),
+        icon: const Icon(Icons.info_outline, color: Colors.white),
+      ).show(context);
       return;
     }
 
     setState(() {
       _isCheckingNickname = true;
-    });
+});
 
     try {
       final viewModel = ref.read(profileEditViewModelProvider.notifier);
@@ -129,21 +148,36 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (mounted) {
         setState(() {
           _isNicknameAvailable = isAvailable;
-          _nicknameEdited = !isAvailable;
+          // 닉네임이 사용 가능하면 _nicknameEdited를 true로 유지
+          if (isAvailable) {
+            _nicknameEdited = true;
+          }
         });
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(
-              isAvailable ? '사용 가능한 닉네임입니다.' : '이미 사용 중인 닉네임입니다.',
-            ),
+        await Flushbar(
+          message: isAvailable ? '사용 가능한 닉네임입니다.' : '이미 사용 중인 닉네임입니다.',
+          backgroundColor: isAvailable ? Colors.green.shade600 : Colors.red.shade700,
+          flushbarPosition: FlushbarPosition.TOP,
+          margin: const EdgeInsets.all(10),
+          borderRadius: BorderRadius.circular(10),
+          duration: const Duration(seconds: 2),
+          icon: Icon(
+            isAvailable ? Icons.check_circle : Icons.cancel,
+            color: Colors.white,
           ),
-        );
+        ).show(context);
+        _updateSaveButtonState();
       }
     } catch (e) {
       if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(content: Text('닉네임 확인 중 오류가 발생했습니다: $e')),
-        );
+        await Flushbar(
+          message: '닉네임 확인 중 오류가 발생했습니다: $e',
+          backgroundColor: Colors.red.shade700,
+          flushbarPosition: FlushbarPosition.TOP,
+          margin: const EdgeInsets.all(10),
+          borderRadius: BorderRadius.circular(10),
+          duration: const Duration(seconds: 2),
+          icon: const Icon(Icons.error_outline, color: Colors.white),
+        ).show(context);
       }
     } finally {
       if (mounted) {
@@ -157,7 +191,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
   Future<void> _saveProfile() async {
     if (!_canSave) return;
-    final messenger = ScaffoldMessenger.of(context);
     final nickname = _nicknameController.text.trim();
     final imageUrl = _currentImageUrl ?? '';
     final publicId = _currentPublicId;
@@ -171,7 +204,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         imageUrl: imageUrl,
         publicId: publicId,
       );
-      await userViewModel.loadUserProfile();
+      // 프로필 업데이트 후 최신 사용자 정보 로드
+      final updatedUser = await userViewModel.loadUserProfile();
+      if (updatedUser != null) {
+        ref.read(userInfoStateProvider.notifier).setUser(updatedUser);
+      }
       if (!mounted) return;
       setState(() {
         _photoChanged = false;
@@ -180,9 +217,15 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _canSave = false;
         _saveCompleted = true;
       });
-      messenger.showSnackBar(
-        const SnackBar(content: Text('프로필이 저장되었습니다.')),
-      );
+      await Flushbar(
+        message: '프로필이 저장되었습니다.',
+        backgroundColor: Colors.green.shade600,
+        flushbarPosition: FlushbarPosition.TOP,
+        margin: const EdgeInsets.all(10),
+        borderRadius: BorderRadius.circular(10),
+        duration: const Duration(seconds: 2),
+        icon: const Icon(Icons.check_circle, color: Colors.white),
+      ).show(context);
       await Future.delayed(const Duration(seconds: 2));
       if (mounted) {
         setState(() {
@@ -191,63 +234,86 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       }
     } catch (e) {
       if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(content: Text('프로필 저장 중 오류가 발생했습니다: $e')),
-        );
+        await Flushbar(
+          message: '프로필 저장 중 오류가 발생했습니다: $e',
+          backgroundColor: Colors.red.shade700,
+          flushbarPosition: FlushbarPosition.TOP,
+          margin: const EdgeInsets.all(10),
+          borderRadius: BorderRadius.circular(10),
+          duration: const Duration(seconds: 2),
+          icon: const Icon(Icons.error_outline, color: Colors.white),
+        ).show(context);
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final userState = ref.watch(userViewModelProvider);
-    userState.whenOrNull(data: (user) {
-      if (!_initialized) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!_initialized && mounted) {
-            setState(() {
-              _nicknameController.text = user.nickName ?? '';
-              _currentImageUrl = user.profileImage;
-              _currentPublicId = '';
-              _initialized = true;
-            });
-          }
-        });
-      }
-    });
+    final user = ref.watch(userInfoStateProvider);
+    
+    // 사용자 정보가 있고 아직 초기화되지 않았다면 초기화
+    if (user != null && !_initialized) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_initialized && mounted) {
+          setState(() {
+            _nicknameController.text = user.nickName ?? '';
+            _currentImageUrl = user.profileImage;
+            _currentPublicId = '';
+            _initialized = true;
+          });
+        }
+      });
+    }
 
     final editState = ref.watch(profileEditViewModelProvider);
     final isSaving = editState.isLoading && !_isCheckingNickname && !_isUploadingImage;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF0BAEFF)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          '프로필 수정',
-          style: TextStyle(
-            color: Color(0xFF333333),
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+      body: SafeArea(
         child: Column(
           children: [
-            const SizedBox(height: 40),
-            _buildProfilePictureSection(),
-            const SizedBox(height: 40),
-            _buildNicknameSection(),
-            const SizedBox(height: 40),
-            _buildSaveButton(isSaving: isSaving),
-            const SizedBox(height: 20),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                const TextHeader(text: '프로필 수정'),
+                Positioned(
+                  left: 0,
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Color(0xFF0BAEFF)),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+              ],
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 40),
+                    _buildProfilePictureSection(),
+                    const SizedBox(height: 40),
+                    _buildNicknameSection(),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: _buildSaveButton(isSaving: isSaving),
+            ),
           ],
         ),
       ),
@@ -362,19 +428,58 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               borderSide: BorderSide(color: Color(0xFF0BAEFF), width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(vertical: 8),
-            suffixIcon: _isCheckingNickname
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : (_isNicknameAvailable == true
-                    ? const Icon(Icons.check_circle, color: Colors.green)
-                    : (_isNicknameAvailable == false
-                        ? const Icon(Icons.cancel, color: Colors.red)
-                        : null)),
           ),
         ),
+        if (_isCheckingNickname) ...[
+          const SizedBox(height: 8),
+          const Row(
+            children: [
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              SizedBox(width: 8),
+              Text(
+                '닉네임 확인 중...',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF0BAEFF),
+                ),
+              ),
+            ],
+          ),
+        ] else if (_isNicknameAvailable == true) ...[
+          const SizedBox(height: 8),
+          const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 16),
+              SizedBox(width: 8),
+              Text(
+                '사용 가능한 닉네임입니다',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.green,
+                ),
+              ),
+            ],
+          ),
+        ] else if (_isNicknameAvailable == false) ...[
+          const SizedBox(height: 8),
+          const Row(
+            children: [
+              Icon(Icons.cancel, color: Colors.red, size: 16),
+              SizedBox(width: 8),
+              Text(
+                '이미 사용 중인 닉네임입니다',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.red,
+                ),
+              ),
+            ],
+          ),
+        ],
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
@@ -410,6 +515,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
   Widget _buildSaveButton({required bool isSaving}) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
           width: double.infinity,
@@ -418,6 +524,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               backgroundColor: const Color(0xFF0BAEFF),
+              disabledBackgroundColor: const Color(0xFFD9D9D9),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),

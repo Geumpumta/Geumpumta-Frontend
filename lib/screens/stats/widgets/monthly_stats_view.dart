@@ -289,9 +289,10 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
       );
     }
 
-    return _buildMotivationContent(
+    return _buildMotivationContentWithHighlight(
       icon: Icons.emoji_events,
-      lines: ['이번 달 가장 열심히 한 날은 ${bestEntry.date.day}일 입니다'],
+      text: '이번 달 가장 열심히 한 날은 ',
+      highlightText: '${bestEntry.date.day}일',
     );
   }
 
@@ -335,6 +336,44 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
                 color: Color(0xFF333333),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMotivationContentWithHighlight({
+    required IconData icon,
+    required String text,
+    required String highlightText,
+  }) {
+    return Center(
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            color: const Color(0xFF0BAEFF),
+            size: 32,
+          ),
+          const SizedBox(height: 12),
+          RichText(
+            textAlign: TextAlign.center,
+            text: TextSpan(
+              style: const TextStyle(
+                fontSize: 16,
+                color: Color(0xFF333333),
+              ),
+              children: [
+                TextSpan(text: text),
+                TextSpan(
+                  text: highlightText,
+                  style: const TextStyle(
+                    color: Color(0xFF0BAEFF),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

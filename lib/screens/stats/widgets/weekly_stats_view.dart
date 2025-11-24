@@ -329,6 +329,44 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     );
   }
 
+  Widget _buildMotivationContentWithHighlight({
+    required IconData icon,
+    required String text,
+    required String highlightText,
+  }) {
+    return Center(
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            color: const Color(0xFF0BAEFF),
+            size: 32,
+          ),
+          const SizedBox(height: 12),
+          RichText(
+            textAlign: TextAlign.center,
+            text: TextSpan(
+              style: const TextStyle(
+                fontSize: 16,
+                color: Color(0xFF333333),
+              ),
+              children: [
+                TextSpan(text: text),
+                TextSpan(
+                  text: highlightText,
+                  style: const TextStyle(
+                    color: Color(0xFF0BAEFF),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMotivationalMessage(
     AsyncValue<WeeklyStatistics> weeklyState,
     AsyncValue<GrassStatistics> currentMonth,
@@ -383,9 +421,10 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     }
 
     final weekdayLabel = _weekdayLabel(bestEntry.date.weekday);
-    return _buildMotivationContent(
+    return _buildMotivationContentWithHighlight(
       icon: Icons.local_fire_department,
-      lines: ['이번 주 가장 열심히 한 날은 $weekdayLabel 입니다'],
+      text: '이번 주 가장 열심히 한 날은 ',
+      highlightText: '$weekdayLabel',
     );
   }
 

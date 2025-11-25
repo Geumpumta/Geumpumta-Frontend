@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/screens/home/home.dart';
 
+import '../../provider/study/study_provider.dart';
+import '../../widgets/error_dialog/error_dialog.dart';
 import '../more/more.dart';
 import '../ranking/ranking.dart';
 import '../stats/stats.dart';
 
-class MainScreen extends StatefulWidget {
+  class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  ConsumerState<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = const [
@@ -23,9 +26,14 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    final isRunning = ref.read(studyRunningProvider);
+
+    if (isRunning && index != 0) {
+      ErrorDialog.show(context, "공부 중에는 이동할 수 없어요!");
+      return;
+    }
+
+    setState(() => _selectedIndex = index);
   }
 
   @override

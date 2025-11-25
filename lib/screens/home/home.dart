@@ -13,6 +13,7 @@ import 'package:geumpumta/widgets/top_logo_bar/top_logo_bar.dart';
 import 'package:geumpumta/widgets/error_dialog/error_dialog.dart';
 import 'package:geumpumta/widgets/loading_dialog/loading_dialog.dart';
 
+import '../../provider/study/study_provider.dart';
 import '../../provider/userState/user_info_state.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -22,7 +23,9 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver {
+
   bool _isTimerRunning = false;
   Duration _timerDuration = Duration.zero;
 
@@ -31,10 +34,58 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   int _sessionId = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshFromServer());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _timer?.cancel();
+    _heartBeatTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (!_isTimerRunning) return;
+
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+
+      _stopLocalTimer();
+      _stopHeartBeat();
+      _isTimerRunning = false;
+
+      ref.read(studyRunningProvider.notifier).state = false;
+
+      ErrorDialog.show(
+        context,
+        "앱을 벗어나 공부가 종료되었어요!",
+      );
+
+      final vm = ref.read(studyViewmodelProvider);
+      await vm.endStudyTime(
+        EndStudyRequestDto(
+          studySessionId: _sessionId,
+          endTime: DateTime.now(),
+        ),
+      );
+
+      _sessionId = 0;
+      await _refreshFromServer();
+    }
+  }
+
+
   void _startLocalTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() {
-        _timerDuration += const Duration(milliseconds: 1000);
+        _timerDuration += const Duration(seconds: 1);
       });
     });
   }
@@ -68,7 +119,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (res == null || !res.success) {
       ErrorDialog.show(
         context,
-        res?.message ?? "하트비트 전송 실패: 세션 만료 가능성",
+        res?.message ?? "하트비트 전송에 실패했어요.",
       );
     }
   }
@@ -87,104 +138,111 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshFromServer());
-  }
-
-  @override
   Widget build(BuildContext context) {
     final vm = ref.watch(studyViewmodelProvider);
 
-    return Scaffold(
-      backgroundColor: const Color(0x1AFFFFFF),
-      body: Stack(
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 60,
-            children: [
-              const SizedBox(height: 60),
-              Column(
-                children: [
-                  CustomTimerWidget(duration: _timerDuration),
-                  const SizedBox(height: 60),
-                  TotalProgressDot(duration: _timerDuration),
-                ],
-              ),
+    return WillPopScope(
+      onWillPop: () async {
+        if (_isTimerRunning) {
+          ErrorDialog.show(context, "공부 중에는 이동할 수 없어요!");
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0x1AFFFFFF),
+        body: Stack(
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 60,
+              children: [
+                const SizedBox(height: 60),
+                Column(
+                  children: [
+                    CustomTimerWidget(duration: _timerDuration),
+                    const SizedBox(height: 60),
+                    TotalProgressDot(duration: _timerDuration),
+                  ],
+                ),
 
-              StartAndStopBtn(
-                isTimerRunning: _isTimerRunning,
+                StartAndStopBtn(
+                  isTimerRunning: _isTimerRunning,
 
-                onStart: () async {
-                  LoadingDialog.show(context);
+                  onStart: () async {
+                    LoadingDialog.show(context);
 
-                  try {
-                    final now = DateTime.now();
-                    final wifi = await vm.getWIFIInfo();
+                    try {
+                      final now = DateTime.now();
+                      final wifi = await vm.getWIFIInfo();
 
-                    final res = await vm.startStudyTime(
-                      StartStudyTimeRequestDto(
-                        startTime: now,
-                        gatewayIp: wifi['gatewayIp'] ?? '',
-                        clientIp: wifi['ip'] ?? '',
-                      ),
-                    );
+                      final res = await vm.startStudyTime(
+                        StartStudyTimeRequestDto(
+                          startTime: now,
+                          gatewayIp: wifi['gatewayIp'] ?? '',
+                          clientIp: wifi['ip'] ?? '',
+                        ),
+                      );
 
-                    LoadingDialog.hide(context);
+                      LoadingDialog.hide(context);
 
-                    if (res == null || !res.success) {
-                      ErrorDialog.show(context, res?.message ?? "시작 실패");
-                      return;
+                      if (res == null || !res.success) {
+                        ErrorDialog.show(context, res?.message ?? "시작 실패");
+                        return;
+                      }
+
+                      _sessionId = res.data?.studySessionId ?? -1;
+
+                      setState(() => _isTimerRunning = true);
+                      ref.read(studyRunningProvider.notifier).state = true;
+
+                      _startLocalTimer();
+                      _startHeartBeat();
+
+                    } catch (e) {
+                      LoadingDialog.hide(context);
+                      ErrorDialog.show(context, "시작 실패: $e");
                     }
+                  },
 
-                    _sessionId = res.data?.studySessionId??-1;
+                  onStop: () async {
+                    LoadingDialog.show(context);
 
-                    setState(() => _isTimerRunning = true);
-                    _startLocalTimer();
-                    _startHeartBeat();
+                    try {
+                      final res = await vm.endStudyTime(
+                        EndStudyRequestDto(
+                          studySessionId: _sessionId,
+                          endTime: DateTime.now(),
+                        ),
+                      );
 
-                  } catch (e) {
-                    LoadingDialog.hide(context);
-                    ErrorDialog.show(context, "시작 실패: $e");
-                  }
-                },
+                      LoadingDialog.hide(context);
 
-                onStop: () async {
-                  LoadingDialog.show(context);
+                      if (res == null || !res.success) {
+                        ErrorDialog.show(context, res?.message ?? "종료 실패");
+                        return;
+                      }
 
-                  try {
-                    final res = await vm.endStudyTime(
-                      EndStudyRequestDto(
-                        studySessionId: _sessionId,
-                        endTime: DateTime.now(),
-                      ),
-                    );
+                      setState(() => _isTimerRunning = false);
+                      ref.read(studyRunningProvider.notifier).state = false;
 
-                    LoadingDialog.hide(context);
+                      _stopLocalTimer();
+                      _stopHeartBeat();
+                      _sessionId = 0;
 
-                    if (res == null || !res.success) {
-                      ErrorDialog.show(context, res?.message ?? "종료 실패");
-                      return;
+                      await _refreshFromServer();
+
+                    } catch (e) {
+                      LoadingDialog.hide(context);
+                      ErrorDialog.show(context, "종료 실패: $e");
                     }
-
-                    setState(() => _isTimerRunning = false);
-                    _stopLocalTimer();
-                    _stopHeartBeat();
-
-                    await _refreshFromServer();
-                    _sessionId = 0;
-
-                  } catch (e) {
-                    LoadingDialog.hide(context);
-                    ErrorDialog.show(context, "종료 실패: $e");
-                  }
-                },
-              ),
-            ],
-          ),
-          const Positioned(top: 0, left: 0, right: 0, child: TopLogoBar()),
-        ],
+                  },
+                ),
+              ],
+            ),
+            const Positioned(top: 0, left: 0, right: 0, child: TopLogoBar()),
+          ],
+        ),
       ),
     );
   }

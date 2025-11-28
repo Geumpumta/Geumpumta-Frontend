@@ -1,6 +1,4 @@
 import 'dart:io';
-
-import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/provider/userState/user_info_state.dart';
@@ -26,13 +24,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   String _currentPublicId = '';
 
   bool _photoChanged = false;
-  bool _saveCompleted = false;
   bool _isCheckingNickname = false;
   bool? _isNicknameAvailable;
   bool _isUploadingImage = false;
   bool _initialized = false;
   bool _nicknameEdited = false;
   bool _canSave = false;
+  String? _statusMessage;
+  Color _statusColor = const Color(0xFF0BAEFF);
 
   @override
   void initState() {
@@ -75,16 +74,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         await _uploadImage(File(image.path));
       }
     } catch (e) {
-      if (!mounted) return;
-      await Flushbar(
-        message: '이미지 선택 중 오류가 발생했습니다: $e',
-        backgroundColor: Colors.red.shade700,
-        flushbarPosition: FlushbarPosition.TOP,
-        margin: const EdgeInsets.all(10),
-        borderRadius: BorderRadius.circular(10),
-        duration: const Duration(seconds: 2),
-        icon: const Icon(Icons.error_outline, color: Colors.white),
-      ).show(context);
+      _setStatusMessage(
+        '이미지 선택 중 오류가 발생했습니다: $e',
+        color: Colors.red.shade700,
+      );
     }
   }
 
@@ -104,15 +97,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       _updateSaveButtonState();
     } catch (e) {
       if (mounted) {
-        await Flushbar(
-          message: '이미지 업로드에 실패했습니다: $e',
-          backgroundColor: Colors.red.shade700,
-          flushbarPosition: FlushbarPosition.TOP,
-          margin: const EdgeInsets.all(10),
-          borderRadius: BorderRadius.circular(10),
-          duration: const Duration(seconds: 2),
-          icon: const Icon(Icons.error_outline, color: Colors.white),
-        ).show(context);
+        _setStatusMessage(
+          '이미지 업로드에 실패했습니다: $e',
+          color: Colors.red.shade700,
+        );
       }
     } finally {
       if (mounted) {
@@ -126,15 +114,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   Future<void> _checkDuplication() async {
     final nickname = _nicknameController.text.trim();
     if (nickname.isEmpty) {
-      await Flushbar(
-        message: '닉네임을 입력해주세요.',
-        backgroundColor: Colors.orange.shade700,
-        flushbarPosition: FlushbarPosition.TOP,
-        margin: const EdgeInsets.all(10),
-        borderRadius: BorderRadius.circular(10),
-        duration: const Duration(seconds: 2),
-        icon: const Icon(Icons.info_outline, color: Colors.white),
-      ).show(context);
+      _setStatusMessage(
+        '닉네임을 입력해주세요.',
+        color: Colors.orange.shade700,
+      );
       return;
     }
 
@@ -153,31 +136,18 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             _nicknameEdited = true;
           }
         });
-        await Flushbar(
-          message: isAvailable ? '사용 가능한 닉네임입니다.' : '이미 사용 중인 닉네임입니다.',
-          backgroundColor: isAvailable ? Colors.green.shade600 : Colors.red.shade700,
-          flushbarPosition: FlushbarPosition.TOP,
-          margin: const EdgeInsets.all(10),
-          borderRadius: BorderRadius.circular(10),
-          duration: const Duration(seconds: 2),
-          icon: Icon(
-            isAvailable ? Icons.check_circle : Icons.cancel,
-            color: Colors.white,
-          ),
-        ).show(context);
+        _setStatusMessage(
+          isAvailable ? '사용 가능한 닉네임입니다.' : '이미 사용 중인 닉네임입니다.',
+          color: isAvailable ? Colors.green.shade600 : Colors.red.shade700,
+        );
         _updateSaveButtonState();
       }
     } catch (e) {
       if (mounted) {
-        await Flushbar(
-          message: '닉네임 확인 중 오류가 발생했습니다: $e',
-          backgroundColor: Colors.red.shade700,
-          flushbarPosition: FlushbarPosition.TOP,
-          margin: const EdgeInsets.all(10),
-          borderRadius: BorderRadius.circular(10),
-          duration: const Duration(seconds: 2),
-          icon: const Icon(Icons.error_outline, color: Colors.white),
-        ).show(context);
+        _setStatusMessage(
+          '닉네임 확인 중 오류가 발생했습니다: $e',
+          color: Colors.red.shade700,
+        );
       }
     } finally {
       if (mounted) {
@@ -215,34 +185,15 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _isNicknameAvailable = null;
         _nicknameEdited = false;
         _canSave = false;
-        _saveCompleted = true;
+        _statusMessage = '프로필이 저장되었습니다.';
+        _statusColor = Colors.green.shade600;
       });
-      await Flushbar(
-        message: '프로필이 저장되었습니다.',
-        backgroundColor: Colors.green.shade600,
-        flushbarPosition: FlushbarPosition.TOP,
-        margin: const EdgeInsets.all(10),
-        borderRadius: BorderRadius.circular(10),
-        duration: const Duration(seconds: 2),
-        icon: const Icon(Icons.check_circle, color: Colors.white),
-      ).show(context);
-      await Future.delayed(const Duration(seconds: 2));
-      if (mounted) {
-        setState(() {
-          _saveCompleted = false;
-        });
-      }
     } catch (e) {
       if (mounted) {
-        await Flushbar(
-          message: '프로필 저장 중 오류가 발생했습니다: $e',
-          backgroundColor: Colors.red.shade700,
-          flushbarPosition: FlushbarPosition.TOP,
-          margin: const EdgeInsets.all(10),
-          borderRadius: BorderRadius.circular(10),
-          duration: const Duration(seconds: 2),
-          icon: const Icon(Icons.error_outline, color: Colors.white),
-        ).show(context);
+        _setStatusMessage(
+          '프로필 저장 중 오류가 발생했습니다: $e',
+          color: Colors.red.shade700,
+        );
       }
     }
   }
@@ -549,18 +500,17 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   ),
           ),
         ),
-        if (_saveCompleted) ...[
-          const SizedBox(height: 8),
-          const Text(
-            '저장이 완료되었습니다',
-            style: TextStyle(
-              color: Color(0xFF0BAEFF),
-              fontSize: 12,
-            ),
-          ),
-        ],
       ],
     );
+  }
+
+  void _setStatusMessage(String message, {Color? color}) {
+    setState(() {
+      _statusMessage = message;
+      if (color != null) {
+        _statusColor = color;
+      }
+    });
   }
 }
 

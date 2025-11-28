@@ -69,7 +69,7 @@ class _RankingScreenState extends ConsumerState<RankingScreen> {
             department: userInfoState?.department ?? Department.none,
             nickname: userInfoState?.name ?? '이름 없음',
             duration: Duration(milliseconds: userInfoState?.totalMillis ?? 0),
-            ranking: 1,
+            ranking: myRanking?.rank ?? 5,
           ),
 
           PerDayOrWeekOrMonth(

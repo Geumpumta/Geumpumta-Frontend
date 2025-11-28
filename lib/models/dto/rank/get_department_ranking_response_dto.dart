@@ -13,7 +13,7 @@ class DepartmentRankingDataItem {
 
   factory DepartmentRankingDataItem.fromJson(Map<String, dynamic> json) =>
       DepartmentRankingDataItem(
-        departmentName: DepartmentParser.fromKorean(json['department']),
+        departmentName: DepartmentParser.fromKorean(json['departmentName']),
         totalMillis: json['totalMillis'] as int,
         rank: json['rank'] as int,
       );

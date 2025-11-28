@@ -1,12 +1,13 @@
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geumpumta/screens/more/widgets/profile_section.dart';
 import 'package:geumpumta/screens/more/widgets/notice_section.dart';
 import 'package:geumpumta/screens/more/widgets/menu_section.dart';
 import 'package:geumpumta/screens/more/widgets/logout_button.dart';
+import 'package:geumpumta/screens/more/widgets/profile_section.dart';
 import 'package:geumpumta/routes/app_routes.dart';
 import 'package:geumpumta/viewmodel/auth/auth_viewmodel.dart';
+import 'package:geumpumta/widgets/section_title/section_title.dart';
 import 'package:geumpumta/widgets/text_header/text_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,6 +30,8 @@ class MoreScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 8),
+            const SectionTitle(title: '프로필'),
+            const SizedBox(height: 12),
             const ProfileSection(),
             const SizedBox(height: 32),
             const NoticeSection(),

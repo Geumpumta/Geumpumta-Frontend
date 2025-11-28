@@ -4,9 +4,14 @@ import 'package:geumpumta/screens/stats/widgets/contribution_grass.dart';
 import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 
 class ContinuousStudySection extends ConsumerWidget {
-  const ContinuousStudySection({super.key, this.manualStreakDays});
+  const ContinuousStudySection({
+    super.key,
+    this.manualStreakDays,
+    this.selectedDate,
+  });
 
   final int? manualStreakDays;
+  final DateTime? selectedDate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,7 +38,11 @@ class ContinuousStudySection extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const ContributionGrass(),
+          ContributionGrass(
+            selectedMonth: selectedDate != null
+                ? DateTime(selectedDate!.year, selectedDate!.month)
+                : null,
+          ),
           const SizedBox(height: 16),
           Center(
             child: streakAsync.when(

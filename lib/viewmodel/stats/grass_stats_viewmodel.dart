@@ -63,10 +63,20 @@ final currentStreakProvider = FutureProvider<int>((ref) async {
 
   int streak = 0;
   DateTime cursor = DateTime(today.year, today.month, today.day);
+  bool skippedTodayOnce = false;
 
   while (true) {
     final level = byDate[_formatDate(cursor)] ?? 0;
-    if (level <= 0) break;
+
+    if (level <= 0) {
+      if (!skippedTodayOnce && _isSameDay(cursor, today)) {
+        skippedTodayOnce = true;
+        cursor = cursor.subtract(const Duration(days: 1));
+        continue;
+      }
+      break;
+    }
+
     streak++;
     cursor = cursor.subtract(const Duration(days: 1));
     final earliestSupported =
@@ -89,6 +99,10 @@ String _formatDate(DateTime date) {
   final month = date.month.toString().padLeft(2, '0');
   final day = date.day.toString().padLeft(2, '0');
   return '${date.year}-$month-$day';
+}
+
+bool _isSameDay(DateTime a, DateTime b) {
+  return a.year == b.year && a.month == b.month && a.day == b.day;
 }
 
 

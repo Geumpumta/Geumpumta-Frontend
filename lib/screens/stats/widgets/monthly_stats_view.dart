@@ -60,7 +60,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
           const SizedBox(height: 16),
           _buildMonthlyStatsCard(monthlyStatsState, daysInMonth),
           const SizedBox(height: 24),
-          const ContinuousStudySection(),
+          ContinuousStudySection(selectedDate: _selectedMonth),
           const SizedBox(height: 24),
           _buildMotivationalMessage(monthlyStatsState, grassState),
           const SizedBox(height: 40),
@@ -129,7 +129,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
         children: [
           _buildStatRow(
             '월간 총 공부 시간',
-            _formatDuration(stats.totalMonthlySeconds),
+            _formatDuration(stats.totalMonthSeconds),
           ),
           const SizedBox(height: 12),
           _buildStatRow(
@@ -254,7 +254,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (monthlyStats.totalMonthlySeconds == 0) {
+    if (monthlyStats.totalMonthSeconds == 0) {
       return _buildMotivationContent(
         icon: Icons.emoji_events,
         lines: const [

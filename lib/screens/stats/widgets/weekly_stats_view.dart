@@ -94,7 +94,7 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
           const SizedBox(height: 16),
           _buildWeeklyStatsCard(weeklyStatsState),
           const SizedBox(height: 24),
-          const ContinuousStudySection(),
+          ContinuousStudySection(selectedDate: _selectedWeekStart),
           const SizedBox(height: 24),
           _buildMotivationalMessage(
             weeklyStatsState,

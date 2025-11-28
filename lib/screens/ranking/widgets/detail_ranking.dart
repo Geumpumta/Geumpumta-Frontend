@@ -68,7 +68,7 @@ class _DetailRankingState extends State<DetailRanking> {
                     style: TextStyle(
                       color: Color(0xFF898989),
                       fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(

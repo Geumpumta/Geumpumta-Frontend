@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/dto/study/end_study_request_dto.dart';
@@ -15,6 +14,7 @@ import 'package:geumpumta/widgets/loading_dialog/loading_dialog.dart';
 
 import '../../provider/study/study_provider.dart';
 import '../../provider/userState/user_info_state.dart';
+import '../../main.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -24,7 +24,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen>
-    with WidgetsBindingObserver {
+    with RouteAware, WidgetsBindingObserver {
 
   bool _isTimerRunning = false;
   Duration _timerDuration = Duration.zero;
@@ -38,11 +38,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshFromServer());
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshFromServer();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
   }
 
   @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _heartBeatTimer?.cancel();
@@ -53,34 +63,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (!_isTimerRunning) return;
 
-    if (state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached) {
+    if (state == AppLifecycleState.detached) {
+      await _endStudyInternal();
+    }
 
-      _stopLocalTimer();
-      _stopHeartBeat();
-      _isTimerRunning = false;
-
-      ref.read(studyRunningProvider.notifier).state = false;
-
-      ErrorDialog.show(
-        context,
-        "앱을 벗어나 공부가 종료되었어요!",
-      );
-
-      final vm = ref.read(studyViewmodelProvider);
-      await vm.endStudyTime(
-        EndStudyRequestDto(
-          studySessionId: _sessionId,
-          endTime: DateTime.now(),
-        ),
-      );
-
-      _sessionId = 0;
-      await _refreshFromServer();
+    if (state == AppLifecycleState.paused) {
+      await _endStudyInternal(showDialog: false);
+      return;
     }
   }
 
+  @override
+  void didPushNext() async {
+    if (_isTimerRunning) {
+      await _endStudyInternal(showDialog: true);
+    }
+  }
+
+  @override
+  void didPopNext() {
+  }
+
+  Future<void> _endStudyInternal({bool showDialog = false}) async {
+    _stopLocalTimer();
+    _stopHeartBeat();
+    _isTimerRunning = false;
+    ref.read(studyRunningProvider.notifier).state = false;
+
+    final vm = ref.read(studyViewmodelProvider);
+
+    await vm.endStudyTime(
+      EndStudyRequestDto(
+        studySessionId: _sessionId,
+        endTime: DateTime.now(),
+      ),
+    );
+
+    _sessionId = 0;
+    await _refreshFromServer();
+
+    if (showDialog && mounted) {
+      ErrorDialog.show(context, "공부가 종료되었어요!");
+    }
+  }
 
   void _startLocalTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -95,9 +120,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   void _startHeartBeat() {
-    _heartBeatTimer = Timer.periodic(const Duration(minutes: 1), (_) async {
-      await _sendHeartBeat();
-    });
+    _heartBeatTimer =
+        Timer.periodic(const Duration(minutes: 1), (_) async {
+          await _sendHeartBeat();
+        });
   }
 
   void _stopHeartBeat() {
@@ -117,10 +143,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
 
     if (res == null || !res.success) {
-      ErrorDialog.show(
-        context,
-        res?.message ?? "하트비트 전송에 실패했어요.",
-      );
+      ErrorDialog.show(context, res?.message ?? "하트비트 전송 실패");
     }
   }
 
@@ -171,7 +194,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
                   onStart: () async {
                     LoadingDialog.show(context);
-
                     try {
                       final now = DateTime.now();
                       final wifi = await vm.getWIFIInfo();
@@ -207,31 +229,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
                   onStop: () async {
                     LoadingDialog.show(context);
-
                     try {
-                      final res = await vm.endStudyTime(
-                        EndStudyRequestDto(
-                          studySessionId: _sessionId,
-                          endTime: DateTime.now(),
-                        ),
-                      );
-
+                      await _endStudyInternal();
                       LoadingDialog.hide(context);
-
-                      if (res == null || !res.success) {
-                        ErrorDialog.show(context, res?.message ?? "종료 실패");
-                        return;
-                      }
-
-                      setState(() => _isTimerRunning = false);
-                      ref.read(studyRunningProvider.notifier).state = false;
-
-                      _stopLocalTimer();
-                      _stopHeartBeat();
-                      _sessionId = 0;
-
-                      await _refreshFromServer();
-
                     } catch (e) {
                       LoadingDialog.hide(context);
                       ErrorDialog.show(context, "종료 실패: $e");

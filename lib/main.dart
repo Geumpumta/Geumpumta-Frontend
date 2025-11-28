@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geumpumta/provider/auth/auth_provider.dart';
 import 'package:geumpumta/provider/userState/user_info_state.dart';
 import 'package:geumpumta/screens/login/login.dart';
 import 'package:geumpumta/screens/main/main.dart';
@@ -11,6 +10,8 @@ import 'package:geumpumta/routes/app_routes.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart' as kakao;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geumpumta/models/entity/user/user.dart';
+
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,6 +50,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorObservers: [routeObserver],
       theme: ThemeData(useMaterial3: false),
       debugShowCheckedModeBanner: false,
       home: const MyHomePage(),

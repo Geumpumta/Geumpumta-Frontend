@@ -8,7 +8,7 @@ import '../more/more.dart';
 import '../ranking/ranking.dart';
 import '../stats/stats.dart';
 
-  class MainScreen extends ConsumerStatefulWidget {
+class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
 
   @override

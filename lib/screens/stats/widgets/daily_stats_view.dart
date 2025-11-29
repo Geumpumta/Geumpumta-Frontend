@@ -114,7 +114,7 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
           const SizedBox(height: 16),
         StatsCard(stats: statItems),
           const SizedBox(height: 24),
-        const ContinuousStudySection(),
+        ContinuousStudySection(selectedDate: _selectedDate),
           const SizedBox(height: 24),
         UsageTimeChartSection(slots: stats.slots),
           const SizedBox(height: 24),

@@ -4,28 +4,31 @@ class StudyTimeData {
   StudyTimeData({required this.studySessionId});
 
   factory StudyTimeData.fromJson(Map<String, dynamic> json) {
-    return StudyTimeData(
-      studySessionId: json['studySessionId'] as int,
-    );
+    return StudyTimeData(studySessionId: json['studySessionId'] as int);
   }
 }
 
 class StartStudyTimeResponseDto {
   final bool success;
-  final StudyTimeData data;
+  final StudyTimeData? data;
+  final String? code;
   final String? message;
 
   StartStudyTimeResponseDto({
     required this.success,
     required this.data,
+    this.code,
     this.message,
   });
 
   factory StartStudyTimeResponseDto.fromJson(Map<String, dynamic> json) {
     return StartStudyTimeResponseDto(
       success: json['success'] == true || json['success'].toString() == 'true',
-      data: StudyTimeData.fromJson(json['data']),
-      message: json['message'],
+      data: json['data'] != null
+          ? StudyTimeData.fromJson(json['data'])
+          : StudyTimeData(studySessionId: -1),
+      code: json['code'],
+      message: json['msg'],
     );
   }
 }

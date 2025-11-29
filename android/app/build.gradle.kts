@@ -7,6 +7,7 @@ val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
+val hasKeystore = keystoreProperties.isNotEmpty()
 
 plugins {
     id("com.android.application")
@@ -37,28 +38,19 @@ android {
     }
 
     signingConfigs {
-        if (keystorePropertiesFile.exists()) {
-            val keyAliasValue = keystoreProperties["keyAlias"] as? String
-            val keyPasswordValue = keystoreProperties["keyPassword"] as? String
-            val storeFileValue = keystoreProperties["storeFile"] as? String
-            val storePasswordValue = keystoreProperties["storePassword"] as? String
-            
-            if (keyAliasValue != null && keyPasswordValue != null && 
-                storeFileValue != null && storePasswordValue != null) {
-                create("release") {
-                    keyAlias = keyAliasValue
-                    keyPassword = keyPasswordValue
-                    storeFile = file(storeFileValue)
-                    storePassword = storePasswordValue
-                }
+        if (hasKeystore) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
             }
         }
     }
 
     buildTypes {
         release {
-            if (keystorePropertiesFile.exists() && 
-                signingConfigs.findByName("release") != null) {
+            if (hasKeystore) {
                 signingConfig = signingConfigs.getByName("release")
             }
 

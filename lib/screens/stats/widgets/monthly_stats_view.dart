@@ -60,7 +60,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
           const SizedBox(height: 16),
           _buildMonthlyStatsCard(monthlyStatsState, daysInMonth),
           const SizedBox(height: 24),
-          const ContinuousStudySection(),
+          ContinuousStudySection(selectedDate: _selectedMonth),
           const SizedBox(height: 24),
           _buildMotivationalMessage(monthlyStatsState, grassState),
           const SizedBox(height: 40),
@@ -129,7 +129,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
         children: [
           _buildStatRow(
             '월간 총 공부 시간',
-            _formatDuration(stats.totalMonthlySeconds),
+            _formatDuration(stats.totalMonthSeconds),
           ),
           const SizedBox(height: 12),
           _buildStatRow(
@@ -254,7 +254,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (monthlyStats.totalMonthlySeconds == 0) {
+    if (monthlyStats.totalMonthSeconds == 0) {
       return _buildMotivationContent(
         icon: Icons.emoji_events,
         lines: const [
@@ -289,9 +289,10 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
       );
     }
 
-    return _buildMotivationContent(
+    return _buildMotivationContentWithHighlight(
       icon: Icons.emoji_events,
-      lines: ['이번 달 가장 열심히 한 날은 ${bestEntry.date.day}일 입니다'],
+      text: '이번 달 가장 열심히 한 날은 ',
+      highlightText: '${bestEntry.date.day}일',
     );
   }
 
@@ -335,6 +336,44 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
                 color: Color(0xFF333333),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMotivationContentWithHighlight({
+    required IconData icon,
+    required String text,
+    required String highlightText,
+  }) {
+    return Center(
+      child: Column(
+        children: [
+          Icon(
+            icon,
+            color: const Color(0xFF0BAEFF),
+            size: 32,
+          ),
+          const SizedBox(height: 12),
+          RichText(
+            textAlign: TextAlign.center,
+            text: TextSpan(
+              style: const TextStyle(
+                fontSize: 16,
+                color: Color(0xFF333333),
+              ),
+              children: [
+                TextSpan(text: text),
+                TextSpan(
+                  text: highlightText,
+                  style: const TextStyle(
+                    color: Color(0xFF0BAEFF),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

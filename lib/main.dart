@@ -51,7 +51,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorObservers: [routeObserver],
-      theme: ThemeData(useMaterial3: false),
+      theme: ThemeData(
+        useMaterial3: false,
+        fontFamily: 'SCDream',
+      ),
       debugShowCheckedModeBanner: false,
       home: const MyHomePage(),
       routes: AppRoutes.routes,

@@ -7,11 +7,11 @@ class ContinuousStudySection extends ConsumerWidget {
   const ContinuousStudySection({
     super.key,
     this.manualStreakDays,
-    this.targetUserId,
+    this.selectedDate,
   });
 
   final int? manualStreakDays;
-  final int? targetUserId;
+  final DateTime? selectedDate;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,7 +38,11 @@ class ContinuousStudySection extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          ContributionGrass(targetUserId: targetUserId),
+          ContributionGrass(
+            selectedMonth: selectedDate != null
+                ? DateTime(selectedDate!.year, selectedDate!.month)
+                : null,
+          ),
           const SizedBox(height: 16),
           Center(
             child: streakAsync.when(

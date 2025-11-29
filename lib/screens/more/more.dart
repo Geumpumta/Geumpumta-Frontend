@@ -1,11 +1,14 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geumpumta/screens/more/widgets/profile_section.dart';
 import 'package:geumpumta/screens/more/widgets/notice_section.dart';
 import 'package:geumpumta/screens/more/widgets/menu_section.dart';
 import 'package:geumpumta/screens/more/widgets/logout_button.dart';
+import 'package:geumpumta/screens/more/widgets/profile_section.dart';
 import 'package:geumpumta/routes/app_routes.dart';
 import 'package:geumpumta/viewmodel/auth/auth_viewmodel.dart';
+import 'package:geumpumta/widgets/section_title/section_title.dart';
+import 'package:geumpumta/widgets/text_header/text_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MoreScreen extends ConsumerWidget {
@@ -16,27 +19,19 @@ class MoreScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        centerTitle: false,
-        titleSpacing: 20,
-        title: const Text(
-          '더보기',
-          style: TextStyle(
-            color: Color(0xFF333333),
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      body: SingleChildScrollView(
+      body: SafeArea(
+        child: Column(
+          children: [
+            const TextHeader(text: '더보기'),
+            Expanded(
+              child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 8),
+            const SectionTitle(title: '프로필'),
+            const SizedBox(height: 12),
             const ProfileSection(),
             const SizedBox(height: 32),
             const NoticeSection(),
@@ -87,6 +82,10 @@ class MoreScreen extends ConsumerWidget {
             const SizedBox(height: 40),
           ],
         ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -133,21 +132,27 @@ class MoreScreen extends ConsumerWidget {
                 try {
                   await viewModel.logout(context);
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('로그아웃되었습니다.'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
+                    await Flushbar(
+                      message: '로그아웃되었습니다.',
+                      backgroundColor: Colors.green.shade600,
+                      flushbarPosition: FlushbarPosition.TOP,
+                      margin: const EdgeInsets.all(10),
+                      borderRadius: BorderRadius.circular(10),
+                      duration: const Duration(seconds: 2),
+                      icon: const Icon(Icons.check_circle, color: Colors.white),
+                    ).show(context);
                   }
                 } catch (e) {
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('로그아웃 중 오류가 발생했습니다: $e'),
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
+                    await Flushbar(
+                      message: '로그아웃 중 오류가 발생했습니다: $e',
+                      backgroundColor: Colors.red.shade700,
+                      flushbarPosition: FlushbarPosition.TOP,
+                      margin: const EdgeInsets.all(10),
+                      borderRadius: BorderRadius.circular(10),
+                      duration: const Duration(seconds: 2),
+                      icon: const Icon(Icons.error_outline, color: Colors.white),
+                    ).show(context);
                   }
                 }
               },
@@ -262,21 +267,27 @@ class MoreScreen extends ConsumerWidget {
                     final accessToken = prefs.getString('accessToken')??'';
                     await viewModel.deleteAccount(accessToken);
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('회원탈퇴가 완료되었습니다.'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
+                      await Flushbar(
+                        message: '회원탈퇴가 완료되었습니다.',
+                        backgroundColor: Colors.green.shade600,
+                        flushbarPosition: FlushbarPosition.TOP,
+                        margin: const EdgeInsets.all(10),
+                        borderRadius: BorderRadius.circular(10),
+                        duration: const Duration(seconds: 2),
+                        icon: const Icon(Icons.check_circle, color: Colors.white),
+                      ).show(context);
                     }
                   } catch (e) {
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('회원탈퇴 중 오류가 발생했습니다: $e'),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
+                      await Flushbar(
+                        message: '회원탈퇴 중 오류가 발생했습니다: $e',
+                        backgroundColor: Colors.red.shade700,
+                        flushbarPosition: FlushbarPosition.TOP,
+                        margin: const EdgeInsets.all(10),
+                        borderRadius: BorderRadius.circular(10),
+                        duration: const Duration(seconds: 2),
+                        icon: const Icon(Icons.error_outline, color: Colors.white),
+                      ).show(context);
                     }
                   }
                 }

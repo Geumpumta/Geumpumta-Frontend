@@ -229,7 +229,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       LoadingDialog.hide(context);
 
                       if (res == null || !res.success) {
-                        ErrorDialog.show(context, res?.message ?? "시작 실패");
+                        ErrorDialog.show(context, "교내 WIFI로 연결되어야 합니다.");
                         return;
                       }
 

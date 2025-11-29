@@ -28,6 +28,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   bool _isTimerRunning = false;
   Duration _timerDuration = Duration.zero;
+  DateTime? _lastInactiveTime;
 
   Timer? _timer;
   Timer? _heartBeatTimer;
@@ -63,15 +64,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (!_isTimerRunning) return;
 
-    if (state == AppLifecycleState.detached) {
-      await _endStudyInternal();
+    if (state == AppLifecycleState.inactive) {
+      _lastInactiveTime = DateTime.now();
+      return;
     }
 
     if (state == AppLifecycleState.paused) {
+      final now = DateTime.now();
+
+      final isScreenOff = _lastInactiveTime != null &&
+          now.difference(_lastInactiveTime!) < Duration(milliseconds: 500);
+
+      if (isScreenOff) {
+        print("화면 꺼짐 감지 → 타이머 유지");
+        return;
+      }
+
+      print("홈 이동 감지 → 공부 종료");
+
+      await _endStudyInternal(showDialog: true);
+      return;
+    }
+
+    if (state == AppLifecycleState.detached) {
       await _endStudyInternal(showDialog: false);
       return;
     }
   }
+
 
   @override
   void didPushNext() async {

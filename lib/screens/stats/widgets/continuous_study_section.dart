@@ -17,7 +17,7 @@ class ContinuousStudySection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final streakAsync = manualStreakDays != null
         ? AsyncValue<int>.data(manualStreakDays!)
-        : ref.watch(currentStreakProvider);
+        : ref.watch(currentStreakProvider(targetUserId));
 
     return Container(
       padding: const EdgeInsets.all(16),

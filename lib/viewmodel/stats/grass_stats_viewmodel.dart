@@ -39,7 +39,7 @@ final grassStatisticsProvider =
   return repo.fetchGrassStatistics(date: formattedMonth);
 });
 
-final currentStreakProvider = FutureProvider<int>((ref) async {
+final currentStreakProvider = FutureProvider.family<int, int?>((ref, targetUserId) async {
   final repo = ref.watch(grassStatisticsRepositoryProvider);
   final today = DateTime.now();
   final currentMonth = DateTime(today.year, today.month, 1);
@@ -50,11 +50,15 @@ final currentStreakProvider = FutureProvider<int>((ref) async {
   );
 
   final entries = <GrassEntry>[];
-  final current =
-      await repo.fetchGrassStatistics(date: _formatMonth(currentMonth));
+  final current = await repo.fetchGrassStatistics(
+    date: _formatMonth(currentMonth),
+    targetUserId: targetUserId,
+  );
   entries.addAll(current.entries);
-  final prev =
-      await repo.fetchGrassStatistics(date: _formatMonth(previousMonth));
+  final prev = await repo.fetchGrassStatistics(
+    date: _formatMonth(previousMonth),
+    targetUserId: targetUserId,
+  );
   entries.addAll(prev.entries);
 
   final byDate = <String, int>{

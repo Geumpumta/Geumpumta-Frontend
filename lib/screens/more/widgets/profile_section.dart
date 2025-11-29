@@ -1,28 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/department.dart';
+import 'package:geumpumta/provider/userState/user_info_state.dart';
 import 'package:geumpumta/routes/app_routes.dart';
-import 'package:geumpumta/viewmodel/user/user_viewmodel.dart';
 
 class ProfileSection extends ConsumerWidget {
   const ProfileSection({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userState = ref.watch(userViewModelProvider);
+    final user = ref.watch(userInfoStateProvider);
 
-    return userState.when(
-      data: (user) => _ProfileSectionContent(
-        nickname: user.nickName ?? '닉네임',
-        department: user.department.koreanName ?? '학과 정보 없음',
-        profileImageUrl: user.profileImage,
-      ),
-      loading: () => const _ProfileSectionSkeleton(),
-      error: (_, __) => const _ProfileSectionContent(
-        nickname: '닉네임',
-        department: '학과 정보 없음',
-        profileImageUrl: null,
-      ),
+    if (user == null) {
+      return const _ProfileSectionSkeleton();
+    }
+
+    return _ProfileSectionContent(
+      nickname: user.nickName ?? '닉네임',
+      department: user.department.koreanName ?? '학과 정보 없음',
+      profileImageUrl: user.profileImage,
     );
   }
 }

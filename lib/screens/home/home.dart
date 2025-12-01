@@ -141,7 +141,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   void _startHeartBeat() {
     _heartBeatTimer =
-        Timer.periodic(const Duration(minutes: 1), (_) async {
+        Timer.periodic(const Duration(seconds: 30), (_) async {
           await _sendHeartBeat();
         });
   }
@@ -164,6 +164,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     if (res == null || !res.success) {
       ErrorDialog.show(context, res?.message ?? "하트비트 전송 실패");
+      await _endStudyInternal(showDialog: false);
     }
   }
 

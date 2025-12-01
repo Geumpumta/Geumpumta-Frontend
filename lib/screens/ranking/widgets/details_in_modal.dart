@@ -8,10 +8,14 @@ class DetailsInModal extends StatelessWidget {
     super.key,
     required this.nickname,
     required this.recordedTime,
+    required this.imageUrl,
+    this.targetUserId,
   });
 
   final String nickname;
   final Duration recordedTime;
+  final String imageUrl;
+  final int? targetUserId;
 
   @override
   Widget build(BuildContext context) {
@@ -36,10 +40,20 @@ class DetailsInModal extends StatelessWidget {
               Row(
                 spacing: 10,
                 children: [
-                  Image.asset(
-                    'assets/image/login/main_img.png',
-                    width: 40,
-                    height: 40,
+                  ClipOval(
+                    child: Image.network(
+                      imageUrl,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Image.asset(
+                          'assets/image/login/main_img.png',
+                          width: 40,
+                          height: 40,
+                        );
+                      },
+                    ),
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,7 +93,7 @@ class DetailsInModal extends StatelessWidget {
             ],
           ),
           SizedBox(height: 30),
-          const ContinuousStudySection(),
+          ContinuousStudySection(targetUserId: targetUserId),
           SizedBox(height: 30),
           const UsageTimeChartSection(slots: <DailySlot>[]),
         ],

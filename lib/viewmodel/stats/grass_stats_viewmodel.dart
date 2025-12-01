@@ -33,10 +33,15 @@ class GrassStatsViewModel extends StateNotifier<AsyncValue<GrassStatistics>> {
 }
 
 final grassStatisticsProvider =
-    FutureProvider.family<GrassStatistics, DateTime>((ref, month) async {
+    FutureProvider.family<GrassStatistics, (DateTime, int?)>((ref, params) async {
   final repo = ref.watch(grassStatisticsRepositoryProvider);
+  final month = params.$1;
+  final targetUserId = params.$2;
   final formattedMonth = _formatMonth(month);
-  return repo.fetchGrassStatistics(date: formattedMonth);
+  return repo.fetchGrassStatistics(
+    date: formattedMonth,
+    targetUserId: targetUserId,
+  );
 });
 
 final currentStreakProvider = FutureProvider.family<int, int?>((ref, targetUserId) async {

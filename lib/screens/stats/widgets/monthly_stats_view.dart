@@ -47,7 +47,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
   @override
   Widget build(BuildContext context) {
     final monthlyStatsState = ref.watch(monthlyStatsViewModelProvider);
-    final grassState = ref.watch(grassStatisticsProvider(_selectedMonth));
+    final grassState = ref.watch(grassStatisticsProvider((_selectedMonth, null)));
     final daysInMonth =
         DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0).day;
 

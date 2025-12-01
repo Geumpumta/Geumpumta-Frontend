@@ -4,7 +4,6 @@ import 'package:geumpumta/models/entity/stats/daily_statistics.dart';
 import 'package:geumpumta/screens/stats/widgets/continuous_study_section.dart';
 import 'package:geumpumta/screens/stats/widgets/date_navigation.dart';
 import 'package:geumpumta/screens/stats/widgets/motivational_message.dart';
-import 'package:geumpumta/screens/stats/widgets/stats_card.dart';
 import 'package:geumpumta/screens/stats/widgets/usage_time_chart_section.dart';
 import 'package:geumpumta/viewmodel/stats/daily_stats_viewmodel.dart';
 
@@ -51,59 +50,7 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
-      child: dailyState.when(
-        data: (stats) => _buildContent(stats),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 40),
-            const Icon(
-              Icons.error_outline,
-              color: Color(0xFFFF6B6B),
-              size: 40,
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              '일간 통계를 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF666666),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _fetchDailyStats,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0BAEFF),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('다시 시도'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContent(DailyStatistics stats) {
-    final statItems = [
-      StatItem(
-        label: '총 공부 시간',
-        value: _formatDuration(stats.totalStudySeconds),
-      ),
-      StatItem(
-        label: '최대 집중 시간',
-        value: _formatDuration(stats.maxFocusSeconds),
-      ),
-      StatItem(
-        label: '집중 시간 합계',
-        value: _formatDuration(stats.totalStudySeconds),
-      ),
-    ];
-
-    return Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           DateNavigation(
@@ -112,15 +59,167 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
             onNextDate: _nextDate,
           ),
           const SizedBox(height: 16),
-        StatsCard(stats: statItems),
+          _buildDailyStatsCard(dailyState),
           const SizedBox(height: 24),
-        ContinuousStudySection(selectedDate: _selectedDate),
+          ContinuousStudySection(selectedDate: _selectedDate),
           const SizedBox(height: 24),
-        UsageTimeChartSection(slots: stats.slots),
+          _buildUsageTimeChart(dailyState),
           const SizedBox(height: 24),
           const MotivationalMessage(),
           const SizedBox(height: 40),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDailyStatsCard(AsyncValue<DailyStatistics> state) {
+    return state.when(
+      data: (stats) => _buildStatsContainer(
+        children: [
+          _buildStatRow(
+            '총 공부 시간',
+            _formatDuration(stats.totalStudySeconds),
+          ),
+          const SizedBox(height: 12),
+          _buildStatRow(
+            '최대 집중 시간',
+            _formatDuration(stats.maxFocusSeconds),
+          ),
+          const SizedBox(height: 12),
+          _buildStatRow(
+            '집중 시간 합계',
+            _formatDuration(stats.totalStudySeconds),
+          ),
+        ],
+      ),
+      loading: () => _buildStatsContainer(
+        children: [
+          _buildLoadingRow('총 공부 시간'),
+          const SizedBox(height: 12),
+          _buildLoadingRow('최대 집중 시간'),
+          const SizedBox(height: 12),
+          _buildLoadingRow('집중 시간 합계'),
+        ],
+      ),
+      error: (error, _) => _buildStatsContainer(
+        children: [
+          const Icon(
+            Icons.error_outline,
+            color: Color(0xFFFF6B6B),
+            size: 28,
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            '일간 통계를 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: Color(0xFF666666),
+            ),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: _fetchDailyStats,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0BAEFF),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('다시 시도'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUsageTimeChart(AsyncValue<DailyStatistics> state) {
+    return state.when(
+      data: (stats) => UsageTimeChartSection(slots: stats.slots),
+      loading: () => Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFF0F0F0)),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+      error: (_, __) => Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFF0F0F0)),
+        ),
+        child: const Center(
+          child: Text(
+            '차트를 불러오지 못했습니다.',
+            style: TextStyle(
+              fontSize: 14,
+              color: Color(0xFF666666),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsContainer({required List<Widget> children}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(children: children),
+    );
+  }
+
+  Widget _buildLoadingRow(String label) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF333333),
+          ),
+        ),
+        Container(
+          width: 80,
+          height: 16,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF333333),
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF0BAEFF),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 

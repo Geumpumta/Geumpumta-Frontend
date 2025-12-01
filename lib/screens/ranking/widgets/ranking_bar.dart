@@ -9,12 +9,14 @@ class RankingBar extends StatefulWidget {
     required this.imgUrl,
     required this.nickname,
     required this.recordedTime,
+    this.userId,
   });
 
   final int ranking;
   final String imgUrl;
   final String nickname;
   final Duration recordedTime;
+  final int? userId;
 
   @override
   State<RankingBar> createState() => _RankingBarState();
@@ -98,6 +100,8 @@ class _RankingBarState extends State<RankingBar> {
                   return DetailsInModal(
                     nickname: widget.nickname,
                     recordedTime: widget.recordedTime,
+                    imageUrl: widget.imgUrl,
+                    targetUserId: widget.userId,
                   );
                 },
               );

@@ -81,9 +81,9 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
   Widget build(BuildContext context) {
     final weeklyStatsState = ref.watch(weeklyStatsViewModelProvider);
     final grassCurrentMonth =
-        ref.watch(grassStatisticsProvider(_selectedWeekStart));
+        ref.watch(grassStatisticsProvider((_selectedWeekStart, null)));
     final grassNextMonth =
-        ref.watch(grassStatisticsProvider(_addMonth(_selectedWeekStart)));
+        ref.watch(grassStatisticsProvider((_addMonth(_selectedWeekStart), null)));
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),

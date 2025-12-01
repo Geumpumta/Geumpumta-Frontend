@@ -156,6 +156,7 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
               imgUrl: data.imageUrl,
               nickname: data.username ?? '알 수 없음',
               recordedTime: Duration(milliseconds: data.totalMillis),
+              userId: data.userId,
             );
           },
         );

@@ -8,10 +8,12 @@ class ContinuousStudySection extends ConsumerWidget {
     super.key,
     this.manualStreakDays,
     this.selectedDate,
+    this.targetUserId,
   });
 
   final int? manualStreakDays;
   final DateTime? selectedDate;
+  final int? targetUserId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -42,6 +44,7 @@ class ContinuousStudySection extends ConsumerWidget {
             selectedMonth: selectedDate != null
                 ? DateTime(selectedDate!.year, selectedDate!.month)
                 : null,
+            targetUserId: targetUserId,
           ),
           const SizedBox(height: 16),
           Center(

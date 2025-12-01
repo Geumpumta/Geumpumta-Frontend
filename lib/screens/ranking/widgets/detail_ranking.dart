@@ -96,6 +96,7 @@ class _DetailRankingState extends State<DetailRanking> {
                   return DetailsInModal(
                     nickname: widget.nickname,
                     recordedTime: widget.recordedTime,
+                    imageUrl: widget.imageUrl,
                   );
                 },
               );

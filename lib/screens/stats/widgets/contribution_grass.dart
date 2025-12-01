@@ -4,9 +4,14 @@ import 'package:geumpumta/models/entity/stats/grass_statistics.dart';
 import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 
 class ContributionGrass extends ConsumerStatefulWidget {
-  const ContributionGrass({super.key, this.selectedMonth});
+  const ContributionGrass({
+    super.key,
+    this.selectedMonth,
+    this.targetUserId,
+  });
 
   final DateTime? selectedMonth;
+  final int? targetUserId;
 
   @override
   ConsumerState<ContributionGrass> createState() => _ContributionGrassState();
@@ -75,7 +80,9 @@ class _ContributionGrassState extends ConsumerState<ContributionGrass> {
   @override
   Widget build(BuildContext context) {
     // 항상 grassStatisticsProvider를 사용하여 내부에서 월 변경 가능하도록 함
-    final grassState = ref.watch(grassStatisticsProvider(_currentMonth));
+    final grassState = ref.watch(
+      grassStatisticsProvider((_currentMonth, widget.targetUserId)),
+    );
 
     final monthName = _monthNames[_currentMonth.month - 1];
     final daysInMonth =

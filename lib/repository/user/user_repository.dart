@@ -35,10 +35,10 @@ class UserRepository {
   }
 
   Future<CompleteRegistrationResponseDto> completeRegistration(
-      String email,
-      String studentId,
-      String department,
-      ) async {
+    String email,
+    String studentId,
+    String department,
+  ) async {
     try {
       final response = await _api.completeRegistration(
         CompleteRegistrationRequestDto(
@@ -53,14 +53,15 @@ class UserRepository {
         response.data?.refreshToken ?? '',
       );
       return response;
-
     } on DioException catch (e) {
       final data = e.response?.data;
       return CompleteRegistrationResponseDto(
         success: false,
         data: null,
         code: data?['code'],
-        msg: data?['msg'] ?? '서버 오류가 발생했습니다.',
+        msg: data?['code'] == 'C001'
+            ? '이미 다른 계정으로 가입된 회원입니다.'
+            : '서버 오류가 발생했습니다.',
       );
     }
   }

@@ -16,13 +16,17 @@ class CompleteResitrationDataDto {
 
 class CompleteRegistrationResponseDto {
   final bool success;
-  final CompleteResitrationDataDto data;
+  final CompleteResitrationDataDto? data;
+  final String? code;
+  final String? msg;
 
-  CompleteRegistrationResponseDto({required this.success, required this.data});
+  CompleteRegistrationResponseDto({required this.success, this.data, this.msg, this.code});
 
   factory CompleteRegistrationResponseDto.fromJson(Map<String, dynamic> json) =>
       CompleteRegistrationResponseDto(
         success: json['success']=='true'||json['success']==true,
         data: CompleteResitrationDataDto.fromJson(json['data']),
+        code: json['code'],
+        msg: json['msg'],
       );
 }

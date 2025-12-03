@@ -6,7 +6,6 @@ Dio createDioClient() {
   final dio = Dio(
     BaseOptions(
       baseUrl: dotenv.env['BASE_URL'] ?? '',
-      validateStatus: (status) => true,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
       headers: {'Content-Type': 'application/json'},

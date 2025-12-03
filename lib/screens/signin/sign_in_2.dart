@@ -39,6 +39,8 @@ class _SignIn2ScreenState extends ConsumerState<SignIn2Screen> {
     final signUpState = ref.watch(signUpProvider);
     final isVerifying = ref.watch(isVerifyingProvider);
 
+    final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -67,14 +69,36 @@ class _SignIn2ScreenState extends ConsumerState<SignIn2Screen> {
                         ),
                       ),
                     ),
-                    Container(
-                      width: MediaQuery.of(context).size.width,
-                      alignment: Alignment.center,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 25),
-                        child: Image.asset(
-                          'assets/image/signin/verification_code_img.png',
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 100),
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0, 0.1),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          );
+                        },
+
+                        child: !isKeyboardVisible
+                          ? Container(
+                        key: const ValueKey('image_visible'),
+                        width: MediaQuery.of(context).size.width,
+                        alignment: Alignment.center,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 25),
+                          child: Image.asset(
+                            width: 150,
+                            'assets/image/signin/verification_code_img.png',
+                          ),
                         ),
+                      )
+                          : const SizedBox(
+                        key: ValueKey('image_hidden'),
                       ),
                     ),
                     CustomInput(

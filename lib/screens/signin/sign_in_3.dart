@@ -34,68 +34,72 @@ class _SignIn3ScreenState extends ConsumerState<SignIn3Screen> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     final userViewmodel = ref.watch(userViewModelProvider.notifier);
     final signUpState = ref.watch(signUpProvider);
 
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const BackAndProgress(percent: 0.6),
-                  const SizedBox(height: 20),
-                  const Padding(
-                    padding: EdgeInsets.all(15),
-                    child: Text(
-                      '학과 선택',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w800,
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const BackAndProgress(percent: 0.6),
+                    const SizedBox(height: 20),
+                    const Padding(
+                      padding: EdgeInsets.all(15),
+                      child: Text(
+                        '학과 선택',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
-                  ),
-                  CustomSearchBar(
-                    controller: _searchController,
-                    value: _searchController.text,
-                    onActive: () => print(_searchController.text),
-                  ),
-                  Expanded(
-                    child: DepartmentScrollDown(
-                      searchText: _searchText,
-                      onDepartmentSelected: (dept) {
-                        print('선택된 학과: ${dept.koreanName}');
-                        setState(() {
-                          department = dept.koreanName;
-                        });
-                      },
-                      selected: department,
+                    CustomSearchBar(
+                      controller: _searchController,
+                      value: _searchController.text,
+                      onActive: () => print(_searchController.text),
                     ),
-                  ),
-                  // DepartmentScrollDown(),
-                ],
+                    Expanded(
+                      child: DepartmentScrollDown(
+                        searchText: _searchText,
+                        onDepartmentSelected: (dept) {
+                          print('선택된 학과: ${dept.koreanName}');
+                          setState(() {
+                            department = dept.koreanName;
+                          });
+                        },
+                        selected: department,
+                      ),
+                    ),
+                    // DepartmentScrollDown(),
+                  ],
+                ),
               ),
-            ),
-            CustomButton(
-              buttonText: '확인',
-              onActive: department != Department.none.koreanName,
-              onPressed: () => userViewmodel.completeRegistration(
-                context,
-                signUpState.email,
-                signUpState.studentId,
-                department,
+              CustomButton(
+                buttonText: '확인',
+                onActive: department != Department.none.koreanName,
+                onPressed: () => userViewmodel.completeRegistration(
+                  context,
+                  signUpState.email,
+                  signUpState.studentId,
+                  department,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

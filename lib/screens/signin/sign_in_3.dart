@@ -7,6 +7,7 @@ import 'package:geumpumta/widgets/custom_search_bar/custom_search_bar.dart';
 import '../../provider/signin/signin_provider.dart';
 import '../../widgets/back_and_progress/back_and_progress.dart';
 import '../../widgets/custom_button/custom_button.dart';
+import '../../widgets/error_dialog/error_dialog.dart';
 
 class SignIn3Screen extends ConsumerStatefulWidget {
   const SignIn3Screen({super.key});
@@ -84,19 +85,24 @@ class _SignIn3ScreenState extends ConsumerState<SignIn3Screen> {
                         selected: department,
                       ),
                     ),
-                    // DepartmentScrollDown(),
                   ],
                 ),
               ),
               CustomButton(
                 buttonText: '확인',
                 onActive: department != Department.none.koreanName,
-                onPressed: () => userViewmodel.completeRegistration(
-                  context,
-                  signUpState.email,
-                  signUpState.studentId,
-                  department,
-                ),
+                onPressed: () async {
+                  final res = await userViewmodel.completeRegistration(
+                    context,
+                    signUpState.email,
+                    signUpState.studentId,
+                    department,
+                  );
+
+                  if (res == null || !res.success) {
+                    return;
+                  }
+                },
               ),
             ],
           ),

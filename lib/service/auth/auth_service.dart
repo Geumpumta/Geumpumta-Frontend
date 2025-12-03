@@ -12,8 +12,6 @@ class OAuthService {
 
       final authUrl =
           '$baseUrl/oauth2/authorization/$provider?redirect_uri=$redirectUri';
-      print("🔥 BASE_URL from .env = $baseUrl");
-      print("🔥 AUTH URL = $authUrl");
 
 
       final result = await FlutterWebAuth2.authenticate(

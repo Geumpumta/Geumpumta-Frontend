@@ -1,7 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:geumpumta/models/department.dart';
 import 'package:geumpumta/models/dto/user/complete_registration_request_dto.dart';
 import 'package:geumpumta/repository/auth/auth_repository.dart';
 
+import '../../models/dto/user/complete_registration_response_dto.dart';
 import '../../models/entity/user/user.dart';
 import '../../service/retrofit/user_api.dart';
 
@@ -32,7 +34,7 @@ class UserRepository {
     }
   }
 
-  Future<void> completeRegistration(
+  Future<CompleteRegistrationResponseDto> completeRegistration(
     String email,
     String studentId,
     String department,
@@ -45,13 +47,22 @@ class UserRepository {
           department: department,
         ),
       );
+
       _authRepository.updateTokens(
-        response.data.accessToken,
-        response.data.refreshToken,
+        response.data?.accessToken ?? '',
+        response.data?.refreshToken ?? '',
       );
-    } catch (e, st) {
-      rethrow;
+      return response;
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      return CompleteRegistrationResponseDto(
+        success: false,
+        data: null,
+        code: data?['code'],
+        msg: data?['code'] == 'C001'
+            ? '이미 다른 계정으로 가입된 회원입니다.'
+            : '서버 오류가 발생했습니다.',
+      );
     }
   }
-
 }

@@ -1,10 +1,11 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'token_interceptor.dart';
 
 Dio createDioClient() {
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'https://dev.geumpumta.shop',
+      baseUrl: dotenv.env['BASE_URL'] ?? '',
       validateStatus: (status) => true,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),

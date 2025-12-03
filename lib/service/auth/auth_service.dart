@@ -1,9 +1,10 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http/http.dart' as http;
 
 class OAuthService {
-  final String baseUrl = 'https://geumpumta.shop';
+  String get baseUrl => dotenv.env['BASE_URL'] ?? '';
 
   Future<Map<String, dynamic>?> socialLogin(String provider) async {
     try {
@@ -11,6 +12,9 @@ class OAuthService {
 
       final authUrl =
           '$baseUrl/oauth2/authorization/$provider?redirect_uri=$redirectUri';
+      print("🔥 BASE_URL from .env = $baseUrl");
+      print("🔥 AUTH URL = $authUrl");
+
 
       final result = await FlutterWebAuth2.authenticate(
         url: authUrl,

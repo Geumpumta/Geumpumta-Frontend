@@ -31,6 +31,16 @@ class UserViewModel extends StateNotifier<void> {
     }
   }
 
+  Future<User?> updateUserInfo() async {
+    try {
+      final user = await _repo.getUserProfile();
+      return user;
+    } catch (e) {
+      debugPrint("updateUserInfo() 실패: $e");
+      return null;
+    }
+  }
+
   Future<CompleteRegistrationResponseDto?> completeRegistration(
     BuildContext context,
     String email,
@@ -49,15 +59,18 @@ class UserViewModel extends StateNotifier<void> {
         return response;
       }
 
+      await updateUserInfo();
+
       await Flushbar(
         message: '계정 생성 완료!',
         backgroundColor: Colors.green.shade600,
         flushbarPosition: FlushbarPosition.TOP,
         margin: const EdgeInsets.all(10),
         borderRadius: BorderRadius.circular(10),
-        duration: const Duration(seconds: 2),
+        duration: const Duration(seconds: 1),
         icon: const Icon(Icons.check_circle, color: Colors.white),
       ).show(context);
+
 
       await Future.delayed(const Duration(seconds: 1));
       Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);

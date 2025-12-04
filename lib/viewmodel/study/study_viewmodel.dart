@@ -56,7 +56,7 @@ class StudyViewmodel extends StateNotifier<AsyncValue<dynamic>> {
     try {
       final response = await repo.sendHeartBeat(dto);
       if (!response.success) {
-        throw Exception(response.message);
+        throw Exception(response..data.message);
       }
       return response;
     } catch (e, st) {

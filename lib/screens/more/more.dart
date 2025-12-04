@@ -10,6 +10,7 @@ import 'package:geumpumta/viewmodel/auth/auth_viewmodel.dart';
 import 'package:geumpumta/widgets/section_title/section_title.dart';
 import 'package:geumpumta/widgets/text_header/text_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
@@ -55,11 +56,17 @@ class MoreScreen extends ConsumerWidget {
               items: [
                 MenuItemData(
                   title: '개인정보 처리방침',
-                  onTap: () => _navigateToPlaceholder(context, '개인정보 처리방침'),
+                  onTap: () => _openUrl(
+                    context,
+                    'https://hail-channel-7a4.notion.site/26665ae7a61081bd9ef0ca1aa17dcb49?source=copy_link',
+                  ),
                 ),
                 MenuItemData(
                   title: '이용약관',
-                  onTap: () => _navigateToPlaceholder(context, '이용약관'),
+                  onTap: () => _openUrl(
+                    context,
+                    'https://hail-channel-7a4.notion.site/26665ae7a61081dfbb1efba16eff0867?source=copy_link',
+                  ),
                 ),
               ],
             ),
@@ -96,6 +103,42 @@ class MoreScreen extends ConsumerWidget {
       AppRoutes.placeholder,
       arguments: {'title': title},
     );
+  }
+
+  Future<void> _openUrl(BuildContext context, String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.inAppWebView,
+        );
+      } else {
+        if (context.mounted) {
+          await Flushbar(
+            message: '링크를 열 수 없습니다.',
+            backgroundColor: Colors.red.shade700,
+            flushbarPosition: FlushbarPosition.TOP,
+            margin: const EdgeInsets.all(10),
+            borderRadius: BorderRadius.circular(10),
+            duration: const Duration(seconds: 2),
+            icon: const Icon(Icons.error_outline, color: Colors.white),
+          ).show(context);
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        await Flushbar(
+          message: '링크를 열 수 없습니다: $e',
+          backgroundColor: Colors.red.shade700,
+          flushbarPosition: FlushbarPosition.TOP,
+          margin: const EdgeInsets.all(10),
+          borderRadius: BorderRadius.circular(10),
+          duration: const Duration(seconds: 2),
+          icon: const Icon(Icons.error_outline, color: Colors.white),
+        ).show(context);
+      }
+    }
   }
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {

@@ -17,7 +17,6 @@ class MoreScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -26,69 +25,79 @@ class MoreScreen extends ConsumerWidget {
             const TextHeader(text: '더보기'),
             Expanded(
               child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 8),
-            const SectionTitle(title: '프로필'),
-            const SizedBox(height: 12),
-            const ProfileSection(),
-            const SizedBox(height: 32),
-            const NoticeSection(),
-            const SizedBox(height: 28),
-            MenuSection(
-              title: '서비스 이용',
-              items: [
-                MenuItemData(
-                  title: '이벤트',
-                  onTap: () => _navigateToPlaceholder(context, '이벤트'),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 8),
+                    const SectionTitle(title: '프로필'),
+                    const SizedBox(height: 12),
+                    const ProfileSection(),
+                    const SizedBox(height: 32),
+                    const NoticeSection(),
+                    const SizedBox(height: 28),
+                    MenuSection(
+                      title: '서비스 이용',
+                      items: [
+                        MenuItemData(
+                          title: '이벤트',
+                          onTap: () =>
+                              _navigateToPlaceholder(context, '이벤트'),
+                        ),
+                        MenuItemData(
+                          title: '고객센터',
+                          onTap: () =>
+                              _navigateToPlaceholder(context, '고객센터'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 28),
+                    MenuSection(
+                      title: '약관 및 정책',
+                      items: [
+                        MenuItemData(
+                          title: '개인정보 처리방침',
+                          onTap: () => _openUrl(
+                            context,
+                            'https://hail-channel-7a4.notion.site/26665ae7a61081bd9ef0ca1aa17dcb49?source=copy_link',
+                          ),
+                        ),
+                        MenuItemData(
+                          title: '이용약관',
+                          onTap: () => _openUrl(
+                            context,
+                            'https://hail-channel-7a4.notion.site/26665ae7a61081dfbb1efba16eff0867?source=copy_link',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 28),
+                    MenuSection(
+                      title: '계정 관리',
+                      items: [
+                        MenuItemData(
+                          title: '회원 탈퇴',
+                          textColor: const Color(0xFFFF3B30),
+                          iconColor: const Color(0xFFFF3B30),
+                          onTap: () =>
+                              _showDeleteAccountDialog(context, ref),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 28),
+                    const SectionTitle(title: '디버그 정보'),
+                    const SizedBox(height: 8),
+                    const _AccessTokenDebugTile(),
+                    const SizedBox(height: 12),
+                    const _RefreshTokenDebugTile(),
+                    const SizedBox(height: 40),
+                    LogoutButton(
+                      onPressed: () => _showLogoutDialog(context, ref),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
                 ),
-                MenuItemData(
-                  title: '고객센터',
-                  onTap: () => _navigateToPlaceholder(context, '고객센터'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 28),
-            MenuSection(
-              title: '약관 및 정책',
-              items: [
-                MenuItemData(
-                  title: '개인정보 처리방침',
-                  onTap: () => _openUrl(
-                    context,
-                    'https://hail-channel-7a4.notion.site/26665ae7a61081bd9ef0ca1aa17dcb49?source=copy_link',
-                  ),
-                ),
-                MenuItemData(
-                  title: '이용약관',
-                  onTap: () => _openUrl(
-                    context,
-                    'https://hail-channel-7a4.notion.site/26665ae7a61081dfbb1efba16eff0867?source=copy_link',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 28),
-            MenuSection(
-              title: '계정 관리',
-              items: [
-                MenuItemData(
-                  title: '회원 탈퇴',
-                  textColor: const Color(0xFFFF3B30),
-                  iconColor: const Color(0xFFFF3B30),
-                  onTap: () => _showDeleteAccountDialog(context, ref),
-                ),
-              ],
-            ),
-            const SizedBox(height: 40),
-            LogoutButton(
-              onPressed: () => _showLogoutDialog(context, ref),
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
               ),
             ),
           ],
@@ -347,6 +356,181 @@ class MoreScreen extends ConsumerWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _AccessTokenDebugTile extends StatefulWidget {
+  const _AccessTokenDebugTile();
+
+  @override
+  State<_AccessTokenDebugTile> createState() => _AccessTokenDebugTileState();
+}
+
+class _AccessTokenDebugTileState extends State<_AccessTokenDebugTile> {
+  String? _accessToken;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadToken();
+  }
+
+  Future<void> _loadToken() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken');
+    setState(() {
+      _accessToken = token;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '현재 Access Token',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh, size: 20),
+                tooltip: '토큰 새로고침',
+                onPressed: _isLoading ? null : _loadToken,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (_isLoading)
+            const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else if (_accessToken == null || _accessToken!.isEmpty)
+            Text(
+              '저장된 Access Token이 없습니다.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.grey[600],
+              ),
+            )
+          else
+            SelectableText(
+              _accessToken!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontFamily: 'monospace',
+                color: Colors.black87,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RefreshTokenDebugTile extends StatefulWidget {
+  const _RefreshTokenDebugTile();
+
+  @override
+  State<_RefreshTokenDebugTile> createState() =>
+      _RefreshTokenDebugTileState();
+}
+
+class _RefreshTokenDebugTileState extends State<_RefreshTokenDebugTile> {
+  String? _refreshToken;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadToken();
+  }
+
+  Future<void> _loadToken() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('refreshToken');
+    setState(() {
+      _refreshToken = token;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '현재 Refresh Token',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.refresh, size: 20),
+                tooltip: '토큰 새로고침',
+                onPressed: _isLoading ? null : _loadToken,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (_isLoading)
+            const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          else if (_refreshToken == null || _refreshToken!.isEmpty)
+            Text(
+              '저장된 Refresh Token이 없습니다.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: Colors.grey[600],
+              ),
+            )
+          else
+            SelectableText(
+              _refreshToken!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontFamily: 'monospace',
+                color: Colors.black87,
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

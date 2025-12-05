@@ -23,7 +23,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchMonthlyStats();
       // 연속공부현황 provider 새로고침
-      ref.invalidate(currentStreakProvider(null));
+      ref.refresh(currentStreakProvider(null));
     });
   }
 

@@ -36,7 +36,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     // 통계 탭으로 이동할 때마다 연속공부현황 provider 새로고침
     if (index == 1) {
-      ref.invalidate(currentStreakProvider(null));
+      ref.refresh(currentStreakProvider(null));
     }
 
     setState(() => _selectedIndex = index);

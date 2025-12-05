@@ -89,7 +89,7 @@ class _CustomPeriodPickerState extends State<CustomPeriodPicker> {
     }
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         IconButton(
@@ -105,7 +105,7 @@ class _CustomPeriodPickerState extends State<CustomPeriodPicker> {
             formattedViewText(widget.selectedDate),
             style: TextStyle(
               color: Color(0xFF000000),
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),

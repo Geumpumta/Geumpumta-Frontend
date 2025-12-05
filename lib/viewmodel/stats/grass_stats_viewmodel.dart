@@ -70,30 +70,47 @@ final currentStreakProvider = FutureProvider.family<int, int?>((ref, targetUserI
     for (final entry in entries) _formatDate(entry.date): entry.level,
   };
 
-  int streak = 0;
-  DateTime cursor = DateTime(today.year, today.month, today.day);
-  bool skippedTodayOnce = false;
+  // 오늘 날짜
+  final todayDate = DateTime(today.year, today.month, today.day);
+  final todayLevel = byDate[_formatDate(todayDate)] ?? 0;
+
+  // 오늘이 level 0이면 0일차
+  if (todayLevel <= 0) {
+    return 0;
+  }
+
+  // 오늘이 level > 0이면 1일차부터 시작
+  int streak = 1;
+  DateTime cursor = todayDate.subtract(const Duration(days: 1));
+  int consecutiveZeroDays = 0;
+
+  final earliestSupported =
+      DateTime(previousMonth.year, previousMonth.month, 1);
 
   while (true) {
-    final level = byDate[_formatDate(cursor)] ?? 0;
-
-    if (level <= 0) {
-      if (!skippedTodayOnce && _isSameDay(cursor, today)) {
-        skippedTodayOnce = true;
-        cursor = cursor.subtract(const Duration(days: 1));
-        continue;
-      }
-      break;
-    }
-
-    streak++;
-    cursor = cursor.subtract(const Duration(days: 1));
-    final earliestSupported =
-        DateTime(previousMonth.year, previousMonth.month, 1);
+    // 범위를 벗어나면 종료
     if (cursor.isBefore(earliestSupported) &&
         !byDate.containsKey(_formatDate(cursor))) {
       break;
     }
+
+    final level = byDate[_formatDate(cursor)] ?? 0;
+
+    if (level > 0) {
+      // 공부한 날이면 streak 증가하고 연속 0일 카운터 리셋
+      streak++;
+      consecutiveZeroDays = 0;
+    } else {
+      // level이 0이면 연속 0일 카운터 증가
+      consecutiveZeroDays++;
+      
+      // 연속으로 2일 이상 level이 0이면 종료
+      if (consecutiveZeroDays >= 2) {
+        break;
+      }
+    }
+
+    cursor = cursor.subtract(const Duration(days: 1));
   }
 
   return streak;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/screens/stats/widgets/contribution_grass.dart';
 import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ContinuousStudySection extends ConsumerWidget {
   const ContinuousStudySection({

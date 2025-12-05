@@ -15,19 +15,17 @@ class DailyUsageChart extends StatelessWidget {
     for (final slot in slots) {
       // 시작 시간에 맞춰 정확한 인덱스 계산
       final startHour = slot.start.hour;
-      final endHour = slot.end.hour;
       
-      // 시작 시간이 속한 2시간 구간 찾기
+      // slotEnd가 다음 날로 넘어간 경우(예: 22:00~00:00) 처리
+      // 이 경우 시작 시간의 구간에만 표시
+      final isNextDay = slot.end.day > slot.start.day;
+      final endHour = isNextDay ? 24 : slot.end.hour;
+      
+      // 시작 시간이 속한 2시간 구간 찾기 (0~22시 범위)
       final startIndex = (startHour ~/ 2).clamp(0, hours.length - 1);
-      final endIndex = (endHour ~/ 2).clamp(0, hours.length - 1);
       
-      // 같은 구간이면 해당 구간에 추가
-      if (startIndex == endIndex) {
-        focusTimes[startIndex] += slot.secondsStudied / 3600.0;
-      } else {
-        // 여러 구간에 걸쳐 있으면 시작 구간에 추가
-        focusTimes[startIndex] += slot.secondsStudied / 3600.0;
-      }
+      // 슬롯의 시간을 해당 구간에 추가
+      focusTimes[startIndex] += slot.secondsStudied / 3600.0;
     }
 
     final maxHeight = 120.0;

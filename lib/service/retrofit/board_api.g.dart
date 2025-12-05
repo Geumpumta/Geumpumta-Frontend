@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'profile_api.dart';
+part of 'board_api.dart';
 
 // dart format off
 
@@ -10,8 +10,8 @@ part of 'profile_api.dart';
 
 // ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers,unused_element,unnecessary_string_interpolations,unused_element_parameter,avoid_unused_constructor_parameters,unreachable_from_main
 
-class _ProfileApi implements ProfileApi {
-  _ProfileApi(this._dio, {this.baseUrl, this.errorLogger});
+class _BoardApi implements BoardApi {
+  _BoardApi(this._dio, {this.baseUrl, this.errorLogger});
 
   final Dio _dio;
 
@@ -20,25 +20,25 @@ class _ProfileApi implements ProfileApi {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<NicknameVerifyResponseDto> verifyNickname(String nickname) async {
+  Future<BoardListResponseDto> getBoardList() async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'nickname': nickname};
+    final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<NicknameVerifyResponseDto>(
+    final _options = _setStreamType<BoardListResponseDto>(
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/api/v1/user/nickname/verify',
+            '/api/v1/board/list',
             queryParameters: queryParameters,
             data: _data,
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late NicknameVerifyResponseDto _value;
+    late BoardListResponseDto _value;
     try {
-      _value = NicknameVerifyResponseDto.fromJson(_result.data!);
+      _value = BoardListResponseDto.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;
@@ -47,56 +47,30 @@ class _ProfileApi implements ProfileApi {
   }
 
   @override
-  Future<ImageUploadResponseDto> uploadProfileImage(MultipartFile image) async {
+  Future<BoardDetailResponseDto> getBoardDetail(int boardId) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
-    final _data = FormData();
-    _data.files.add(MapEntry('image', image));
-    final _options = _setStreamType<ImageUploadResponseDto>(
-      Options(
-            method: 'POST',
-            headers: _headers,
-            extra: _extra,
-            contentType: 'multipart/form-data',
-          )
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<BoardDetailResponseDto>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/api/v1/image/profile',
+            '/api/v1/board/${boardId}',
             queryParameters: queryParameters,
             data: _data,
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late ImageUploadResponseDto _value;
+    late BoardDetailResponseDto _value;
     try {
-      _value = ImageUploadResponseDto.fromJson(_result.data!);
+      _value = BoardDetailResponseDto.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;
     }
     return _value;
-  }
-
-  @override
-  Future<void> updateUserProfile(UpdateProfileRequestDto request) async {
-    final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{};
-    final _data = <String, dynamic>{};
-    _data.addAll(request.toJson());
-    final _options = _setStreamType<void>(
-      Options(method: 'POST', headers: _headers, extra: _extra)
-          .compose(
-            _dio.options,
-            '/api/v1/user/profile',
-            queryParameters: queryParameters,
-            data: _data,
-          )
-          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
-    );
-    await _dio.fetch<void>(_options);
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {

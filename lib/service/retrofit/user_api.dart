@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:geumpumta/models/dto/common/common_dto.dart';
 import 'package:geumpumta/models/dto/user/complete_registration_request_dto.dart';
 import 'package:geumpumta/models/dto/user/complete_registration_response_dto.dart';
 import 'package:geumpumta/models/dto/user/get_user_info_response_dto.dart';
@@ -17,4 +18,10 @@ abstract class UserApi {
   Future<CompleteRegistrationResponseDto> completeRegistration(
       @Body() CompleteRegistrationRequestDto request
       );
+  
+  @DELETE('/api/v1/user/withdraw')
+  Future<CommonDto> withdrawUser();
+  
+  @POST('/api/v1/user/restore')
+  Future<CompleteRegistrationResponseDto> restoreUser();
 }

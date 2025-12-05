@@ -22,10 +22,12 @@ class MotivationalMessage extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           RichText(
+            textAlign: TextAlign.center,
             text: TextSpan(
               style: const TextStyle(
                 fontSize: 16,
                 color: Color(0xFF333333),
+                fontFamily: 'SCDream',
               ),
               children: [
                 const TextSpan(text: '오늘은 '),
@@ -34,6 +36,7 @@ class MotivationalMessage extends StatelessWidget {
                   style: const TextStyle(
                     color: Color(0xFF0BAEFF),
                     fontWeight: FontWeight.w600,
+                    fontFamily: 'SCDream',
                   ),
                 ),
                 const TextSpan(text: '을 놓쳤습니다'),
@@ -43,9 +46,11 @@ class MotivationalMessage extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             message,
+            textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 14,
               color: Color(0xFF666666),
+              fontFamily: 'SCDream',
             ),
           ),
         ],

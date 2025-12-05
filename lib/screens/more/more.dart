@@ -10,13 +10,13 @@ import 'package:geumpumta/viewmodel/auth/auth_viewmodel.dart';
 import 'package:geumpumta/widgets/section_title/section_title.dart';
 import 'package:geumpumta/widgets/text_header/text_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -25,63 +25,73 @@ class MoreScreen extends ConsumerWidget {
             const TextHeader(text: '더보기'),
             Expanded(
               child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 8),
-            const SectionTitle(title: '프로필'),
-            const SizedBox(height: 12),
-            const ProfileSection(),
-            const SizedBox(height: 32),
-            const NoticeSection(),
-            const SizedBox(height: 28),
-            MenuSection(
-              title: '서비스 이용',
-              items: [
-                MenuItemData(
-                  title: '이벤트',
-                  onTap: () => _navigateToPlaceholder(context, '이벤트'),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 8),
+                    const SectionTitle(title: '프로필'),
+                    const SizedBox(height: 12),
+                    const ProfileSection(),
+                    const SizedBox(height: 32),
+                    const NoticeSection(),
+                    const SizedBox(height: 28),
+                    MenuSection(
+                      title: '서비스 이용',
+                      items: [
+                        MenuItemData(
+                          title: '이벤트',
+                          onTap: () =>
+                              _navigateToPlaceholder(context, '이벤트'),
+                        ),
+                        MenuItemData(
+                          title: '고객센터',
+                          onTap: () =>
+                              _navigateToPlaceholder(context, '고객센터'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 28),
+                    MenuSection(
+                      title: '약관 및 정책',
+                      items: [
+                        MenuItemData(
+                          title: '개인정보 처리방침',
+                          onTap: () => _openUrl(
+                            context,
+                            'https://hail-channel-7a4.notion.site/26665ae7a61081bd9ef0ca1aa17dcb49?source=copy_link',
+                          ),
+                        ),
+                        MenuItemData(
+                          title: '이용약관',
+                          onTap: () => _openUrl(
+                            context,
+                            'https://hail-channel-7a4.notion.site/26665ae7a61081dfbb1efba16eff0867?source=copy_link',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 28),
+                    MenuSection(
+                      title: '계정 관리',
+                      items: [
+                        MenuItemData(
+                          title: '회원 탈퇴',
+                          textColor: const Color(0xFFFF3B30),
+                          iconColor: const Color(0xFFFF3B30),
+                          onTap: () =>
+                              _showDeleteAccountDialog(context, ref),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 40),
+                    LogoutButton(
+                      onPressed: () => _showLogoutDialog(context, ref),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
                 ),
-                MenuItemData(
-                  title: '고객센터',
-                  onTap: () => _navigateToPlaceholder(context, '고객센터'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 28),
-            MenuSection(
-              title: '약관 및 정책',
-              items: [
-                MenuItemData(
-                  title: '개인정보 처리방침',
-                  onTap: () => _navigateToPlaceholder(context, '개인정보 처리방침'),
-                ),
-                MenuItemData(
-                  title: '이용약관',
-                  onTap: () => _navigateToPlaceholder(context, '이용약관'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 28),
-            MenuSection(
-              title: '계정 관리',
-              items: [
-                MenuItemData(
-                  title: '회원 탈퇴',
-                  textColor: const Color(0xFFFF3B30),
-                  iconColor: const Color(0xFFFF3B30),
-                  onTap: () => _showDeleteAccountDialog(context, ref),
-                ),
-              ],
-            ),
-            const SizedBox(height: 40),
-            LogoutButton(
-              onPressed: () => _showLogoutDialog(context, ref),
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
               ),
             ),
           ],
@@ -96,6 +106,42 @@ class MoreScreen extends ConsumerWidget {
       AppRoutes.placeholder,
       arguments: {'title': title},
     );
+  }
+
+  Future<void> _openUrl(BuildContext context, String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.inAppWebView,
+        );
+      } else {
+        if (context.mounted) {
+          await Flushbar(
+            message: '링크를 열 수 없습니다.',
+            backgroundColor: Colors.red.shade700,
+            flushbarPosition: FlushbarPosition.TOP,
+            margin: const EdgeInsets.all(10),
+            borderRadius: BorderRadius.circular(10),
+            duration: const Duration(seconds: 2),
+            icon: const Icon(Icons.error_outline, color: Colors.white),
+          ).show(context);
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        await Flushbar(
+          message: '링크를 열 수 없습니다: $e',
+          backgroundColor: Colors.red.shade700,
+          flushbarPosition: FlushbarPosition.TOP,
+          margin: const EdgeInsets.all(10),
+          borderRadius: BorderRadius.circular(10),
+          duration: const Duration(seconds: 2),
+          icon: const Icon(Icons.error_outline, color: Colors.white),
+        ).show(context);
+      }
+    }
   }
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
@@ -196,7 +242,7 @@ class MoreScreen extends ConsumerWidget {
               ),
               SizedBox(height: 12),
               Text(
-                '탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.',
+                '탈퇴 시 모든 데이터가 삭제됩니다.',
                 style: TextStyle(
                   fontSize: 14,
                   color: Color(0xFF666666),
@@ -264,30 +310,50 @@ class MoreScreen extends ConsumerWidget {
                 if (confirmed == true) {
                   try {
                     final prefs = await SharedPreferences.getInstance();
-                    final accessToken = prefs.getString('accessToken')??'';
+                    final accessToken = prefs.getString('accessToken') ?? '';
                     await viewModel.deleteAccount(accessToken);
+                    
+                    // 회원탈퇴 성공 시 로그인 화면으로 이동
                     if (context.mounted) {
-                      await Flushbar(
-                        message: '회원탈퇴가 완료되었습니다.',
-                        backgroundColor: Colors.green.shade600,
-                        flushbarPosition: FlushbarPosition.TOP,
-                        margin: const EdgeInsets.all(10),
-                        borderRadius: BorderRadius.circular(10),
-                        duration: const Duration(seconds: 2),
-                        icon: const Icon(Icons.check_circle, color: Colors.white),
-                      ).show(context);
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/login',
+                        (route) => false,
+                      );
+                      // 이동 후 Flushbar 표시
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      if (context.mounted) {
+                        await Flushbar(
+                          message: '회원탈퇴가 완료되었습니다.',
+                          backgroundColor: Colors.green.shade600,
+                          flushbarPosition: FlushbarPosition.TOP,
+                          margin: const EdgeInsets.all(10),
+                          borderRadius: BorderRadius.circular(10),
+                          duration: const Duration(seconds: 2),
+                          icon: const Icon(Icons.check_circle, color: Colors.white),
+                        ).show(context);
+                      }
                     }
                   } catch (e) {
+                    // 에러 발생 시에도 로그인 화면으로 이동 (로컬 데이터는 이미 삭제됨)
                     if (context.mounted) {
-                      await Flushbar(
-                        message: '회원탈퇴 중 오류가 발생했습니다: $e',
-                        backgroundColor: Colors.red.shade700,
-                        flushbarPosition: FlushbarPosition.TOP,
-                        margin: const EdgeInsets.all(10),
-                        borderRadius: BorderRadius.circular(10),
-                        duration: const Duration(seconds: 2),
-                        icon: const Icon(Icons.error_outline, color: Colors.white),
-                      ).show(context);
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/login',
+                        (route) => false,
+                      );
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      if (context.mounted) {
+                        await Flushbar(
+                          message: '회원탈퇴 중 오류가 발생했습니다: $e',
+                          backgroundColor: Colors.red.shade700,
+                          flushbarPosition: FlushbarPosition.TOP,
+                          margin: const EdgeInsets.all(10),
+                          borderRadius: BorderRadius.circular(10),
+                          duration: const Duration(seconds: 2),
+                          icon: const Icon(Icons.error_outline, color: Colors.white),
+                        ).show(context);
+                      }
                     }
                   }
                 }

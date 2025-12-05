@@ -68,17 +68,58 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends ConsumerWidget {
+class MyHomePage extends ConsumerStatefulWidget {
   const MyHomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends ConsumerState<MyHomePage> {
+  bool _isChecking = true;
+  bool _hasToken = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('accessToken');
+    final userString = prefs.getString('userInfo');
+
+    // 토큰과 사용자 정보가 모두 있어야 메인 화면으로
+    final hasValidAuth = accessToken != null && 
+                        accessToken.isNotEmpty && 
+                        userString != null;
+
+    if (mounted) {
+      setState(() {
+        _hasToken = hasValidAuth;
+        _isChecking = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isChecking) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     final user = ref.watch(userInfoStateProvider);
 
-    if (user?.userRole == 'USER') {
-      return const MainScreen();
-    } else {
+    // 토큰이 없거나 사용자 정보가 없으면 로그인 화면
+    if (!_hasToken || user == null || user.userRole != 'USER') {
       return const LoginScreen();
     }
+
+    return const MainScreen();
   }
 }

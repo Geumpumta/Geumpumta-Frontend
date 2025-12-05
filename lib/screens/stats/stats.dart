@@ -20,9 +20,28 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 통계 탭에 진입할 때마다 연속공부현황 provider 새로고침
+    // 통계 탭에 진입할 때마다 연속공부현황 및 잔디 provider 새로고침
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.invalidate(currentStreakProvider(null));
+      // refresh를 사용하여 즉시 새로고침 시작
+      ref.refresh(currentStreakProvider(null));
+      
+      // 현재 월과 이전 월, 다음 월의 잔디 데이터 새로고침
+      final now = DateTime.now();
+      final currentMonth = DateTime(now.year, now.month, 1);
+      final previousMonth = DateTime(
+        now.month == 1 ? now.year - 1 : now.year,
+        now.month == 1 ? 12 : now.month - 1,
+        1,
+      );
+      final nextMonth = DateTime(
+        now.month == 12 ? now.year + 1 : now.year,
+        now.month == 12 ? 1 : now.month + 1,
+        1,
+      );
+      
+      ref.refresh(grassStatisticsProvider((currentMonth, null)));
+      ref.refresh(grassStatisticsProvider((previousMonth, null)));
+      ref.refresh(grassStatisticsProvider((nextMonth, null)));
     });
   }
 

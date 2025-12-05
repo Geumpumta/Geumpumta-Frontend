@@ -4,7 +4,7 @@ import 'package:geumpumta/screens/stats/widgets/contribution_grass.dart';
 import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ContinuousStudySection extends ConsumerWidget {
+class ContinuousStudySection extends ConsumerStatefulWidget {
   const ContinuousStudySection({
     super.key,
     this.manualStreakDays,
@@ -17,10 +17,26 @@ class ContinuousStudySection extends ConsumerWidget {
   final int? targetUserId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final streakAsync = manualStreakDays != null
-        ? AsyncValue<int>.data(manualStreakDays!)
-        : ref.watch(currentStreakProvider(targetUserId));
+  ConsumerState<ContinuousStudySection> createState() => _ContinuousStudySectionState();
+}
+
+class _ContinuousStudySectionState extends ConsumerState<ContinuousStudySection> {
+  @override
+  void initState() {
+    super.initState();
+    // 위젯이 생성될 때마다 provider 새로고침
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.manualStreakDays == null) {
+        ref.refresh(currentStreakProvider(widget.targetUserId));
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final streakAsync = widget.manualStreakDays != null
+        ? AsyncValue<int>.data(widget.manualStreakDays!)
+        : ref.watch(currentStreakProvider(widget.targetUserId));
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -42,10 +58,10 @@ class ContinuousStudySection extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           ContributionGrass(
-            selectedMonth: selectedDate != null
-                ? DateTime(selectedDate!.year, selectedDate!.month)
+            selectedMonth: widget.selectedDate != null
+                ? DateTime(widget.selectedDate!.year, widget.selectedDate!.month)
                 : null,
-            targetUserId: targetUserId,
+            targetUserId: widget.targetUserId,
           ),
           const SizedBox(height: 16),
           Center(

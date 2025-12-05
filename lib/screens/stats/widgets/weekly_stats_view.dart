@@ -23,7 +23,7 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchWeeklyStats();
       // 연속공부현황 provider 새로고침
-      ref.invalidate(currentStreakProvider(null));
+      ref.refresh(currentStreakProvider(null));
     });
   }
 

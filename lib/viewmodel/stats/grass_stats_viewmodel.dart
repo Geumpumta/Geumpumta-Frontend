@@ -44,7 +44,7 @@ final grassStatisticsProvider =
   );
 });
 
-final currentStreakProvider = FutureProvider.family<int, int?>((ref, targetUserId) async {
+final currentStreakProvider = FutureProvider.autoDispose.family<int, int?>((ref, targetUserId) async {
   final repo = ref.watch(grassStatisticsRepositoryProvider);
   final today = DateTime.now();
   final currentMonth = DateTime(today.year, today.month, 1);

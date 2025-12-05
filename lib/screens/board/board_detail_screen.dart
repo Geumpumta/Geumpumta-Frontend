@@ -132,12 +132,16 @@ class _BoardDetailScreenState extends ConsumerState<BoardDetailScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 24),
-                                  Text(
-                                    _board!.content,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Color(0xFF555555),
-                                      height: 1.6,
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      _board!.content,
+                                      textAlign: TextAlign.left,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Color(0xFF555555),
+                                        height: 1.6,
+                                      ),
                                     ),
                                   ),
                                 ],

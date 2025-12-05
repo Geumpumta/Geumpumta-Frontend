@@ -18,6 +18,8 @@ class CustomPeriodPicker extends StatefulWidget {
 }
 
 class _CustomPeriodPickerState extends State<CustomPeriodPicker> {
+
+  final DateTime minDate = DateTime(2025, 11, 1);
   @override
   Widget build(BuildContext context) {
     int getWeekOfMonth(DateTime date) {
@@ -47,7 +49,22 @@ class _CustomPeriodPickerState extends State<CustomPeriodPicker> {
       return !nextDate.isAfter(today);
     }
 
+    bool canDecrease(DateTime date) {
+      DateTime prev;
+
+      if (widget.option == PeriodOption.daily) {
+        prev = date.subtract(const Duration(days: 1));
+      } else if (widget.option == PeriodOption.weekly) {
+        prev = date.subtract(const Duration(days: 7));
+      } else {
+        prev = DateTime(date.year, date.month - 1, 1);
+      }
+
+      return !prev.isBefore(minDate);
+    }
+
     final isIncreaseEnabled = canIncrease(widget.selectedDate);
+    final isDecreaseEnabled = canDecrease(widget.selectedDate);
 
     void decreaseDate() {
       if (widget.option == PeriodOption.daily)
@@ -76,10 +93,11 @@ class _CustomPeriodPickerState extends State<CustomPeriodPicker> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         IconButton(
-          onPressed: () {
-            decreaseDate();
-          },
-          icon: Icon(Icons.chevron_left),
+          onPressed: isDecreaseEnabled ? decreaseDate : null,
+          icon: Icon(
+            Icons.chevron_left,
+            color: isDecreaseEnabled ? Colors.black : const Color(0xFFD9D9D9),
+          ),
         ),
         TextButton(
           onPressed: () {},

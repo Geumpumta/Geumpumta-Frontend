@@ -38,7 +38,16 @@ class _CustomPeriodPickerState extends State<CustomPeriodPicker> {
         return '${widget.selectedDate.year}.${widget.selectedDate.month}';
     }
 
+    bool canIncrease(DateTime date) {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final next = date.add(const Duration(days: 1));
+      final nextDate = DateTime(next.year, next.month, next.day);
 
+      return !nextDate.isAfter(today);
+    }
+
+    final isIncreaseEnabled = canIncrease(widget.selectedDate);
 
     void decreaseDate() {
       if (widget.option == PeriodOption.daily)
@@ -47,11 +56,7 @@ class _CustomPeriodPickerState extends State<CustomPeriodPicker> {
         widget.onSelect(widget.selectedDate.subtract(const Duration(days: 7)));
       else
         widget.onSelect(
-          DateTime(
-            widget.selectedDate.year,
-            widget.selectedDate.month - 1,
-            1,
-          ),
+          DateTime(widget.selectedDate.year, widget.selectedDate.month - 1, 1),
         );
     }
 
@@ -62,11 +67,7 @@ class _CustomPeriodPickerState extends State<CustomPeriodPicker> {
         widget.onSelect(widget.selectedDate.add(const Duration(days: 7)));
       else
         widget.onSelect(
-          DateTime(
-            widget.selectedDate.year,
-            widget.selectedDate.month + 1,
-            1,
-          ),
+          DateTime(widget.selectedDate.year, widget.selectedDate.month + 1, 1),
         );
     }
 
@@ -92,10 +93,11 @@ class _CustomPeriodPickerState extends State<CustomPeriodPicker> {
           ),
         ),
         IconButton(
-          onPressed: () {
-            increaseDate();
-          },
-          icon: Icon(Icons.chevron_right),
+          onPressed: isIncreaseEnabled ? increaseDate : null,
+          icon: Icon(
+            Icons.chevron_right,
+            color: isIncreaseEnabled ? Colors.black : Color(0xFFD9D9D9),
+          ),
         ),
       ],
     );

@@ -7,20 +7,20 @@ import 'package:geumpumta/models/dto/user/complete_registration_response_dto.dar
 
 import '../../models/entity/user/user.dart';
 import '../../provider/repository_provider.dart';
+import '../../provider/userState/user_info_state.dart';
 import '../../repository/user/user_repository.dart';
 import '../../widgets/error_dialog/error_dialog.dart';
 
-final userViewModelProvider =
-StateNotifierProvider<UserViewModel, void>((ref) {
+final userViewModelProvider = StateNotifierProvider<UserViewModel, void>((ref) {
   final repo = ref.watch(userRepositoryProvider);
-  return UserViewModel(repo);
+  return UserViewModel(repo, ref);
 });
-
 
 class UserViewModel extends StateNotifier<void> {
   final UserRepository _repo;
+  final Ref ref;
 
-  UserViewModel(this._repo) : super(const AsyncLoading());
+  UserViewModel(this._repo, this.ref) : super(const AsyncLoading());
 
   Future<User?> loadUserProfile() async {
     try {
@@ -34,6 +34,11 @@ class UserViewModel extends StateNotifier<void> {
   Future<User?> updateUserInfo() async {
     try {
       final user = await _repo.getUserProfile();
+
+      if (user != null) {
+        ref.read(userInfoStateProvider.notifier).setUser(user);
+      }
+
       return user;
     } catch (e) {
       debugPrint("updateUserInfo() 실패: $e");
@@ -70,7 +75,6 @@ class UserViewModel extends StateNotifier<void> {
         duration: const Duration(seconds: 1),
         icon: const Icon(Icons.check_circle, color: Colors.white),
       ).show(context);
-
 
       await Future.delayed(const Duration(seconds: 1));
       Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);

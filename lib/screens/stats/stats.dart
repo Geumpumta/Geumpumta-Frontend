@@ -17,9 +17,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
+    return SafeArea(
         child: Column(
           children: [
             const TextHeader(text: '통계'),
@@ -36,7 +34,6 @@ class _StatsScreenState extends State<StatsScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 

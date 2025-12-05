@@ -11,7 +11,7 @@ class TokenInterceptor extends Interceptor {
   @override
   void onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
-    // 토큰 갱신 요청은 Authorization 헤더를 추가하지 않음
+    // 토큰 갱신 요청은 Authorization 헤더를 추가 X
     if (options.path == '/auth/token/refresh') {
       return handler.next(options);
     }
@@ -28,7 +28,7 @@ class TokenInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    // 토큰 갱신 요청 자체가 실패한 경우는 그대로 전달
+    // 토큰 갱신 요청 자체가 실패한 경우 -> 그대로 전달
     if (err.requestOptions.path == '/auth/token/refresh') {
       return handler.next(err);
     }
@@ -52,7 +52,6 @@ class TokenInterceptor extends Interceptor {
       }
 
       try {
-        // 토큰 갱신 요청은 Authorization 헤더 없이 별도로 처리
         final refreshDio = Dio(BaseOptions(
           baseUrl: dio.options.baseUrl,
           connectTimeout: const Duration(seconds: 10),
@@ -68,11 +67,25 @@ class TokenInterceptor extends Interceptor {
           },
         );
 
-        // 서버 응답이 { success, data: { accessToken, refreshToken } } 형태일 수도 있고,
-        // { accessToken, refreshToken } 바로 내려올 수도 있어 둘 다 케이스 처리
         final raw = res.data;
-        final tokenData =
-            (raw is Map && raw['data'] is Map) ? raw['data'] : raw;
+        Map<String, dynamic>? tokenData;
+        
+        if (raw is Map) {
+          // success 필드 확인
+          final success = raw['success'];
+          final isSuccess = success == true || success == 'true';
+          
+          if (isSuccess && raw['data'] is Map) {
+            // { success: "true", data: { accessToken, refreshToken } } 형태
+            tokenData = raw['data'] as Map<String, dynamic>;
+          } else if (raw['accessToken'] != null) {
+            tokenData = raw as Map<String, dynamic>;
+          }
+        }
+
+        if (tokenData == null) {
+          throw Exception('토큰 갱신 응답 형식이 올바르지 않습니다: $raw');
+        }
 
         final String? newAccessToken = tokenData['accessToken'];
         final String? newRefreshToken = tokenData['refreshToken'];
@@ -83,7 +96,7 @@ class TokenInterceptor extends Interceptor {
             await prefs.setString('refreshToken', newRefreshToken);
           }
 
-          // 원래 요청 재시도
+          // 원래 요청 재시도 해야함
           final retryRequest = err.requestOptions;
           retryRequest.headers['Authorization'] = 'Bearer $newAccessToken';
 
@@ -102,7 +115,7 @@ class TokenInterceptor extends Interceptor {
           _rejectPendingRequests(err);
         }
       } catch (e) {
-        // 토큰 갱신 실패 시 모든 토큰 삭제 (로그아웃 처리)
+        // 토큰 갱신 실패 시 모든 토큰 삭제 (갱신 실패하면 로그아웃 처리)
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove('accessToken');
         await prefs.remove('refreshToken');

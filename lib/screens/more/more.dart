@@ -17,9 +17,7 @@ class MoreScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
+    return SafeArea(
         child: Column(
           children: [
             const TextHeader(text: '더보기'),
@@ -96,7 +94,6 @@ class MoreScreen extends ConsumerWidget {
             ),
           ],
         ),
-      ),
     );
   }
 

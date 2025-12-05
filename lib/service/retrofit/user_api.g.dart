@@ -8,7 +8,7 @@ part of 'user_api.dart';
 // RetrofitGenerator
 // **************************************************************************
 
-// ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers,unused_element,unnecessary_string_interpolations,unused_element_parameter
+// ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers,unused_element,unnecessary_string_interpolations,unused_element_parameter,avoid_unused_constructor_parameters,unreachable_from_main
 
 class _UserApi implements UserApi {
   _UserApi(this._dio, {this.baseUrl, this.errorLogger});
@@ -74,6 +74,65 @@ class _UserApi implements UserApi {
       rethrow;
     }
     return _value;
+  }
+
+  @override
+  Future<CommonDto> withdrawUser() async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<CommonDto>(
+      Options(method: 'DELETE', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/api/v1/user/withdraw',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late CommonDto _value;
+    try {
+      _value = CommonDto.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<CompleteRegistrationResponseDto> restoreUser() async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<CompleteRegistrationResponseDto>(
+      Options(method: 'POST', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/api/v1/user/restore',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    try {
+      final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+      late CompleteRegistrationResponseDto _value;
+      try {
+        _value = CompleteRegistrationResponseDto.fromJson(_result.data!);
+      } on Object catch (e, s) {
+        errorLogger?.logError(e, s, _options);
+        rethrow;
+      }
+      return _value;
+    } on DioException catch (e) {
+      // DioException을 그대로 전달하여 repository에서 처리하도록 함
+      rethrow;
+    }
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {

@@ -25,8 +25,10 @@ class CompleteRegistrationResponseDto {
   factory CompleteRegistrationResponseDto.fromJson(Map<String, dynamic> json) =>
       CompleteRegistrationResponseDto(
         success: json['success']=='true'||json['success']==true,
-        data: CompleteResitrationDataDto.fromJson(json['data']),
+        data: json['data'] != null 
+            ? CompleteResitrationDataDto.fromJson(json['data'] as Map<String, dynamic>)
+            : null,
         code: json['code'],
-        msg: json['msg'],
+        msg: json['message'] ?? json['msg'],
       );
 }

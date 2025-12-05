@@ -26,6 +26,9 @@ class UserViewModel extends StateNotifier<void> {
     try {
       final user = await _repo.getUserProfile();
       return user;
+    } on UserProfileException {
+      // UserProfileException은 그대로 전달
+      rethrow;
     } catch (e, st) {
       return null;
     }

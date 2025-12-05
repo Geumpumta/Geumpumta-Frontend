@@ -20,7 +20,11 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
   void initState() {
     super.initState();
     _selectedMonth = DateTime.now();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _fetchMonthlyStats());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchMonthlyStats();
+      // 연속공부현황 provider 새로고침
+      ref.invalidate(currentStreakProvider(null));
+    });
   }
 
   void _fetchMonthlyStats() {

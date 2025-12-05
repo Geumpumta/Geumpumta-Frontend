@@ -8,6 +8,7 @@ import 'package:geumpumta/service/retrofit/profile_api.dart';
 import 'package:geumpumta/service/retrofit/study_api.dart';
 import 'package:geumpumta/service/retrofit/user_api.dart';
 import 'package:geumpumta/service/retrofit/weekly_statistics_api.dart';
+import 'package:geumpumta/service/retrofit/board_api.dart';
 
 import 'dio_provider.dart';
 
@@ -54,4 +55,9 @@ final dailyStatisticsApiProvider = Provider<DailyStatisticsApi>((ref) {
 final grassStatisticsApiProvider = Provider<GrassStatisticsApi>((ref) {
   final dio = ref.watch(dioProvider);
   return GrassStatisticsApi(dio);
+});
+
+final boardApiProvider = Provider<BoardApi>((ref) {
+  final dio = ref.watch(dioProvider);
+  return BoardApi(dio);
 });

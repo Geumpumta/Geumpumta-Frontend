@@ -167,19 +167,21 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
     final viewModel = ref.read(profileEditViewModelProvider.notifier);
     final userViewModel = ref.read(userViewModelProvider.notifier);
+    final userInfoNotifier = ref.read(userInfoStateProvider.notifier);
 
-    try {
-      await viewModel.updateProfile(
-        nickname: nickname,
-        imageUrl: imageUrl,
-        publicId: publicId,
-      );
-      // 프로필 업데이트 후 최신 사용자 정보 로드
-      final updatedUser = await userViewModel.loadUserProfile();
-      if (updatedUser != null) {
-        ref.read(userInfoStateProvider.notifier).setUser(updatedUser);
-      }
-      if (!mounted) return;
+    // 현재 사용자 정보 가져오기 (롤백용)
+    final currentUser = ref.read(userInfoStateProvider);
+    if (currentUser == null) return;
+
+    // 즉시 로컬 상태 업데이트 (optimistic update)
+    final updatedUser = currentUser.copyWith(
+      nickName: nickname.isNotEmpty ? nickname : currentUser.nickName,
+      profileImage: imageUrl.isNotEmpty ? imageUrl : currentUser.profileImage,
+    );
+    userInfoNotifier.setUser(updatedUser);
+
+    // UI 상태 업데이트
+    if (mounted) {
       setState(() {
         _photoChanged = false;
         _isNicknameAvailable = null;
@@ -188,12 +190,34 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _statusMessage = '프로필이 저장되었습니다.';
         _statusColor = Colors.green.shade600;
       });
+    }
+
+    // API 요청을 백그라운드에서 처리
+    try {
+      await viewModel.updateProfile(
+        nickname: nickname,
+        imageUrl: imageUrl,
+        publicId: publicId,
+      );
+      
+      // 성공 시 서버에서 최신 정보를 가져와서 동기화
+      final serverUser = await userViewModel.loadUserProfile();
+      if (serverUser != null) {
+        userInfoNotifier.setUser(serverUser);
+      }
     } catch (e) {
+      // 실패 시 이전 상태로 복원
+      userInfoNotifier.setUser(currentUser);
+      
       if (mounted) {
         _setStatusMessage(
           '프로필 저장 중 오류가 발생했습니다: $e',
           color: Colors.red.shade700,
         );
+        // 저장 버튼 상태 복원
+        setState(() {
+          _canSave = true;
+        });
       }
     }
   }
@@ -444,20 +468,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               ),
               backgroundColor: Colors.white,
             ),
-            child: _isCheckingNickname
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text(
-                    '중복 확인하기',
-                    style: TextStyle(
-                      color: Color(0xFF0BAEFF),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+            child: const Text(
+              '중복 확인하기',
+              style: TextStyle(
+                color: Color(0xFF0BAEFF),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         ),
       ],

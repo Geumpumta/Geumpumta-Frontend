@@ -51,9 +51,14 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
   @override
   Widget build(BuildContext context) {
     final monthlyStatsState = ref.watch(monthlyStatsViewModelProvider);
-    final grassState = ref.watch(grassStatisticsProvider((_selectedMonth, null)));
-    final daysInMonth =
-        DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0).day;
+    final grassState = ref.watch(
+      grassStatisticsProvider((_selectedMonth, null)),
+    );
+    final daysInMonth = DateTime(
+      _selectedMonth.year,
+      _selectedMonth.month + 1,
+      0,
+    ).day;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -76,6 +81,17 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
   Widget _buildMonthNavigation() {
     final monthStr = '${_selectedMonth.year}년 ${_selectedMonth.month}월';
 
+    final minDate = DateTime(2025, 11, 1);
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, 1);
+
+    final prevMonth = _getPreviousMonth(_selectedMonth);
+    final nextMonth = _getNextMonth(_selectedMonth);
+
+    final canGoPrev = !prevMonth.isBefore(minDate);
+    final canGoNext = !nextMonth.isAfter(today);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -86,16 +102,18 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedMonth = _getPreviousMonth(_selectedMonth);
-              });
-              _fetchMonthlyStats();
-            },
-            child: const Icon(
+            onTap: canGoPrev
+                ? () {
+                    setState(() {
+                      _selectedMonth = prevMonth;
+                    });
+                    _fetchMonthlyStats();
+                  }
+                : null,
+            child: Icon(
               Icons.arrow_back_ios,
               size: 16,
-              color: Color(0xFF666666),
+              color: canGoPrev ? const Color(0xFF666666) : Colors.grey.shade300,
             ),
           ),
           Text(
@@ -107,16 +125,18 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
             ),
           ),
           GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedMonth = _getNextMonth(_selectedMonth);
-              });
-              _fetchMonthlyStats();
-            },
-            child: const Icon(
+            onTap: canGoNext
+                ? () {
+                    setState(() {
+                      _selectedMonth = nextMonth;
+                    });
+                    _fetchMonthlyStats();
+                  }
+                : null,
+            child: Icon(
               Icons.arrow_forward_ios,
               size: 16,
-              color: Color(0xFF666666),
+              color: canGoNext ? const Color(0xFF666666) : Colors.grey.shade300,
             ),
           ),
         ],
@@ -131,25 +151,13 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     return state.when(
       data: (stats) => _buildStatsContainer(
         children: [
-          _buildStatRow(
-            '월간 총 공부 시간',
-            _formatDuration(stats.totalMonthSeconds),
-          ),
+          _buildStatRow('월간 총 공부 시간', _formatDuration(stats.totalMonthSeconds)),
           const SizedBox(height: 12),
-          _buildStatRow(
-            '평균 공부 시간',
-            _formatDuration(stats.averageDailySeconds),
-          ),
+          _buildStatRow('평균 공부 시간', _formatDuration(stats.averageDailySeconds)),
           const SizedBox(height: 12),
-          _buildStatRow(
-            '이번 달 공부 일 수',
-            '${stats.studiedDays} / $daysInMonth',
-          ),
+          _buildStatRow('이번 달 공부 일 수', '${stats.studiedDays} / $daysInMonth'),
           const SizedBox(height: 12),
-          _buildStatRow(
-            '최대 연속 공부 일수',
-            '${stats.maxConsecutiveStudyDays}일',
-          ),
+          _buildStatRow('최대 연속 공부 일수', '${stats.maxConsecutiveStudyDays}일'),
         ],
       ),
       loading: () => _buildStatsContainer(
@@ -163,19 +171,12 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
       ),
       error: (error, _) => _buildStatsContainer(
         children: [
-          const Icon(
-            Icons.error_outline,
-            color: Color(0xFFFF6B6B),
-            size: 28,
-          ),
+          const Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 28),
           const SizedBox(height: 12),
           const Text(
             '월간 통계를 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF666666),
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF666666)),
           ),
           const SizedBox(height: 12),
           ElevatedButton(
@@ -209,10 +210,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Color(0xFF333333),
-          ),
+          style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
         ),
         Container(
           width: 80,
@@ -232,10 +230,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Color(0xFF333333),
-          ),
+          style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
         ),
         Text(
           value,
@@ -261,9 +256,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     if (monthlyStats.totalMonthSeconds == 0) {
       return _buildMotivationContent(
         icon: Icons.emoji_events,
-        lines: const [
-          '이번달에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요.',
-        ],
+        lines: const ['이번달에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요.'],
       );
     }
 
@@ -287,9 +280,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     if (bestEntry == null) {
       return _buildMotivationContent(
         icon: Icons.emoji_events,
-        lines: const [
-          '이번달에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요.',
-        ],
+        lines: const ['이번달에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요.'],
       );
     }
 
@@ -303,10 +294,12 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
   GrassEntry? _findBestMonthlyEntry(GrassStatistics? stats) {
     if (stats == null) return null;
     final entries = stats.entries
-        .where((entry) =>
-            entry.date.year == _selectedMonth.year &&
-            entry.date.month == _selectedMonth.month &&
-            entry.level > 0)
+        .where(
+          (entry) =>
+              entry.date.year == _selectedMonth.year &&
+              entry.date.month == _selectedMonth.month &&
+              entry.level > 0,
+        )
         .toList();
     if (entries.isEmpty) return null;
     entries.sort((a, b) {
@@ -325,20 +318,13 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     return Center(
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: const Color(0xFF0BAEFF),
-            size: 32,
-          ),
+          Icon(icon, color: const Color(0xFF0BAEFF), size: 32),
           const SizedBox(height: 12),
           for (final line in lines)
             Text(
               line,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF333333),
-              ),
+              style: const TextStyle(fontSize: 16, color: Color(0xFF333333)),
             ),
         ],
       ),
@@ -353,19 +339,12 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     return Center(
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: const Color(0xFF0BAEFF),
-            size: 32,
-          ),
+          Icon(icon, color: const Color(0xFF0BAEFF), size: 32),
           const SizedBox(height: 12),
           RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF333333),
-              ),
+              style: const TextStyle(fontSize: 16, color: Color(0xFF333333)),
               children: [
                 TextSpan(text: text),
                 TextSpan(
@@ -396,5 +375,3 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     return '${date.year}-$month-01';
   }
 }
-
-

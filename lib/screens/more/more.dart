@@ -242,7 +242,7 @@ class MoreScreen extends ConsumerWidget {
               ),
               SizedBox(height: 12),
               Text(
-                '탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.',
+                '탈퇴 시 모든 데이터가 삭제됩니다.',
                 style: TextStyle(
                   fontSize: 14,
                   color: Color(0xFF666666),
@@ -310,30 +310,50 @@ class MoreScreen extends ConsumerWidget {
                 if (confirmed == true) {
                   try {
                     final prefs = await SharedPreferences.getInstance();
-                    final accessToken = prefs.getString('accessToken')??'';
+                    final accessToken = prefs.getString('accessToken') ?? '';
                     await viewModel.deleteAccount(accessToken);
+                    
+                    // 회원탈퇴 성공 시 로그인 화면으로 이동
                     if (context.mounted) {
-                      await Flushbar(
-                        message: '회원탈퇴가 완료되었습니다.',
-                        backgroundColor: Colors.green.shade600,
-                        flushbarPosition: FlushbarPosition.TOP,
-                        margin: const EdgeInsets.all(10),
-                        borderRadius: BorderRadius.circular(10),
-                        duration: const Duration(seconds: 2),
-                        icon: const Icon(Icons.check_circle, color: Colors.white),
-                      ).show(context);
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/login',
+                        (route) => false,
+                      );
+                      // 이동 후 Flushbar 표시
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      if (context.mounted) {
+                        await Flushbar(
+                          message: '회원탈퇴가 완료되었습니다.',
+                          backgroundColor: Colors.green.shade600,
+                          flushbarPosition: FlushbarPosition.TOP,
+                          margin: const EdgeInsets.all(10),
+                          borderRadius: BorderRadius.circular(10),
+                          duration: const Duration(seconds: 2),
+                          icon: const Icon(Icons.check_circle, color: Colors.white),
+                        ).show(context);
+                      }
                     }
                   } catch (e) {
+                    // 에러 발생 시에도 로그인 화면으로 이동 (로컬 데이터는 이미 삭제됨)
                     if (context.mounted) {
-                      await Flushbar(
-                        message: '회원탈퇴 중 오류가 발생했습니다: $e',
-                        backgroundColor: Colors.red.shade700,
-                        flushbarPosition: FlushbarPosition.TOP,
-                        margin: const EdgeInsets.all(10),
-                        borderRadius: BorderRadius.circular(10),
-                        duration: const Duration(seconds: 2),
-                        icon: const Icon(Icons.error_outline, color: Colors.white),
-                      ).show(context);
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/login',
+                        (route) => false,
+                      );
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      if (context.mounted) {
+                        await Flushbar(
+                          message: '회원탈퇴 중 오류가 발생했습니다: $e',
+                          backgroundColor: Colors.red.shade700,
+                          flushbarPosition: FlushbarPosition.TOP,
+                          margin: const EdgeInsets.all(10),
+                          borderRadius: BorderRadius.circular(10),
+                          duration: const Duration(seconds: 2),
+                          icon: const Icon(Icons.error_outline, color: Colors.white),
+                        ).show(context);
+                      }
                     }
                   }
                 }

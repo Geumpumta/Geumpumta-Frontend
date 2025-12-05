@@ -193,9 +193,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         }
         return true;
       },
-      child: Scaffold(
-        backgroundColor: const Color(0x1AFFFFFF),
-        body: Stack(
+      child: Container(
+        color: const Color(0x1AFFFFFF),
+        child: Stack(
           children: [
             Column(
               mainAxisAlignment: MainAxisAlignment.center,

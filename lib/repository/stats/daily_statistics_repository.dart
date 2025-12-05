@@ -14,7 +14,9 @@ class DailyStatisticsRepository {
       date: date,
       targetUserId: targetUserId,
     );
-    return DailyStatistics.fromDto(response.data);
+    // date 문자열을 DateTime으로 파싱 (예: "2025-12-04")
+    final dateTime = DateTime.parse(date);
+    return DailyStatistics.fromDto(response.data, dateTime);
   }
 }
 

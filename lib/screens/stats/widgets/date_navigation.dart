@@ -7,15 +7,30 @@ class DateNavigation extends StatelessWidget {
     required this.selectedDate,
     required this.onPreviousDate,
     required this.onNextDate,
+    required this.minDate,
   });
 
   final DateTime selectedDate;
   final VoidCallback onPreviousDate;
   final VoidCallback onNextDate;
+  final DateTime minDate;
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = '${selectedDate.year}년 ${selectedDate.month}월 ${selectedDate.day}일';
+    // 오늘 날짜 (시간 제거)
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final nextRaw = selectedDate.add(const Duration(days: 1));
+    final nextDate = DateTime(nextRaw.year, nextRaw.month, nextRaw.day);
+
+    final prevRaw = selectedDate.subtract(const Duration(days: 1));
+    final prevDate = DateTime(prevRaw.year, prevRaw.month, prevRaw.day);
+
+    final canGoNext = !nextDate.isAfter(today);
+    final canGoPrev = !prevDate.isBefore(minDate);
+    final dateStr =
+        '${selectedDate.year}년 ${selectedDate.month}월 ${selectedDate.day}일';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -27,11 +42,11 @@ class DateNavigation extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
-            onTap: onPreviousDate,
-            child: const Icon(
+            onTap: canGoPrev ? onPreviousDate : null,
+            child: Icon(
               Icons.arrow_back_ios,
               size: 16,
-              color: Color(0xFF666666),
+              color: canGoPrev ? const Color(0xFF666666) : Colors.grey.shade300,
             ),
           ),
           Text(
@@ -43,11 +58,11 @@ class DateNavigation extends StatelessWidget {
             ),
           ),
           GestureDetector(
-            onTap: onNextDate,
-            child: const Icon(
+            onTap: canGoNext ? onNextDate : null,
+            child: Icon(
               Icons.arrow_forward_ios,
               size: 16,
-              color: Color(0xFF666666),
+              color: canGoNext ? const Color(0xFF666666) : Colors.grey.shade300,
             ),
           ),
         ],
@@ -55,4 +70,3 @@ class DateNavigation extends StatelessWidget {
     );
   }
 }
-

@@ -6,6 +6,7 @@ import 'package:geumpumta/screens/stats/widgets/date_navigation.dart';
 import 'package:geumpumta/screens/stats/widgets/motivational_message.dart';
 import 'package:geumpumta/screens/stats/widgets/usage_time_chart_section.dart';
 import 'package:geumpumta/viewmodel/stats/daily_stats_viewmodel.dart';
+import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 
 class DailyStatsView extends ConsumerStatefulWidget {
   const DailyStatsView({super.key});
@@ -34,7 +35,11 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _fetchDailyStats());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchDailyStats();
+      // 연속공부현황 provider 새로고침
+      ref.invalidate(currentStreakProvider(null));
+    });
   }
 
   void _fetchDailyStats() {
@@ -65,7 +70,7 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
           const SizedBox(height: 24),
           _buildUsageTimeChart(dailyState),
           const SizedBox(height: 24),
-          const MotivationalMessage(),
+          _buildMotivationalMessage(dailyState),
           const SizedBox(height: 40),
         ],
       ),
@@ -235,6 +240,28 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
     return '${date.year}-$month-$day';
+  }
+
+  Widget _buildMotivationalMessage(AsyncValue<DailyStatistics> state) {
+    return state.when(
+      data: (stats) {
+        // 12시간 = 43200초
+        const targetSeconds = 12 * 3600;
+        final missedSeconds = targetSeconds - stats.totalStudySeconds;
+        final missedDuration = Duration(seconds: missedSeconds < 0 ? 0 : missedSeconds);
+        final hours = missedDuration.inHours.toString().padLeft(2, '0');
+        final minutes = (missedDuration.inMinutes % 60).toString().padLeft(2, '0');
+        final secs = (missedDuration.inSeconds % 60).toString().padLeft(2, '0');
+        final missedTime = '$hours:$minutes:$secs';
+        
+        return MotivationalMessage(
+          missedTime: missedTime,
+          message: '집중력을 높여보세요!',
+        );
+      },
+      loading: () => const MotivationalMessage(),
+      error: (_, __) => const MotivationalMessage(),
+    );
   }
 }
 

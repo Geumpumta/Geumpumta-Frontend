@@ -50,43 +50,17 @@ class ContinuousStudySection extends ConsumerWidget {
           Center(
             child: streakAsync.when(
               data: (streak) => Column(
-              children: [
-                Text(
-                    '$streak일',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF333333),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  '연속 공부',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF666666),
-                  ),
-                ),
-              ],
-              ),
-              loading: () => const SizedBox(
-                height: 40,
-                child: Center(
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
-              error: (_, __) => Column(
-                children: const [
+                children: [
                   Text(
-                    '--일',
-                    style: TextStyle(
+                    '$streak일',
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF333333),
                     ),
                   ),
-                  SizedBox(height: 4),
-                  Text(
+                  const SizedBox(height: 4),
+                  const Text(
                     '연속 공부',
                     style: TextStyle(
                       fontSize: 14,
@@ -95,6 +69,35 @@ class ContinuousStudySection extends ConsumerWidget {
                   ),
                 ],
               ),
+              loading: () => const SizedBox(
+                height: 40,
+                child: Center(
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+              error: (error, stackTrace) {
+                debugPrint('연속공부현황 로드 실패: $error');
+                return const Column(
+                  children: [
+                    Text(
+                      '--일',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      '연속 공부',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF666666),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ],

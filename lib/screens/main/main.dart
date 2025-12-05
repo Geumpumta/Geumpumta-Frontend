@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/screens/home/home.dart';
 
 import '../../provider/study/study_provider.dart';
+import '../../viewmodel/stats/grass_stats_viewmodel.dart';
 import '../../widgets/error_dialog/error_dialog.dart';
 import '../more/more.dart';
 import '../ranking/ranking.dart';
@@ -31,6 +32,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     if (isRunning && index != 0) {
       ErrorDialog.show(context, "공부 중에는 이동할 수 없어요!");
       return;
+    }
+
+    // 통계 탭으로 이동할 때마다 연속공부현황 provider 새로고침
+    if (index == 1) {
+      ref.invalidate(currentStreakProvider(null));
     }
 
     setState(() => _selectedIndex = index);

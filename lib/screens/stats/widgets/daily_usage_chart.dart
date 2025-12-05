@@ -13,8 +13,21 @@ class DailyUsageChart extends StatelessWidget {
     final wastedTimes = List<double>.filled(hours.length, 0);
 
     for (final slot in slots) {
-      final index = (slot.start.hour ~/ 2).clamp(0, hours.length - 1);
-      focusTimes[index] += slot.secondsStudied / 3600.0;
+      // 시작 시간에 맞춰 정확한 인덱스 계산
+      final startHour = slot.start.hour;
+      final endHour = slot.end.hour;
+      
+      // 시작 시간이 속한 2시간 구간 찾기
+      final startIndex = (startHour ~/ 2).clamp(0, hours.length - 1);
+      final endIndex = (endHour ~/ 2).clamp(0, hours.length - 1);
+      
+      // 같은 구간이면 해당 구간에 추가
+      if (startIndex == endIndex) {
+        focusTimes[startIndex] += slot.secondsStudied / 3600.0;
+      } else {
+        // 여러 구간에 걸쳐 있으면 시작 구간에 추가
+        focusTimes[startIndex] += slot.secondsStudied / 3600.0;
+      }
     }
 
     final maxHeight = 120.0;
@@ -26,10 +39,12 @@ class DailyUsageChart extends StatelessWidget {
     maxTime = (maxTime * 2).ceil() / 2; // round up to nearest 0.5h
     maxTime = maxTime.clamp(0.5, 6.0);
 
+    // Y축 레이블을 0, 0.5h, 1h, 1.5h, 2h로 고정
     const divisions = 4;
+    const fixedMaxTime = 2.0;
     final yLabels = List<double>.generate(
       divisions + 1,
-      (index) => maxTime * (divisions - index) / divisions,
+      (index) => fixedMaxTime * (divisions - index) / divisions,
     );
 
     return Column(
@@ -78,7 +93,7 @@ class DailyUsageChart extends StatelessWidget {
                   return _buildBar(
                     focusTime: focusTime,
                     wastedTime: wastedTime,
-                    maxTime: maxTime,
+                    maxTime: fixedMaxTime,
                     maxHeight: maxHeight,
                   );
                 }),

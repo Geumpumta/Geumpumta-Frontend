@@ -17,14 +17,22 @@ class ContinuousStudySection extends ConsumerStatefulWidget {
   final int? targetUserId;
 
   @override
-  ConsumerState<ContinuousStudySection> createState() => _ContinuousStudySectionState();
+  ConsumerState<ContinuousStudySection> createState() =>
+      _ContinuousStudySectionState();
 }
 
 class _ContinuousStudySectionState extends ConsumerState<ContinuousStudySection> {
+
+  late DateTime _viewMonth;
+
   @override
   void initState() {
     super.initState();
-    // 위젯이 생성될 때마다 provider 새로고침
+
+    _viewMonth = widget.selectedDate != null
+        ? DateTime(widget.selectedDate!.year, widget.selectedDate!.month)
+        : DateTime.now();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.manualStreakDays == null) {
         ref.refresh(currentStreakProvider(widget.targetUserId));
@@ -33,10 +41,37 @@ class _ContinuousStudySectionState extends ConsumerState<ContinuousStudySection>
   }
 
   @override
+  void didUpdateWidget(covariant ContinuousStudySection oldWidget) {
+    print("didUpdateWidget called! new=${widget.selectedDate}");
+
+    super.didUpdateWidget(oldWidget);
+
+    final newDate = widget.selectedDate;
+    final oldDate = oldWidget.selectedDate;
+
+    if (newDate != null &&
+        (oldDate == null ||
+            oldDate.year != newDate.year ||
+            oldDate.month != newDate.month)) {
+
+      setState(() {
+        _viewMonth = DateTime(newDate.year, newDate.month);
+      });
+
+      if (widget.manualStreakDays == null) {
+        ref.refresh(currentStreakProvider(widget.targetUserId));
+      }
+    }
+  }
+
+
+
+  @override
   Widget build(BuildContext context) {
-    final streakAsync = widget.manualStreakDays != null
-        ? AsyncValue<int>.data(widget.manualStreakDays!)
-        : ref.watch(currentStreakProvider(widget.targetUserId));
+    final streakAsync = ref.watch(
+      monthlyStreakProvider((widget.targetUserId, _viewMonth)),
+    );
+
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -57,12 +92,17 @@ class _ContinuousStudySectionState extends ConsumerState<ContinuousStudySection>
             ),
           ),
           const SizedBox(height: 16),
+
           ContributionGrass(
-            selectedMonth: widget.selectedDate != null
-                ? DateTime(widget.selectedDate!.year, widget.selectedDate!.month)
-                : null,
+            selectedMonth: _viewMonth,
+            onChangeMonth: (newMonth) {
+              setState(() {
+                _viewMonth = newMonth;
+              });
+            },
             targetUserId: widget.targetUserId,
           ),
+
           const SizedBox(height: 16),
           Center(
             child: streakAsync.when(
@@ -79,21 +119,15 @@ class _ContinuousStudySectionState extends ConsumerState<ContinuousStudySection>
                   const SizedBox(height: 4),
                   const Text(
                     '연속 공부',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF666666),
-                    ),
+                    style: TextStyle(fontSize: 14, color: Color(0xFF666666)),
                   ),
                 ],
               ),
               loading: () => const SizedBox(
                 height: 40,
-                child: Center(
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
+                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
               ),
               error: (error, stackTrace) {
-                debugPrint('연속공부현황 로드 실패: $error');
                 return const Column(
                   children: [
                     Text(
@@ -107,10 +141,7 @@ class _ContinuousStudySectionState extends ConsumerState<ContinuousStudySection>
                     SizedBox(height: 4),
                     Text(
                       '연속 공부',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF666666),
-                      ),
+                      style: TextStyle(fontSize: 14, color: Color(0xFF666666)),
                     ),
                   ],
                 );
@@ -122,4 +153,3 @@ class _ContinuousStudySectionState extends ConsumerState<ContinuousStudySection>
     );
   }
 }
-

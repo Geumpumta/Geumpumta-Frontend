@@ -139,7 +139,7 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
 
     return asyncState.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) => Center(child: Text('오류 발생: $e')),
+      error: (e, st) => Center(child: Text('오류가 발생했어요!')),
       data: (response) {
         if (response == null || response.data.topRanks.isEmpty) {
           return const Center(child: Text('개인 랭킹이 없습니다.'));
@@ -169,7 +169,7 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
 
     return asyncState.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, st) => Center(child: Text('오류 발생: $e')),
+      error: (e, st) => Center(child: Text('오류가 발생했어요!')),
       data: (response) {
         if (response == null || response.data.topRanks.isEmpty) {
           return const Center(child: Text('학과 랭킹이 없습니다.'));

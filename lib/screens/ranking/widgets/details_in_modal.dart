@@ -30,7 +30,7 @@ class DetailsInModal extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.8,
+      height: MediaQuery.of(context).size.height * 0.85,
       child: Column(
         children: [
           Row(

@@ -199,7 +199,7 @@ class AuthViewModel extends StateNotifier<bool> {
       if (userInfo.userRole == "GUEST") {
         Navigator.pushNamed(context, AppRoutes.signin1);
       } else {
-        Navigator.pushNamed(context, AppRoutes.main);
+        Navigator.pushNamedAndRemoveUntil(context, AppRoutes.main, (route) => false);
       }
 
       return true;

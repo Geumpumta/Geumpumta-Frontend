@@ -44,6 +44,38 @@ final grassStatisticsProvider =
   );
 });
 
+final monthlyStreakProvider =
+FutureProvider.autoDispose.family<int, (int? userId, DateTime month)>((ref, params) async {
+
+  final userId = params.$1;
+  final selectedMonth = params.$2;
+
+  final repo = ref.watch(grassStatisticsRepositoryProvider);
+
+  final stats = await repo.fetchGrassStatistics(
+    date: _formatMonth(selectedMonth),
+    targetUserId: userId,
+  );
+
+  final entries = stats.entries;
+  entries.sort((a, b) => a.date.compareTo(b.date));
+
+  int streak = 0;
+  int maxStreak = 0;
+
+  for (final e in entries) {
+    if (e.level > 0) {
+      streak++;
+      maxStreak = (streak > maxStreak) ? streak : maxStreak;
+    } else {
+      streak = 0;
+    }
+  }
+
+  return maxStreak;
+});
+
+
 final currentStreakProvider = FutureProvider.autoDispose.family<int, int?>((ref, targetUserId) async {
   final repo = ref.watch(grassStatisticsRepositoryProvider);
   final today = DateTime.now();
@@ -103,7 +135,7 @@ final currentStreakProvider = FutureProvider.autoDispose.family<int, int?>((ref,
     } else {
       // level이 0이면 연속 0일 카운터 증가
       consecutiveZeroDays++;
-      
+
       // 연속으로 2일 이상 level이 0이면 종료
       if (consecutiveZeroDays >= 2) {
         break;

@@ -205,6 +205,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (serverUser != null) {
         userInfoNotifier.setUser(serverUser);
       }
+      Navigator.pop(context);
     } catch (e) {
       // 실패 시 이전 상태로 복원
       userInfoNotifier.setUser(currentUser);

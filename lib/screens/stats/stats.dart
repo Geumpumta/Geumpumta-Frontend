@@ -47,25 +47,25 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const TextHeader(text: '통계'),
-            PeriodSelector(
-              selectedOption: _selectedPeriod,
-              onChange: (option) {
-                setState(() {
-                  _selectedPeriod = option;
-                });
-              },
-            ),
-            Expanded(
-              child: _buildSelectedView(),
-            ),
-          ],
-        ),
+    return Container(
+      color: Colors.white,
+      child: SafeArea(
+          child: Column(
+            children: [
+              const TextHeader(text: '통계'),
+              PeriodSelector(
+                selectedOption: _selectedPeriod,
+                onChange: (option) {
+                  setState(() {
+                    _selectedPeriod = option;
+                  });
+                },
+              ),
+              Expanded(
+                child: _buildSelectedView(),
+              ),
+            ],
+          ),
       ),
     );
   }

@@ -62,6 +62,7 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
             selectedDate: _selectedDate,
             onPreviousDate: _previousDate,
             onNextDate: _nextDate,
+            minDate: DateTime(2025, 11, 1),
           ),
           const SizedBox(height: 16),
           _buildDailyStatsCard(dailyState),
@@ -81,20 +82,11 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
     return state.when(
       data: (stats) => _buildStatsContainer(
         children: [
-          _buildStatRow(
-            '총 공부 시간',
-            _formatDuration(stats.totalStudySeconds),
-          ),
+          _buildStatRow('총 공부 시간', _formatDuration(stats.totalStudySeconds)),
           const SizedBox(height: 12),
-          _buildStatRow(
-            '최대 집중 시간',
-            _formatDuration(stats.maxFocusSeconds),
-          ),
+          _buildStatRow('최대 집중 시간', _formatDuration(stats.maxFocusSeconds)),
           const SizedBox(height: 12),
-          _buildStatRow(
-            '집중 시간 합계',
-            _formatDuration(stats.totalStudySeconds),
-          ),
+          _buildStatRow('집중 시간 합계', _formatDuration(stats.totalStudySeconds)),
         ],
       ),
       loading: () => _buildStatsContainer(
@@ -108,19 +100,12 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
       ),
       error: (error, _) => _buildStatsContainer(
         children: [
-          const Icon(
-            Icons.error_outline,
-            color: Color(0xFFFF6B6B),
-            size: 28,
-          ),
+          const Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 28),
           const SizedBox(height: 12),
           const Text(
             '일간 통계를 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF666666),
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF666666)),
           ),
           const SizedBox(height: 12),
           ElevatedButton(
@@ -146,9 +131,7 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFF0F0F0)),
         ),
-        child: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: const Center(child: CircularProgressIndicator()),
       ),
       error: (_, __) => Container(
         padding: const EdgeInsets.all(16),
@@ -160,10 +143,7 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
         child: const Center(
           child: Text(
             '차트를 불러오지 못했습니다.',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF666666),
-            ),
+            style: TextStyle(fontSize: 14, color: Color(0xFF666666)),
           ),
         ),
       ),
@@ -188,10 +168,7 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Color(0xFF333333),
-          ),
+          style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
         ),
         Container(
           width: 80,
@@ -211,10 +188,7 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Color(0xFF333333),
-          ),
+          style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
         ),
         Text(
           value,
@@ -248,12 +222,17 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
         // 12시간 = 43200초
         const targetSeconds = 12 * 3600;
         final missedSeconds = targetSeconds - stats.totalStudySeconds;
-        final missedDuration = Duration(seconds: missedSeconds < 0 ? 0 : missedSeconds);
+        final missedDuration = Duration(
+          seconds: missedSeconds < 0 ? 0 : missedSeconds,
+        );
         final hours = missedDuration.inHours.toString().padLeft(2, '0');
-        final minutes = (missedDuration.inMinutes % 60).toString().padLeft(2, '0');
+        final minutes = (missedDuration.inMinutes % 60).toString().padLeft(
+          2,
+          '0',
+        );
         final secs = (missedDuration.inSeconds % 60).toString().padLeft(2, '0');
         final missedTime = '$hours:$minutes:$secs';
-        
+
         return MotivationalMessage(
           missedTime: missedTime,
           message: '집중력을 높여보세요!',
@@ -264,4 +243,3 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
     );
   }
 }
-

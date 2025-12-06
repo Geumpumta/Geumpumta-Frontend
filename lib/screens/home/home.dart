@@ -163,7 +163,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
 
     if (res == null || !res.success) {
-      ErrorDialog.show(context, res?.message ?? "하트비트 전송 실패");
+      ErrorDialog.show(context, res?.data.message ?? "하트비트 전송 실패");
       await _endStudyInternal(showDialog: false);
     }
   }
@@ -193,9 +193,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         }
         return true;
       },
-      child: Scaffold(
-        backgroundColor: const Color(0x1AFFFFFF),
-        body: Stack(
+      child: Container(
+        color: const Color(0x1AFFFFFF),
+        child: Stack(
           children: [
             Column(
               mainAxisAlignment: MainAxisAlignment.center,

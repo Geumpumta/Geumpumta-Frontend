@@ -25,10 +25,54 @@ class _SignIn1ScreenState extends ConsumerState<SignIn1Screen> {
   bool isEmailValid = false;
 
   @override
+  void initState() {
+    super.initState();
+    _showPrivacyPopup();
+  }
+
+  @override
   void dispose() {
     studentIdController.dispose();
     emailController.dispose();
     super.dispose();
+  }
+
+  void _showPrivacyPopup() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        barrierDismissible: false, // 바깥 터치로 닫히지 않게
+        builder: (context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              "개인정보 수집 및 이용 안내",
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+            ),
+            content: const Text(
+              "입력하시는 학번과 학교 이메일은\n"
+              "계정 생성과 본인 확인을 위해서만 사용되며,\n"
+              "그 외의 목적으로는 사용되지 않습니다.\n\n"
+              "확인을 눌러 계속 진행해주세요.",
+              style: TextStyle(fontSize: 15, height: 1.4),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  "확인",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    });
   }
 
   bool _validateEmail(String email) {

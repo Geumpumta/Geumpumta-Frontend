@@ -17,85 +17,85 @@ class MoreScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const TextHeader(text: '더보기'),
-            Expanded(
-              child: SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 8),
-                    const SectionTitle(title: '프로필'),
-                    const SizedBox(height: 12),
-                    const ProfileSection(),
-                    const SizedBox(height: 32),
-                    const NoticeSection(),
-                    const SizedBox(height: 28),
-                    MenuSection(
-                      title: '서비스 이용',
-                      items: [
-                        MenuItemData(
-                          title: '이벤트',
-                          onTap: () =>
-                              _navigateToPlaceholder(context, '이벤트'),
-                        ),
-                        MenuItemData(
-                          title: '고객센터',
-                          onTap: () =>
-                              _navigateToPlaceholder(context, '고객센터'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 28),
-                    MenuSection(
-                      title: '약관 및 정책',
-                      items: [
-                        MenuItemData(
-                          title: '개인정보 처리방침',
-                          onTap: () => _openUrl(
-                            context,
-                            'https://hail-channel-7a4.notion.site/26665ae7a61081bd9ef0ca1aa17dcb49?source=copy_link',
+    return Container(
+      color: Colors.white,
+      child: SafeArea(
+          child: Column(
+            children: [
+              const TextHeader(text: '더보기'),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
+                      const SectionTitle(title: '프로필'),
+                      const SizedBox(height: 12),
+                      const ProfileSection(),
+                      const SizedBox(height: 32),
+                      const NoticeSection(),
+                      const SizedBox(height: 28),
+                      MenuSection(
+                        title: '서비스 이용',
+                        items: [
+                          MenuItemData(
+                            title: '이벤트',
+                            onTap: () =>
+                                _navigateToPlaceholder(context, '이벤트'),
                           ),
-                        ),
-                        MenuItemData(
-                          title: '이용약관',
-                          onTap: () => _openUrl(
-                            context,
-                            'https://hail-channel-7a4.notion.site/26665ae7a61081dfbb1efba16eff0867?source=copy_link',
+                          MenuItemData(
+                            title: '고객센터',
+                            onTap: () =>
+                                _navigateToPlaceholder(context, '고객센터'),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 28),
-                    MenuSection(
-                      title: '계정 관리',
-                      items: [
-                        MenuItemData(
-                          title: '회원 탈퇴',
-                          textColor: const Color(0xFFFF3B30),
-                          iconColor: const Color(0xFFFF3B30),
-                          onTap: () =>
-                              _showDeleteAccountDialog(context, ref),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 40),
-                    LogoutButton(
-                      onPressed: () => _showLogoutDialog(context, ref),
-                    ),
-                    const SizedBox(height: 40),
-                  ],
+                        ],
+                      ),
+                      const SizedBox(height: 28),
+                      MenuSection(
+                        title: '약관 및 정책',
+                        items: [
+                          MenuItemData(
+                            title: '개인정보 처리방침',
+                            onTap: () => _openUrl(
+                              context,
+                              'https://hail-channel-7a4.notion.site/26665ae7a61081bd9ef0ca1aa17dcb49?source=copy_link',
+                            ),
+                          ),
+                          MenuItemData(
+                            title: '이용약관',
+                            onTap: () => _openUrl(
+                              context,
+                              'https://hail-channel-7a4.notion.site/26665ae7a61081dfbb1efba16eff0867?source=copy_link',
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 28),
+                      MenuSection(
+                        title: '계정 관리',
+                        items: [
+                          MenuItemData(
+                            title: '회원 탈퇴',
+                            textColor: const Color(0xFFFF3B30),
+                            iconColor: const Color(0xFFFF3B30),
+                            onTap: () =>
+                                _showDeleteAccountDialog(context, ref),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 40),
+                      LogoutButton(
+                        onPressed: () => _showLogoutDialog(context, ref),
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
       ),
     );
   }

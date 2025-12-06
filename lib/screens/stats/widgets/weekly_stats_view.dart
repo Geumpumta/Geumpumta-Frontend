@@ -55,7 +55,9 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     if (firstDayOfMonth.weekday != 1) {
       daysFromFirstMonday = 8 - firstDayOfMonth.weekday;
     }
-    final firstMonday = firstDayOfMonth.add(Duration(days: daysFromFirstMonday));
+    final firstMonday = firstDayOfMonth.add(
+      Duration(days: daysFromFirstMonday),
+    );
 
     final weeksDiff = weekStart.difference(firstMonday).inDays ~/ 7;
     final weekNumber = weeksDiff + 1;
@@ -82,10 +84,12 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
   @override
   Widget build(BuildContext context) {
     final weeklyStatsState = ref.watch(weeklyStatsViewModelProvider);
-    final grassCurrentMonth =
-        ref.watch(grassStatisticsProvider((_selectedWeekStart, null)));
-    final grassNextMonth =
-        ref.watch(grassStatisticsProvider((_addMonth(_selectedWeekStart), null)));
+    final grassCurrentMonth = ref.watch(
+      grassStatisticsProvider((_selectedWeekStart, null)),
+    );
+    final grassNextMonth = ref.watch(
+      grassStatisticsProvider((_addMonth(_selectedWeekStart), null)),
+    );
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -112,6 +116,17 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
   Widget _buildWeekNavigation() {
     final weekStr = _getWeekRangeString(_selectedWeekStart);
 
+    final minDate = DateTime(2025, 11, 1);
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final nextWeek = _getNextWeek(_selectedWeekStart);
+    final prevWeek = _getPreviousWeek(_selectedWeekStart);
+
+    final canGoPrev = !prevWeek.isBefore(minDate);
+    final canGoNext = !nextWeek.isAfter(today);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -122,16 +137,18 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedWeekStart = _getPreviousWeek(_selectedWeekStart);
-              });
-              _fetchWeeklyStats();
-            },
-            child: const Icon(
+            onTap: canGoPrev
+                ? () {
+                    setState(() {
+                      _selectedWeekStart = prevWeek;
+                    });
+                    _fetchWeeklyStats();
+                  }
+                : null,
+            child: Icon(
               Icons.arrow_back_ios,
               size: 16,
-              color: Color(0xFF666666),
+              color: canGoPrev ? const Color(0xFF666666) : Colors.grey.shade300,
             ),
           ),
           Text(
@@ -143,16 +160,18 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
             ),
           ),
           GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedWeekStart = _getNextWeek(_selectedWeekStart);
-              });
-              _fetchWeeklyStats();
-            },
-            child: const Icon(
+            onTap: canGoNext
+                ? () {
+                    setState(() {
+                      _selectedWeekStart = nextWeek;
+                    });
+                    _fetchWeeklyStats();
+                  }
+                : null,
+            child: Icon(
               Icons.arrow_forward_ios,
               size: 16,
-              color: Color(0xFF666666),
+              color: canGoNext ? const Color(0xFF666666) : Colors.grey.shade300,
             ),
           ),
         ],
@@ -164,20 +183,11 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     return state.when(
       data: (stats) => _buildStatsContainer(
         children: [
-          _buildStatRow(
-            '주간 총 공부 시간',
-            _formatDuration(stats.totalWeekSeconds),
-          ),
+          _buildStatRow('주간 총 공부 시간', _formatDuration(stats.totalWeekSeconds)),
           const SizedBox(height: 12),
-          _buildStatRow(
-            '평균 공부 시간',
-            _formatDuration(stats.averageDailySeconds),
-          ),
+          _buildStatRow('평균 공부 시간', _formatDuration(stats.averageDailySeconds)),
           const SizedBox(height: 12),
-          _buildStatRow(
-            '최대 연속 공부 일수',
-            '${stats.maxConsecutiveStudyDays}일',
-          ),
+          _buildStatRow('최대 연속 공부 일수', '${stats.maxConsecutiveStudyDays}일'),
         ],
       ),
       loading: () => _buildStatsContainer(
@@ -190,19 +200,12 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
       error: (error, _) {
         return _buildStatsContainer(
           children: [
-            const Icon(
-              Icons.error_outline,
-              color: Color(0xFFFF6B6B),
-              size: 28,
-            ),
+            const Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 28),
             const SizedBox(height: 12),
             Text(
               '주간 통계를 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF666666),
-              ),
+              style: const TextStyle(fontSize: 14, color: Color(0xFF666666)),
             ),
             const SizedBox(height: 12),
             ElevatedButton(
@@ -237,10 +240,7 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Color(0xFF333333),
-          ),
+          style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
         ),
         Container(
           width: 80,
@@ -260,10 +260,7 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Color(0xFF333333),
-          ),
+          style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
         ),
         Text(
           value,
@@ -311,20 +308,13 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     return Center(
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: const Color(0xFF0BAEFF),
-            size: 32,
-          ),
+          Icon(icon, color: const Color(0xFF0BAEFF), size: 32),
           const SizedBox(height: 12),
           for (final line in lines)
             Text(
               line,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF333333),
-              ),
+              style: const TextStyle(fontSize: 16, color: Color(0xFF333333)),
             ),
         ],
       ),
@@ -339,19 +329,12 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     return Center(
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: const Color(0xFF0BAEFF),
-            size: 32,
-          ),
+          Icon(icon, color: const Color(0xFF0BAEFF), size: 32),
           const SizedBox(height: 12),
           RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF333333),
-              ),
+              style: const TextStyle(fontSize: 16, color: Color(0xFF333333)),
               children: [
                 TextSpan(text: text),
                 TextSpan(
@@ -382,9 +365,7 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     if (weeklyStats.totalWeekSeconds == 0) {
       return _buildMotivationContent(
         icon: Icons.local_fire_department,
-        lines: const [
-          '이번주에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요.',
-        ],
+        lines: const ['이번주에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요.'],
       );
     }
 
@@ -405,10 +386,10 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     final weekStart = _selectedWeekStart;
     final weekEnd = weekStart.add(const Duration(days: 6));
     final bestEntry = _findBestEntryForRange(
-      [currentMonth.asData?.value, nextMonth.asData?.value]
-          .whereType<GrassStatistics>()
-          .expand((stats) => stats.entries)
-          .toList(),
+      [
+        currentMonth.asData?.value,
+        nextMonth.asData?.value,
+      ].whereType<GrassStatistics>().expand((stats) => stats.entries).toList(),
       weekStart,
       weekEnd,
     );
@@ -416,9 +397,7 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     if (bestEntry == null) {
       return _buildMotivationContent(
         icon: Icons.local_fire_department,
-        lines: const [
-          '이번주에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요.',
-        ],
+        lines: const ['이번주에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요.'],
       );
     }
 
@@ -444,5 +423,3 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     return '${date.year}-$month-$day';
   }
 }
-
-

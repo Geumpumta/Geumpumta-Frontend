@@ -8,13 +8,13 @@ import 'package:geumpumta/screens/home/widgets/custom_timer_widget.dart';
 import 'package:geumpumta/screens/home/widgets/start_and_stop_btn.dart';
 import 'package:geumpumta/screens/home/widgets/total_progress_dot.dart';
 import 'package:geumpumta/viewmodel/study/study_viewmodel.dart';
-import 'package:geumpumta/widgets/top_logo_bar/top_logo_bar.dart';
 import 'package:geumpumta/widgets/error_dialog/error_dialog.dart';
 import 'package:geumpumta/widgets/loading_dialog/loading_dialog.dart';
 
 import '../../provider/study/study_provider.dart';
 import '../../provider/userState/user_info_state.dart';
 import '../../main.dart';
+import '../../widgets/top_logo_bar/top_logo_bar.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});

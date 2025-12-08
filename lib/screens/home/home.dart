@@ -27,9 +27,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     with RouteAware, WidgetsBindingObserver {
 
   bool _isTimerRunning = false;
-  Duration _timerDuration = Duration.zero;
-  DateTime? _lastInactiveTime;
 
+  Duration _timerDuration = Duration.zero;
+  Duration _accumulatedDuration = Duration.zero;
+  DateTime? _sessionStartTime;
+
+  DateTime? _lastInactiveTime;
   Timer? _timer;
   Timer? _heartBeatTimer;
 
@@ -62,6 +65,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      if (_isTimerRunning) {
+        _updateTimerUI();
+      }
+      return;
+    }
+
     if (!_isTimerRunning) return;
 
     if (state == AppLifecycleState.inactive) {
@@ -107,7 +117,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Future<void> _endStudyInternal({bool showDialog = false}) async {
     _stopLocalTimer();
     _stopHeartBeat();
+
     _isTimerRunning = false;
+    _sessionStartTime = null;
+    _accumulatedDuration = Duration.zero;
+
     ref.read(studyRunningProvider.notifier).state = false;
 
     final vm = ref.read(studyViewmodelProvider);
@@ -128,10 +142,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   void _startLocalTimer() {
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      setState(() {
-        _timerDuration += const Duration(seconds: 1);
-      });
+      _updateTimerUI();
+    });
+  }
+
+  void _updateTimerUI() {
+    if (_sessionStartTime == null) return;
+
+    setState(() {
+      final now = DateTime.now();
+      _timerDuration = _accumulatedDuration + now.difference(_sessionStartTime!);
     });
   }
 
@@ -140,6 +162,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   void _startHeartBeat() {
+    _heartBeatTimer?.cancel();
     _heartBeatTimer =
         Timer.periodic(const Duration(seconds: 30), (_) async {
           await _sendHeartBeat();
@@ -175,7 +198,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final totalMillis = response.data.totalStudySession;
 
     setState(() {
-      _timerDuration = Duration(milliseconds: totalMillis);
+      if (!_isTimerRunning) {
+        _timerDuration = Duration(milliseconds: totalMillis);
+      }
     });
 
     ref.read(userInfoStateProvider.notifier).updateTotalMillis(totalMillis);
@@ -236,7 +261,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
                       _sessionId = res.data?.studySessionId ?? -1;
 
-                      setState(() => _isTimerRunning = true);
+                      setState(() {
+                        _isTimerRunning = true;
+
+                        _sessionStartTime = DateTime.now();
+
+                        _accumulatedDuration = _timerDuration;
+                      });
+
                       ref.read(studyRunningProvider.notifier).state = true;
 
                       _startLocalTimer();

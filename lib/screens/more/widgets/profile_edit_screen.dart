@@ -32,6 +32,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   bool _canSave = false;
   String? _statusMessage;
   Color _statusColor = const Color(0xFF0BAEFF);
+  String? _initialNickname; // 초기 닉네임 저장
 
   @override
   void initState() {
@@ -46,19 +47,51 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   void _onNicknameChanged() {
+    // 초기화가 완료되지 않았으면 무시
+    if (!_initialized) return;
+    
+    final currentNickname = _nicknameController.text.trim();
+    // 초기 닉네임과 다를 때만 수정된 것으로 간주
+    final isActuallyChanged = currentNickname != (_initialNickname ?? '');
+    
     setState(() {
-      _nicknameEdited = true;
-      _isNicknameAvailable = null;
+      _nicknameEdited = isActuallyChanged;
+      if (isActuallyChanged) {
+        _isNicknameAvailable = null;
+      }
       _updateSaveButtonState();
     });
   }
 
   void _updateSaveButtonState() {
-    // 닉네임이 수정되었고 중복 확인 후 사용 가능한 경우, 또는 이미지가 변경된 경우 저장 가능
-    final nicknameValid = _nicknameEdited && (_isNicknameAvailable == true);
+    // 저장 가능 조건:
+    // 1. 프로필만 수정 -> 저장 O
+    // 2. 닉네임만 수정 -> 중복검사 후 저장 O
+    // 3. 프로필 수정 + 닉네임 수정 후 중복검사 X -> 저장 X
+    // 4. 프로필 수정 + 닉네임 수정 후 중복검사 O -> 저장 O
     final imageChanged = _photoChanged;
+    final nicknameChanged = _nicknameEdited;
+    
+    // 닉네임이 수정되었으면 반드시 중복검사를 통과해야 함
+    final nicknameValid = !nicknameChanged || (_isNicknameAvailable == true);
+    
     setState(() {
-      _canSave = nicknameValid || imageChanged;
+      // 프로필만 수정한 경우: 저장 가능
+      if (imageChanged && !nicknameChanged) {
+        _canSave = true;
+      }
+      // 닉네임만 수정한 경우: 중복검사 통과 시 저장 가능
+      else if (!imageChanged && nicknameChanged) {
+        _canSave = nicknameValid;
+      }
+      // 둘 다 수정한 경우: 닉네임 중복검사 통과 시 저장 가능
+      else if (imageChanged && nicknameChanged) {
+        _canSave = nicknameValid;
+      }
+      // 둘 다 수정하지 않은 경우: 저장 불가
+      else {
+        _canSave = false;
+      }
     });
   }
 
@@ -232,7 +265,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!_initialized && mounted) {
           setState(() {
-            _nicknameController.text = user.nickName ?? '';
+            _initialNickname = user.nickName ?? '';
+            _nicknameController.text = _initialNickname ?? '';
             _currentImageUrl = user.profileImage;
             _currentPublicId = '';
             _initialized = true;

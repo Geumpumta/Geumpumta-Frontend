@@ -95,7 +95,7 @@ class DetailsInModal extends StatelessWidget {
           SizedBox(height: 30),
           ContinuousStudySection(targetUserId: targetUserId),
           SizedBox(height: 30),
-          const UsageTimeChartSection(slots: <DailySlot>[]),
+          UsageTimeChartSection(targetUserId: targetUserId),
         ],
       ),
     );

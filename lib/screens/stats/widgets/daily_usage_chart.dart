@@ -10,22 +10,48 @@ class DailyUsageChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final hours = List.generate(12, (index) => index * 2);
     final focusTimes = List<double>.filled(hours.length, 0);
-    final wastedTimes = List<double>.filled(hours.length, 0);
 
+    // 각 slot이 어떤 구간에 걸치는지 계산하고 집중 시간 분배
     for (final slot in slots) {
-      // 시작 시간에 맞춰 정확한 인덱스 계산
-      final startHour = slot.start.hour;
+      final slotStart = slot.start;
+      final slotEnd = slot.end;
       
-      // slotEnd가 다음 날로 넘어간 경우(예: 22:00~00:00) 처리
-      // 이 경우 시작 시간의 구간에만 표시
-      final isNextDay = slot.end.day > slot.start.day;
-      final endHour = isNextDay ? 24 : slot.end.hour;
+      // slotEnd가 다음 날로 넘어간 경우 24시로 처리
+      final isNextDay = slotEnd.day > slotStart.day;
+      final endHour = isNextDay ? 24 : slotEnd.hour;
+      final startHour = slotStart.hour;
+      final startMinute = slotStart.minute;
+      final endMinute = isNextDay ? 0 : slotEnd.minute;
       
-      // 시작 시간이 속한 2시간 구간 찾기 (0~22시 범위)
-      final startIndex = (startHour ~/ 2).clamp(0, hours.length - 1);
+      // slot의 총 시간(시간 단위)
+      final slotStartDecimal = startHour + startMinute / 60.0;
+      final slotEndDecimal = endHour + endMinute / 60.0;
+      final slotTotalHours = slotEndDecimal - slotStartDecimal;
       
-      // 슬롯의 시간을 해당 구간에 추가
-      focusTimes[startIndex] += slot.secondsStudied / 3600.0;
+      // slot의 집중 시간(시간 단위)
+      final focusHours = slot.secondsStudied / 3600.0;
+      
+      // slot이 걸치는 모든 2시간 구간 찾기
+      final startIntervalIndex = (startHour ~/ 2).clamp(0, hours.length - 1);
+      final endIntervalIndex = ((endHour - 1) ~/ 2).clamp(0, hours.length - 1);
+      
+      // 각 구간에 걸친 시간과 집중 시간 계산
+      for (int i = startIntervalIndex; i <= endIntervalIndex; i++) {
+        final intervalStart = hours[i].toDouble();
+        final intervalEnd = (hours[i] + 2).toDouble();
+        
+        // slot과 구간의 겹치는 부분 계산
+        final overlapStart = slotStartDecimal > intervalStart ? slotStartDecimal : intervalStart;
+        final overlapEnd = slotEndDecimal < intervalEnd ? slotEndDecimal : intervalEnd;
+        final overlapHours = (overlapEnd - overlapStart).clamp(0.0, 2.0);
+        
+        if (overlapHours > 0 && slotTotalHours > 0) {
+          // 겹치는 시간에 비례하여 집중 시간 분배
+          final focusRatio = overlapHours / slotTotalHours;
+          final allocatedFocus = focusHours * focusRatio;
+          focusTimes[i] += allocatedFocus;
+        }
+      }
     }
 
     final maxHeight = 120.0;
@@ -51,8 +77,6 @@ class DailyUsageChart extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             _buildLegendItem(const Color(0xFF0BAEFF), '집중 시간'),
-            const SizedBox(width: 16),
-            _buildLegendItem(const Color(0xFF999999), '버린 시간'),
           ],
         ),
         const SizedBox(height: 16),
@@ -87,10 +111,9 @@ class DailyUsageChart extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: List.generate(hours.length, (index) {
                   final focusTime = focusTimes[index];
-                  final wastedTime = wastedTimes[index];
                   return _buildBar(
                     focusTime: focusTime,
-                    wastedTime: wastedTime,
+                    wastedTime: 0,
                     maxTime: fixedMaxTime,
                     maxHeight: maxHeight,
                   );
@@ -155,54 +178,22 @@ class DailyUsageChart extends StatelessWidget {
     required double maxHeight,
   }) {
     final focusHeight = (focusTime / maxTime) * maxHeight;
-    final wastedHeight = (wastedTime / maxTime) * maxHeight;
-    final totalHeight = focusHeight + wastedHeight;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 20,
-          height: totalHeight > 0 ? totalHeight : 2,
+          height: focusHeight > 0 ? focusHeight : 2,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(4),
           ),
-          child: totalHeight > 0
-              ? Stack(
-                  children: [
-                    if (wastedHeight > 0)
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: wastedHeight,
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF999999),
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(4),
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (focusHeight > 0)
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: focusHeight,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0BAEFF),
-                            borderRadius: wastedHeight > 0
-                                ? const BorderRadius.vertical(
-                                    bottom: Radius.circular(4),
-                                  )
-                                : BorderRadius.circular(4),
-                          ),
-                        ),
-                      ),
-                  ],
+          child: focusHeight > 0
+              ? Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0BAEFF),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 )
               : Container(
                   decoration: BoxDecoration(

@@ -57,7 +57,14 @@ FutureProvider.autoDispose.family<int, (int? userId, DateTime month)>((ref, para
     targetUserId: userId,
   );
 
-  final entries = stats.entries;
+  // 해당 월의 데이터만 필터링
+  final monthStart = DateTime(selectedMonth.year, selectedMonth.month, 1);
+  final monthEnd = DateTime(selectedMonth.year, selectedMonth.month + 1, 0, 23, 59, 59);
+  
+  final entries = stats.entries
+      .where((e) => e.date.isAfter(monthStart.subtract(const Duration(days: 1))) && 
+                    e.date.isBefore(monthEnd.add(const Duration(days: 1))))
+      .toList();
   entries.sort((a, b) => a.date.compareTo(b.date));
 
   int streak = 0;
@@ -92,6 +99,7 @@ final currentStreakProvider = FutureProvider.autoDispose.family<int, int?>((ref,
     targetUserId: targetUserId,
   );
   entries.addAll(current.entries);
+  
   final prev = await repo.fetchGrassStatistics(
     date: _formatMonth(previousMonth),
     targetUserId: targetUserId,
@@ -126,7 +134,8 @@ final currentStreakProvider = FutureProvider.autoDispose.family<int, int?>((ref,
       break;
     }
 
-    final level = byDate[_formatDate(cursor)] ?? 0;
+    final cursorDateStr = _formatDate(cursor);
+    final level = byDate[cursorDateStr] ?? 0;
 
     if (level > 0) {
       // 공부한 날이면 streak 증가하고 연속 0일 카운터 리셋
@@ -143,6 +152,11 @@ final currentStreakProvider = FutureProvider.autoDispose.family<int, int?>((ref,
     }
 
     cursor = cursor.subtract(const Duration(days: 1));
+    
+    // 무한 루프 방지
+    if (cursor.isBefore(earliestSupported.subtract(const Duration(days: 30)))) {
+      break;
+    }
   }
 
   return streak;

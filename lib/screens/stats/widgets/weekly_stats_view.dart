@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/entity/stats/grass_statistics.dart';
 import 'package:geumpumta/models/entity/stats/weekly_statistics.dart';
+import 'package:geumpumta/screens/stats/widgets/build_motivation_content_with_highlight.dart';
 import 'package:geumpumta/screens/stats/widgets/continuous_study_section.dart';
 import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 import 'package:geumpumta/viewmodel/stats/weekly_stats_viewmodel.dart';
@@ -321,37 +322,6 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     );
   }
 
-  Widget _buildMotivationContentWithHighlight({
-    required IconData icon,
-    required String text,
-    required String highlightText,
-  }) {
-    return Center(
-      child: Column(
-        children: [
-          Icon(icon, color: const Color(0xFF0BAEFF), size: 32),
-          const SizedBox(height: 12),
-          RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
-              style: const TextStyle(fontSize: 16, color: Color(0xFF333333)),
-              children: [
-                TextSpan(text: text),
-                TextSpan(
-                  text: highlightText,
-                  style: const TextStyle(
-                    color: Color(0xFF0BAEFF),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildMotivationalMessage(
     AsyncValue<WeeklyStatistics> weeklyState,
     AsyncValue<GrassStatistics> currentMonth,
@@ -402,10 +372,10 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     }
 
     final weekdayLabel = _weekdayLabel(bestEntry.date.weekday);
-    return _buildMotivationContentWithHighlight(
+    return BuildMotivationContentWithHighlight(
       icon: Icons.local_fire_department,
       text: '이번 주 가장 열심히 한 날은 ',
-      highlightText: '$weekdayLabel',
+      highlightText: weekdayLabel,
     );
   }
 

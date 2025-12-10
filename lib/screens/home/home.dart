@@ -25,20 +25,21 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver, RouteAware {
   static const MethodChannel platform = MethodChannel("network_monitor");
 
   bool _isTimerRunning = false;
 
   Duration _timerDuration = Duration.zero;
   Duration _accumulatedDuration = Duration.zero;
+
   DateTime? _sessionStartTime;
+  DateTime? _lastInactiveTime;
 
   Timer? _timer;
   Timer? _heartBeatTimer;
   int _sessionId = 0;
-
-  late final AppLifecycleListener _appLifecycleListener;
 
   void _setupNetworkListener() {
     platform.setMethodCallHandler((call) async {
@@ -47,124 +48,85 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
       if (call.method == "network_changed") {
         final data = Map<String, dynamic>.from(call.arguments ?? {});
 
-        if (mounted) {
-          ErrorDialog.show(
-              context,
-              "네트워크 변경 감지됨"
-          );
-        }
-
-        if (data["type"] == "lost") {
+        if (data["type"] == "lost" || data["isWifi"] == false) {
+          print("네트워크 변경 감지 → 공부 종료");
           await _endStudyInternal(showDialog: false);
-          return;
-        }
-
-        final isWifi = data["isWifi"] ?? false;
-
-        if (!isWifi) {
-          await _endStudyInternal(showDialog: false);
-          return;
         }
       }
     });
   }
 
   Future<void> _requestLocationPermission() async {
-    final status = await Permission.locationWhenInUse.request();
-
-    if (status.isDenied || status.isPermanentlyDenied) {
-      print("위치 권한이 거부됨 → SSID 확인 불가!");
-    }
+    await Permission.locationWhenInUse.request();
   }
 
   @override
   void initState() {
     super.initState();
 
-    _requestLocationPermission();
+    WidgetsBinding.instance.addObserver(this);
 
+    _requestLocationPermission();
     _setupNetworkListener();
 
     final totalMillis = ref.read(userInfoStateProvider)?.totalMillis ?? 0;
-
     _timerDuration = Duration(milliseconds: totalMillis);
 
-    _appLifecycleListener = AppLifecycleListener(
-      onStateChange: _onLifecycleChanged,
-    );
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refreshFromServer();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshFromServer());
   }
 
   @override
   void dispose() {
-    routeObserver.unsubscribe(this);
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _heartBeatTimer?.cancel();
-    _appLifecycleListener.dispose();
     super.dispose();
   }
 
-  AppLifecycleState? _lastState;
-  Timer? _pauseCheckTimer;
-
-  Future<void> _onLifecycleChanged(AppLifecycleState state) async {
-    print("Lifecycle: $state");
-
-    _lastState = state;
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    print("🔄 LIFECYCLE = $state");
 
     if (!_isTimerRunning) return;
 
-    switch (state) {
-      case AppLifecycleState.inactive:
-        break;
-
-      case AppLifecycleState.paused:
-        print("PAUSED → 화면 OFF인지 홈 이동인지 판단 중...");
-
-        _pauseCheckTimer?.cancel();
-
-        _pauseCheckTimer = Timer(const Duration(milliseconds: 700), () async {
-          if (_lastState == AppLifecycleState.resumed) {
-            print("화면 꺼짐으로 판단 → 타이머 유지.");
-          } else {
-            print("홈 이동으로 판단 → 공부 종료 실행.");
-            await _endStudyInternal(showDialog: true);
-          }
-        });
-
-        break;
-
-
-      case AppLifecycleState.resumed:
-        print("RESUMED → 앱이 다시 화면에 표시됨");
-
-        _lastState = AppLifecycleState.resumed;
-
-        _updateTimerUI();
-        break;
-
-      case AppLifecycleState.detached:
-        print("DETACHED → 앱 종료 감지");
-        await _endStudyInternal(showDialog: false);
-        break;
-
-      case AppLifecycleState.hidden:
-        print("hidden: 보통 화면 꺼짐과 무관");
-        break;
+    if (state == AppLifecycleState.inactive) {
+      _lastInactiveTime = DateTime.now();
+      return;
     }
-  }
 
-  @override
-  void didPushNext() async {
-    if (_isTimerRunning) {
+    if (state == AppLifecycleState.paused) {
+      final now = DateTime.now();
+
+      final isScreenOff =
+          _lastInactiveTime != null &&
+              now.difference(_lastInactiveTime!) < Duration(milliseconds: 500);
+
+      if (isScreenOff) {
+        print("화면 꺼짐 감지 → 종료하지 않음");
+        return;
+      }
+
+      print("홈으로 이동 감지 → 공부 종료");
       await _endStudyInternal(showDialog: true);
+      return;
+    }
+
+    if (state == AppLifecycleState.resumed) {
+      print("화면 켜짐 → 타이머 갱신");
+      _updateTimerUI();
+      return;
+    }
+
+    if (state == AppLifecycleState.detached) {
+      print("앱 완전 종료 → 즉시 종료 요청");
+      await _endStudyInternal(showDialog: false);
+      return;
     }
   }
 
   Future<void> _endStudyInternal({bool showDialog = false}) async {
+    print("endStudyInternal 호출됨");
+
     _stopLocalTimer();
     _stopHeartBeat();
 
@@ -177,7 +139,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
     final vm = ref.read(studyViewmodelProvider);
 
     await vm.endStudyTime(
-      EndStudyRequestDto(studySessionId: _sessionId, endTime: DateTime.now()),
+      EndStudyRequestDto(
+        studySessionId: _sessionId,
+        endTime: DateTime.now(),
+      ),
     );
 
     _sessionId = 0;
@@ -190,35 +155,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
 
   void _startLocalTimer() {
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _updateTimerUI();
-    });
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+          (_) => _updateTimerUI(),
+    );
   }
 
   void _updateTimerUI() {
     if (_sessionStartTime == null) return;
 
     setState(() {
-      final now = DateTime.now();
       _timerDuration =
-          _accumulatedDuration + now.difference(_sessionStartTime!);
+          _accumulatedDuration + DateTime.now().difference(_sessionStartTime!);
     });
   }
 
-  void _stopLocalTimer() {
-    _timer?.cancel();
-  }
+  void _stopLocalTimer() => _timer?.cancel();
 
   void _startHeartBeat() {
     _heartBeatTimer?.cancel();
-    _heartBeatTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
-      await _sendHeartBeat();
-    });
+    _heartBeatTimer =
+        Timer.periodic(const Duration(seconds: 30), (_) => _sendHeartBeat());
   }
 
-  void _stopHeartBeat() {
-    _heartBeatTimer?.cancel();
-  }
+  void _stopHeartBeat() => _heartBeatTimer?.cancel();
 
   Future<void> _sendHeartBeat() async {
     final vm = ref.read(studyViewmodelProvider);
@@ -233,7 +193,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
     );
 
     if (res == null || !res.success) {
-      ErrorDialog.show(context, res?.data.message ?? "하트비트 전송 실패");
+      ErrorDialog.show(context, res?.data.message ?? "하트비트 실패");
       await _endStudyInternal(showDialog: false);
     }
   }
@@ -244,11 +204,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
 
     final totalMillis = response.data.totalStudySession;
 
-    setState(() {
-      if (!_isTimerRunning) {
+    if (!_isTimerRunning) {
+      setState(() {
         _timerDuration = Duration(milliseconds: totalMillis);
-      }
-    });
+      });
+    }
 
     ref.read(userInfoStateProvider.notifier).updateTotalMillis(totalMillis);
   }
@@ -274,6 +234,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
               spacing: 60,
               children: [
                 const SizedBox(height: 60),
+
                 Column(
                   children: [
                     CustomTimerWidget(duration: _timerDuration),
@@ -281,6 +242,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
                     TotalProgressDot(duration: _timerDuration),
                   ],
                 ),
+
                 StartAndStopBtn(
                   isTimerRunning: _isTimerRunning,
                   onStart: () async {
@@ -308,7 +270,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
 
                       setState(() {
                         _isTimerRunning = true;
-                        _sessionStartTime = DateTime.now();
+                        _sessionStartTime = now;
                         _accumulatedDuration = _timerDuration;
                       });
 
@@ -324,7 +286,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
                   onStop: () async {
                     LoadingDialog.show(context);
                     try {
-                      await _endStudyInternal();
+                      await _endStudyInternal(showDialog: true);
                       LoadingDialog.hide(context);
                     } catch (e) {
                       LoadingDialog.hide(context);
@@ -334,6 +296,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
                 ),
               ],
             ),
+
             const Positioned(top: 0, left: 0, right: 0, child: TopLogoBar()),
           ],
         ),

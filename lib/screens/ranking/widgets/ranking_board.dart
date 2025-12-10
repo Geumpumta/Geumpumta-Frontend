@@ -183,6 +183,7 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
           itemBuilder: (context, index) {
             final data = list[index];
             return RankingBar(
+              isDetailAvailable: false,
               dateTime: widget.selectedDate,
               ranking: data.rank,
               imgUrl:

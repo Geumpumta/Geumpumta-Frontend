@@ -15,7 +15,6 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../provider/study/study_provider.dart';
 import '../../provider/userState/user_info_state.dart';
-import '../../main.dart';
 import '../../widgets/top_logo_bar/top_logo_bar.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -51,7 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         if (data["type"] == "lost" || data["isWifi"] == false) {
           print("네트워크 변경 감지 → 공부 종료");
           ErrorDialog.show(context, "네트워크 변경이 감지되어 공부가 종료되었어요!");
-          await _endStudyInternal(showDialog: false);
+          await _endStudyInternal();
         }
       }
     });
@@ -108,7 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       }
 
       print("홈으로 이동 감지 → 공부 종료");
-      await _endStudyInternal(showDialog: true);
+      await _endStudyInternal();
       return;
     }
 
@@ -120,12 +119,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     if (state == AppLifecycleState.detached) {
       print("앱 완전 종료 → 즉시 종료 요청");
-      await _endStudyInternal(showDialog: false);
+      await _endStudyInternal();
       return;
     }
   }
 
-  Future<void> _endStudyInternal({bool showDialog = false}) async {
+  Future<void> _endStudyInternal() async {
     print("endStudyInternal 호출됨");
 
     _stopLocalTimer();
@@ -139,20 +138,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     final vm = ref.read(studyViewmodelProvider);
 
-    await vm.endStudyTime(
-      EndStudyRequestDto(
-        studySessionId: _sessionId,
-        endTime: DateTime.now(),
-      ),
-    );
+    try {
+      await vm.endStudyTime(
+        EndStudyRequestDto(
+          studySessionId: _sessionId,
+          endTime: DateTime.now(),
+        ),
+      );
+      print("endStudyTime 성공");
+    } catch (e) {
+      print("endStudyTime 실패: $e");
+    }
 
     _sessionId = 0;
     await _refreshFromServer();
-
-    if (showDialog && mounted) {
-      ErrorDialog.show(context, "공부가 종료되었어요!");
-    }
   }
+
 
   void _startLocalTimer() {
     _timer?.cancel();
@@ -195,7 +196,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     if (res == null || !res.success) {
       ErrorDialog.show(context, res?.data.message ?? "하트비트 실패");
-      await _endStudyInternal(showDialog: false);
+      await _endStudyInternal();
     }
   }
 
@@ -287,13 +288,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   onStop: () async {
                     LoadingDialog.show(context);
                     try {
-                      await _endStudyInternal(showDialog: true);
+                      await _endStudyInternal();
                       LoadingDialog.hide(context);
+                      // ErrorDialog.show(context, "공부가 종료되었어요!");
                     } catch (e) {
                       LoadingDialog.hide(context);
                       ErrorDialog.show(context, "종료 실패: $e");
                     }
                   },
+
                 ),
               ],
             ),

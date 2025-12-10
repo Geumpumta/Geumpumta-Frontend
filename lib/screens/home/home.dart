@@ -107,6 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       }
 
       print("홈으로 이동 감지 → 공부 종료");
+      ErrorDialog.show(context, '공부가 종료되었어요!');
       await _endStudyInternal();
       return;
     }
@@ -119,6 +120,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     if (state == AppLifecycleState.detached) {
       print("앱 완전 종료 → 즉시 종료 요청");
+      ErrorDialog.show(context, '공부가 종료되었어요!');
       await _endStudyInternal();
       return;
     }

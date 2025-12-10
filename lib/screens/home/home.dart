@@ -23,25 +23,26 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen>
-    with RouteAware, WidgetsBindingObserver {
-
+class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
   bool _isTimerRunning = false;
 
   Duration _timerDuration = Duration.zero;
   Duration _accumulatedDuration = Duration.zero;
   DateTime? _sessionStartTime;
 
-  DateTime? _lastInactiveTime;
   Timer? _timer;
   Timer? _heartBeatTimer;
-
   int _sessionId = 0;
+
+  late final AppLifecycleListener _appLifecycleListener;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
+
+    _appLifecycleListener = AppLifecycleListener(
+      onStateChange: _onLifecycleChanged,
+    );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshFromServer();
@@ -49,69 +50,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    routeObserver.subscribe(this, ModalRoute.of(context)! as PageRoute);
-  }
-
-  @override
   void dispose() {
     routeObserver.unsubscribe(this);
-    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _heartBeatTimer?.cancel();
+    _appLifecycleListener.dispose();
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    if (state == AppLifecycleState.resumed) {
-      if (_isTimerRunning) {
-        _updateTimerUI();
-      }
-      return;
-    }
+  Future<void> _onLifecycleChanged(AppLifecycleState state) async {
+    print("Lifecycle: $state");
 
     if (!_isTimerRunning) return;
 
-    if (state == AppLifecycleState.inactive) {
-      _lastInactiveTime = DateTime.now();
-      return;
-    }
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _updateTimerUI();
+        break;
 
-    if (state == AppLifecycleState.paused) {
-      final now = DateTime.now();
+      case AppLifecycleState.hidden:
+        print("화면 OFF 감지 → 타이머 유지");
+        break;
 
-      final isScreenOff = _lastInactiveTime != null &&
-          now.difference(_lastInactiveTime!) < Duration(milliseconds: 500);
+      case AppLifecycleState.inactive:
+        print("inactive 상태 → 유지");
+        break;
 
-      if (isScreenOff) {
-        print("화면 꺼짐 감지 → 타이머 유지");
-        return;
-      }
+      case AppLifecycleState.paused:
+        print("PAUSED 감지 (앱 이탈) → 공부 종료");
+        await _endStudyInternal(showDialog: true);
+        break;
 
-      print("홈 이동 감지 → 공부 종료");
-
-      await _endStudyInternal(showDialog: true);
-      return;
-    }
-
-    if (state == AppLifecycleState.detached) {
-      await _endStudyInternal(showDialog: false);
-      return;
+      case AppLifecycleState.detached:
+        print("DETACHED → 앱 종료 감지");
+        await _endStudyInternal(showDialog: false);
+        break;
     }
   }
-
 
   @override
   void didPushNext() async {
     if (_isTimerRunning) {
       await _endStudyInternal(showDialog: true);
     }
-  }
-
-  @override
-  void didPopNext() {
   }
 
   Future<void> _endStudyInternal({bool showDialog = false}) async {
@@ -153,7 +134,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     setState(() {
       final now = DateTime.now();
-      _timerDuration = _accumulatedDuration + now.difference(_sessionStartTime!);
+      _timerDuration =
+          _accumulatedDuration + now.difference(_sessionStartTime!);
     });
   }
 
@@ -234,10 +216,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     TotalProgressDot(duration: _timerDuration),
                   ],
                 ),
-
                 StartAndStopBtn(
                   isTimerRunning: _isTimerRunning,
-
                   onStart: () async {
                     LoadingDialog.show(context);
                     try {
@@ -263,9 +243,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
                       setState(() {
                         _isTimerRunning = true;
-
                         _sessionStartTime = DateTime.now();
-
                         _accumulatedDuration = _timerDuration;
                       });
 
@@ -273,13 +251,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
                       _startLocalTimer();
                       _startHeartBeat();
-
                     } catch (e) {
                       LoadingDialog.hide(context);
                       ErrorDialog.show(context, "시작 실패: $e");
                     }
                   },
-
                   onStop: () async {
                     LoadingDialog.show(context);
                     try {

@@ -50,6 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
         if (data["type"] == "lost" || data["isWifi"] == false) {
           print("네트워크 변경 감지 → 공부 종료");
+          ErrorDialog.show(context, "네트워크 변경이 감지되어 공부가 종료되었어요!");
           await _endStudyInternal(showDialog: false);
         }
       }
@@ -85,7 +86,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
-    print("🔄 LIFECYCLE = $state");
+    print("LIFECYCLE = $state");
 
     if (!_isTimerRunning) return;
 

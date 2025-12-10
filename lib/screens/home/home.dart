@@ -40,6 +40,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
   void initState() {
     super.initState();
 
+    final totalMillis = ref.read(userInfoStateProvider)?.totalMillis ?? 0;
+
+    _timerDuration = Duration(milliseconds: totalMillis);
+
     _appLifecycleListener = AppLifecycleListener(
       onStateChange: _onLifecycleChanged,
     );
@@ -108,10 +112,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
     final vm = ref.read(studyViewmodelProvider);
 
     await vm.endStudyTime(
-      EndStudyRequestDto(
-        studySessionId: _sessionId,
-        endTime: DateTime.now(),
-      ),
+      EndStudyRequestDto(studySessionId: _sessionId, endTime: DateTime.now()),
     );
 
     _sessionId = 0;
@@ -145,10 +146,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
 
   void _startHeartBeat() {
     _heartBeatTimer?.cancel();
-    _heartBeatTimer =
-        Timer.periodic(const Duration(seconds: 30), (_) async {
-          await _sendHeartBeat();
-        });
+    _heartBeatTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
+      await _sendHeartBeat();
+    });
   }
 
   void _stopHeartBeat() {

@@ -23,6 +23,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
   void initState() {
     super.initState();
     _selectedMonth = DateTime.now();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchMonthlyStats();
       ref.refresh(currentStreakProvider(null));
@@ -46,9 +47,6 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
   @override
   Widget build(BuildContext context) {
     final monthlyStatsState = ref.watch(monthlyStatsViewModelProvider);
-    final grassState = ref.watch(
-      grassStatisticsProvider((_selectedMonth, null)),
-    );
 
     final daysInMonth = DateTime(
       _selectedMonth.year,
@@ -65,9 +63,15 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
           const SizedBox(height: 16),
           _buildMonthlyStatsCard(monthlyStatsState, daysInMonth),
           const SizedBox(height: 24),
+
           ContinuousStudySection(selectedDate: _selectedMonth),
           const SizedBox(height: 24),
-          _buildMotivationalMessage(monthlyStatsState, grassState),
+
+          MakeMotivationHighlightText(
+            periodOption: PeriodOption.monthly,
+            selectedDate: _selectedMonth,
+          ),
+
           const SizedBox(height: 40),
         ],
       ),
@@ -98,17 +102,15 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
           GestureDetector(
             onTap: canGoPrev
                 ? () {
-                    setState(() {
-                      _selectedMonth = prevMonth;
-                    });
-                    _fetchMonthlyStats();
-                  }
+              setState(() {
+                _selectedMonth = prevMonth;
+              });
+              _fetchMonthlyStats();
+            }
                 : null,
-            child: Icon(
-              Icons.arrow_back_ios,
-              size: 16,
-              color: canGoPrev ? const Color(0xFF666666) : Colors.grey.shade300,
-            ),
+            child: Icon(Icons.arrow_back_ios,
+                size: 16,
+                color: canGoPrev ? const Color(0xFF666666) : Colors.grey.shade300),
           ),
           Text(
             monthStr,
@@ -121,17 +123,15 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
           GestureDetector(
             onTap: canGoNext
                 ? () {
-                    setState(() {
-                      _selectedMonth = nextMonth;
-                    });
-                    _fetchMonthlyStats();
-                  }
+              setState(() {
+                _selectedMonth = nextMonth;
+              });
+              _fetchMonthlyStats();
+            }
                 : null,
-            child: Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: canGoNext ? const Color(0xFF666666) : Colors.grey.shade300,
-            ),
+            child: Icon(Icons.arrow_forward_ios,
+                size: 16,
+                color: canGoNext ? const Color(0xFF666666) : Colors.grey.shade300),
           ),
         ],
       ),
@@ -139,9 +139,9 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
   }
 
   Widget _buildMonthlyStatsCard(
-    AsyncValue<MonthlyStatistics> state,
-    int daysInMonth,
-  ) {
+      AsyncValue<MonthlyStatistics> state,
+      int daysInMonth,
+      ) {
     return state.when(
       data: (stats) => _buildStatsContainer(
         children: [
@@ -201,10 +201,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
-        ),
+        Text(label, style: const TextStyle(fontSize: 14, color: Color(0xFF333333))),
         Container(
           width: 80,
           height: 16,
@@ -221,10 +218,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
-        ),
+        Text(label, style: const TextStyle(fontSize: 14, color: Color(0xFF333333))),
         Text(
           value,
           style: const TextStyle(
@@ -234,63 +228,6 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildMotivationalMessage(
-    AsyncValue<MonthlyStatistics> monthlyState,
-    AsyncValue<GrassStatistics> grassState,
-  ) {
-    final monthlyStats = monthlyState.asData?.value;
-
-    if (monthlyStats == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (monthlyStats.totalMonthSeconds == 0) {
-      return _buildMotivationContent(
-        icon: Icons.emoji_events,
-        lines: const ["이번달에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요."],
-      );
-    }
-
-    final highlight = MakeMotivationHighlightText(
-      periodOption: PeriodOption.monthly,
-      selectedDate: _selectedMonth,
-    ).getHighlightText(ref);
-
-    if (highlight.trim().isEmpty) {
-      return _buildMotivationContent(
-        icon: Icons.emoji_events,
-        lines: const ["이번달에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요."],
-      );
-    }
-
-    return BuildMotivationContentWithHighlight(
-      icon: Icons.emoji_events,
-      text: "이번 달 가장 열심히 한 날은 ",
-      highlightText: highlight,
-    );
-  }
-
-  Widget _buildMotivationContent({
-    required IconData icon,
-    required List<String> lines,
-  }) {
-    return Center(
-      child: Column(
-        children: [
-          Icon(icon, color: const Color(0xFF0BAEFF), size: 32),
-          const SizedBox(height: 12),
-          ...lines.map(
-            (line) => Text(
-              line,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, color: Color(0xFF333333)),
-            ),
-          ),
-        ],
-      ),
     );
   }
 

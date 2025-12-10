@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/entity/stats/grass_statistics.dart';
 import 'package:geumpumta/screens/ranking/ranking.dart';
+import 'package:geumpumta/screens/stats/widgets/build_motivation_content_with_highlight.dart';
 import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 
 class MakeMotivationHighlightText extends ConsumerWidget {
@@ -13,6 +14,63 @@ class MakeMotivationHighlightText extends ConsumerWidget {
 
   final PeriodOption periodOption;
   final DateTime selectedDate;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final grassThisMonth = ref.watch(
+      grassStatisticsProvider((selectedDate, null)),
+    );
+    final grassNextMonth = ref.watch(
+      grassStatisticsProvider((_nextMonth(selectedDate), null)),
+    );
+
+    if (grassThisMonth.isLoading || grassNextMonth.isLoading) {
+      return const BuildMotivationContentWithHighlight(
+        icon: Icons.local_fire_department,
+        text: "데이터를 불러오는 중...",
+        highlightText: "",
+      );
+    }
+
+    if (grassThisMonth.hasError || grassNextMonth.hasError) {
+      return const BuildMotivationContentWithHighlight(
+        icon: Icons.local_fire_department,
+        text: "학습 데이터를 불러오지 못했습니다.",
+        highlightText: "",
+      );
+    }
+
+    final thisMonth = grassThisMonth.asData?.value;
+    final nextMonth = grassNextMonth.asData?.value;
+
+    if (thisMonth == null || nextMonth == null) {
+      return const BuildMotivationContentWithHighlight(
+        icon: Icons.local_fire_department,
+        text: "기록된 공부 시간이 없어요!",
+        highlightText: "",
+      );
+    }
+
+    final highlight = getHighlightText(ref);
+
+    if (highlight.trim().isEmpty) {
+      return const BuildMotivationContentWithHighlight(
+        icon: Icons.local_fire_department,
+        text: "기록된 공부 시간이 없어요!",
+        highlightText: "",
+      );
+    }
+
+    final titleText = periodOption == PeriodOption.weekly
+        ? "이번 주 가장 열심히 한 날은 "
+        : "이번 달 가장 열심히 한 날은 ";
+
+    return BuildMotivationContentWithHighlight(
+      icon: Icons.local_fire_department,
+      text: titleText,
+      highlightText: highlight,
+    );
+  }
 
   String getHighlightText(WidgetRef ref) {
     final grassThisMonth = ref.read(
@@ -39,11 +97,6 @@ class MakeMotivationHighlightText extends ConsumerWidget {
     return "";
   }
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Text(getHighlightText(ref));
-  }
-
   String? _getWeeklyBestDay(
       GrassStatistics thisMonth,
       GrassStatistics nextMonth,
@@ -51,10 +104,7 @@ class MakeMotivationHighlightText extends ConsumerWidget {
       ) {
     final weekEnd = weekStart.add(const Duration(days: 6));
 
-    final entries = [
-      ...thisMonth.entries,
-      ...nextMonth.entries,
-    ];
+    final entries = [...thisMonth.entries, ...nextMonth.entries];
 
     final filtered = entries.where((e) {
       return !e.date.isBefore(weekStart) &&
@@ -98,9 +148,8 @@ class MakeMotivationHighlightText extends ConsumerWidget {
   }
 
   static DateTime _nextMonth(DateTime date) {
-    if (date.month == 12) {
-      return DateTime(date.year + 1, 1, 1);
-    }
-    return DateTime(date.year, date.month + 1, 1);
+    return date.month == 12
+        ? DateTime(date.year + 1, 1, 1)
+        : DateTime(date.year, date.month + 1, 1);
   }
 }

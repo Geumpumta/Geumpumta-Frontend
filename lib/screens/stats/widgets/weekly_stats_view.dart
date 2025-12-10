@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geumpumta/models/entity/stats/grass_statistics.dart';
 import 'package:geumpumta/models/entity/stats/weekly_statistics.dart';
 import 'package:geumpumta/screens/ranking/ranking.dart';
-import 'package:geumpumta/screens/stats/widgets/build_motivation_content_with_highlight.dart';
 import 'package:geumpumta/screens/stats/widgets/continuous_study_section.dart';
 import 'package:geumpumta/screens/stats/widgets/make_motivation_highlight_text.dart';
-import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 import 'package:geumpumta/viewmodel/stats/weekly_stats_viewmodel.dart';
+import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 
 class WeeklyStatsView extends ConsumerStatefulWidget {
   const WeeklyStatsView({super.key});
@@ -34,12 +32,6 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     return date.subtract(Duration(days: date.weekday - 1));
   }
 
-  DateTime _addMonth(DateTime date) {
-    final nextYear = date.month == 12 ? date.year + 1 : date.year;
-    final nextMonth = date.month == 12 ? 1 : date.month + 1;
-    return DateTime(nextYear, nextMonth, 1);
-  }
-
   void _fetchWeeklyStats() {
     final formattedDate = _formatDateForApi(_selectedWeekStart);
     ref.read(weeklyStatsViewModelProvider.notifier)
@@ -61,13 +53,17 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
           const SizedBox(height: 24),
           ContinuousStudySection(selectedDate: _selectedWeekStart),
           const SizedBox(height: 24),
-          _buildMotivationalMessage(),
+
+          MakeMotivationHighlightText(
+            periodOption: PeriodOption.weekly,
+            selectedDate: _selectedWeekStart,
+          ),
+
           const SizedBox(height: 40),
         ],
       ),
     );
   }
-
 
   Widget _buildWeekNavigation() {
     final weekStr = _getWeekRangeString(_selectedWeekStart);
@@ -101,9 +97,9 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
                 : null,
             child: Icon(Icons.arrow_back_ios,
                 size: 16,
-                color:
-                canGoPrev ? const Color(0xFF666666) : Colors.grey.shade300),
+                color: canGoPrev ? const Color(0xFF666666) : Colors.grey.shade300),
           ),
+
           Text(
             weekStr,
             style: const TextStyle(
@@ -111,6 +107,7 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
                 color: Color(0xFF666666),
                 fontWeight: FontWeight.w500),
           ),
+
           GestureDetector(
             onTap: canGoNext
                 ? () {
@@ -122,8 +119,7 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
                 : null,
             child: Icon(Icons.arrow_forward_ios,
                 size: 16,
-                color:
-                canGoNext ? const Color(0xFF666666) : Colors.grey.shade300),
+                color: canGoNext ? const Color(0xFF666666) : Colors.grey.shade300),
           ),
         ],
       ),
@@ -137,7 +133,6 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
   DateTime _nextWeek(DateTime date) {
     return date.add(Duration(days: 8 - date.weekday));
   }
-
 
   Widget _buildWeeklyStatsCard(AsyncValue<WeeklyStatistics> state) {
     return state.when(
@@ -217,52 +212,6 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
                 color: Color(0xFF0BAEFF),
                 fontWeight: FontWeight.w600)),
       ],
-    );
-  }
-
-
-  Widget _buildMotivationalMessage() {
-    final weeklyStats = ref.watch(weeklyStatsViewModelProvider).asData?.value;
-
-    if (weeklyStats == null || weeklyStats.totalWeekSeconds == 0) {
-      return _buildMotivationContent(
-        icon: Icons.local_fire_department,
-        lines: const [
-          "이번주에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요."
-        ],
-      );
-    }
-
-    final highlight = MakeMotivationHighlightText(
-      periodOption: PeriodOption.weekly,
-      selectedDate: _selectedWeekStart,
-    ).getHighlightText(ref);
-
-    return BuildMotivationContentWithHighlight(
-      icon: Icons.local_fire_department,
-      text: "이번 주 가장 열심히 한 날은 ",
-      highlightText: highlight,
-    );
-  }
-
-  Widget _buildMotivationContent({
-    required IconData icon,
-    required List<String> lines,
-  }) {
-    return Center(
-      child: Column(
-        children: [
-          Icon(icon, size: 32, color: const Color(0xFF0BAEFF)),
-          const SizedBox(height: 12),
-          ...lines.map(
-                (e) => Text(
-              e,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, color: Color(0xFF333333)),
-            ),
-          ),
-        ],
-      ),
     );
   }
 

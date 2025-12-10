@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/entity/stats/grass_statistics.dart';
 import 'package:geumpumta/models/entity/stats/monthly_statistics.dart';
+import 'package:geumpumta/screens/ranking/ranking.dart';
+import 'package:geumpumta/screens/stats/widgets/build_motivation_content_with_highlight.dart';
 import 'package:geumpumta/screens/stats/widgets/continuous_study_section.dart';
+import 'package:geumpumta/screens/stats/widgets/make_motivation_highlight_text.dart';
 import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 import 'package:geumpumta/viewmodel/stats/monthly_stats_viewmodel.dart';
 
@@ -22,31 +25,23 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     _selectedMonth = DateTime.now();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchMonthlyStats();
-      // 연속공부현황 provider 새로고침
       ref.refresh(currentStreakProvider(null));
     });
   }
 
   void _fetchMonthlyStats() {
-    final formattedDate = _formatDateForApi(_selectedMonth);
     ref
         .read(monthlyStatsViewModelProvider.notifier)
-        .loadMonthlyStatistics(date: formattedDate);
+        .loadMonthlyStatistics(date: _formatDateForApi(_selectedMonth));
   }
 
-  DateTime _getPreviousMonth(DateTime date) {
-    if (date.month == 1) {
-      return DateTime(date.year - 1, 12);
-    }
-    return DateTime(date.year, date.month - 1);
-  }
+  DateTime _getPreviousMonth(DateTime date) => date.month == 1
+      ? DateTime(date.year - 1, 12)
+      : DateTime(date.year, date.month - 1);
 
-  DateTime _getNextMonth(DateTime date) {
-    if (date.month == 12) {
-      return DateTime(date.year + 1, 1);
-    }
-    return DateTime(date.year, date.month + 1);
-  }
+  DateTime _getNextMonth(DateTime date) => date.month == 12
+      ? DateTime(date.year + 1, 1)
+      : DateTime(date.year, date.month + 1);
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +49,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     final grassState = ref.watch(
       grassStatisticsProvider((_selectedMonth, null)),
     );
+
     final daysInMonth = DateTime(
       _selectedMonth.year,
       _selectedMonth.month + 1,
@@ -79,12 +75,10 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
   }
 
   Widget _buildMonthNavigation() {
-    final monthStr = '${_selectedMonth.year}년 ${_selectedMonth.month}월';
+    final monthStr = "${_selectedMonth.year}년 ${_selectedMonth.month}월";
 
     final minDate = DateTime(2025, 11, 1);
-
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, 1);
+    final today = DateTime(DateTime.now().year, DateTime.now().month);
 
     final prevMonth = _getPreviousMonth(_selectedMonth);
     final nextMonth = _getNextMonth(_selectedMonth);
@@ -151,30 +145,30 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     return state.when(
       data: (stats) => _buildStatsContainer(
         children: [
-          _buildStatRow('월간 총 공부 시간', _formatDuration(stats.totalMonthSeconds)),
+          _buildStatRow("월간 총 공부 시간", _formatDuration(stats.totalMonthSeconds)),
           const SizedBox(height: 12),
-          _buildStatRow('평균 공부 시간', _formatDuration(stats.averageDailySeconds)),
+          _buildStatRow("평균 공부 시간", _formatDuration(stats.averageDailySeconds)),
           const SizedBox(height: 12),
-          _buildStatRow('이번 달 공부 일 수', '${stats.studiedDays} / $daysInMonth'),
+          _buildStatRow("이번 달 공부 일 수", "${stats.studiedDays} / $daysInMonth"),
           const SizedBox(height: 12),
-          _buildStatRow('최대 연속 공부 일수', '${stats.maxConsecutiveStudyDays}일'),
+          _buildStatRow("최대 연속 공부 일수", "${stats.maxConsecutiveStudyDays}일"),
         ],
       ),
       loading: () => _buildStatsContainer(
         children: [
-          _buildLoadingRow('월간 총 공부 시간'),
+          _buildLoadingRow("월간 총 공부 시간"),
           const SizedBox(height: 12),
-          _buildLoadingRow('평균 공부 시간'),
+          _buildLoadingRow("평균 공부 시간"),
           const SizedBox(height: 12),
-          _buildLoadingRow('이번 달 공부 일 수'),
+          _buildLoadingRow("이번 달 공부 일 수"),
         ],
       ),
-      error: (error, _) => _buildStatsContainer(
+      error: (_, __) => _buildStatsContainer(
         children: [
-          const Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 28),
+          const Icon(Icons.error_outline, size: 28, color: Color(0xFFFF6B6B)),
           const SizedBox(height: 12),
           const Text(
-            '월간 통계를 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.',
+            "월간 통계를 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: Color(0xFF666666)),
           ),
@@ -185,7 +179,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
               backgroundColor: const Color(0xFF0BAEFF),
               foregroundColor: Colors.white,
             ),
-            child: const Text('다시 시도'),
+            child: const Text("다시 시도"),
           ),
         ],
       ),
@@ -194,7 +188,6 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
 
   Widget _buildStatsContainer({required List<Widget> children}) {
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFF5F5F5),
@@ -249,6 +242,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     AsyncValue<GrassStatistics> grassState,
   ) {
     final monthlyStats = monthlyState.asData?.value;
+
     if (monthlyStats == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -256,59 +250,27 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     if (monthlyStats.totalMonthSeconds == 0) {
       return _buildMotivationContent(
         icon: Icons.emoji_events,
-        lines: const ['이번달에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요.'],
+        lines: const ["이번달에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요."],
       );
     }
 
-    if (grassState.isLoading) {
-      return _buildMotivationContent(
-        icon: Icons.hourglass_bottom,
-        lines: const ['잔디 데이터를 불러오는 중입니다...'],
-      );
-    }
+    final highlight = MakeMotivationHighlightText(
+      periodOption: PeriodOption.monthly,
+      selectedDate: _selectedMonth,
+    ).getHighlightText(ref);
 
-    if (grassState.hasError) {
-      return _buildMotivationContent(
-        icon: Icons.error_outline,
-        lines: const ['잔디 데이터를 불러오지 못했습니다.'],
-      );
-    }
-
-    final grass = grassState.asData?.value;
-    final bestEntry = _findBestMonthlyEntry(grass);
-
-    if (bestEntry == null) {
+    if (highlight.trim().isEmpty) {
       return _buildMotivationContent(
         icon: Icons.emoji_events,
-        lines: const ['이번달에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요.'],
+        lines: const ["이번달에 기록된 학습시간이 없어요!\n타이머 기능을 통해 학습시간을 측정해보세요."],
       );
     }
 
-    return _buildMotivationContentWithHighlight(
+    return BuildMotivationContentWithHighlight(
       icon: Icons.emoji_events,
-      text: '이번 달 가장 열심히 한 날은 ',
-      highlightText: '${bestEntry.date.day}일',
+      text: "이번 달 가장 열심히 한 날은 ",
+      highlightText: highlight,
     );
-  }
-
-  GrassEntry? _findBestMonthlyEntry(GrassStatistics? stats) {
-    if (stats == null) return null;
-    final entries = stats.entries
-        .where(
-          (entry) =>
-              entry.date.year == _selectedMonth.year &&
-              entry.date.month == _selectedMonth.month &&
-              entry.level > 0,
-        )
-        .toList();
-    if (entries.isEmpty) return null;
-    entries.sort((a, b) {
-      if (b.level != a.level) {
-        return b.level.compareTo(a.level);
-      }
-      return a.date.compareTo(b.date);
-    });
-    return entries.first;
   }
 
   Widget _buildMotivationContent({
@@ -320,41 +282,11 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
         children: [
           Icon(icon, color: const Color(0xFF0BAEFF), size: 32),
           const SizedBox(height: 12),
-          for (final line in lines)
-            Text(
+          ...lines.map(
+            (line) => Text(
               line,
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16, color: Color(0xFF333333)),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMotivationContentWithHighlight({
-    required IconData icon,
-    required String text,
-    required String highlightText,
-  }) {
-    return Center(
-      child: Column(
-        children: [
-          Icon(icon, color: const Color(0xFF0BAEFF), size: 32),
-          const SizedBox(height: 12),
-          RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
-              style: const TextStyle(fontSize: 16, color: Color(0xFF333333)),
-              children: [
-                TextSpan(text: text),
-                TextSpan(
-                  text: highlightText,
-                  style: const TextStyle(
-                    color: Color(0xFF0BAEFF),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
             ),
           ),
         ],
@@ -363,15 +295,13 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
   }
 
   String _formatDuration(int seconds) {
-    final duration = Duration(seconds: seconds);
-    final hours = duration.inHours.toString().padLeft(2, '0');
-    final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
-    final secs = (duration.inSeconds % 60).toString().padLeft(2, '0');
-    return '$hours:$minutes:$secs';
+    final d = Duration(seconds: seconds);
+    return "${d.inHours.toString().padLeft(2, '0')}:"
+        "${(d.inMinutes % 60).toString().padLeft(2, '0')}:"
+        "${(d.inSeconds % 60).toString().padLeft(2, '0')}";
   }
 
-  String _formatDateForApi(DateTime date) {
-    final month = date.month.toString().padLeft(2, '0');
-    return '${date.year}-$month-01';
+  String _formatDateForApi(DateTime d) {
+    return "${d.year}-${d.month.toString().padLeft(2, '0')}-01";
   }
 }

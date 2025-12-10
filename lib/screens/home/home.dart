@@ -122,19 +122,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
         break;
 
       case AppLifecycleState.paused:
-        print("PAUSED 진입 → 홈 이동인지 화면 OFF인지 판단 중...");
+        print("PAUSED → 화면 OFF인지 홈 이동인지 판단 중...");
 
         _pauseCheckTimer?.cancel();
-        _pauseCheckTimer = Timer(const Duration(seconds: 1), () async {
-          if (_lastState != AppLifecycleState.resumed) {
-            print("홈 화면 이동으로 판단됨 → 공부 종료");
-            await _endStudyInternal(showDialog: true);
+
+        _pauseCheckTimer = Timer(const Duration(milliseconds: 700), () async {
+          if (_lastState == AppLifecycleState.resumed) {
+            print("화면 꺼짐으로 판단 → 타이머 유지.");
           } else {
-            print("화면 꺼짐으로 판단됨 → 타이머 유지");
+            print("홈 이동으로 판단 → 공부 종료 실행.");
+            await _endStudyInternal(showDialog: true);
           }
         });
 
         break;
+
 
       case AppLifecycleState.resumed:
         print("RESUMED → 앱이 다시 화면에 표시됨");

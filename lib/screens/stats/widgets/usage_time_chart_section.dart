@@ -21,26 +21,26 @@ class UsageTimeChartSection extends ConsumerStatefulWidget {
       _UsageTimeChartSectionState();
 }
 
-class _UsageTimeChartSectionState
-    extends ConsumerState<UsageTimeChartSection> {
+class _UsageTimeChartSectionState extends ConsumerState<UsageTimeChartSection> {
   @override
   void initState() {
     super.initState();
-    if (widget.targetUserId != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _fetchDailyStats());
-    }
+
+    if (widget.slots != null) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchDailyStats();
+    });
   }
 
   void _fetchDailyStats() {
-    if (widget.targetUserId == null) return;
     final today = DateTime.now();
     final formatted = _formatDateForApi(today);
-    ref
-        .read(dailyStatsViewModelProvider.notifier)
-        .loadDailyStatistics(
-          date: formatted,
-          targetUserId: widget.targetUserId,
-        );
+
+    ref.read(dailyStatsViewModelProvider.notifier).loadDailyStatistics(
+      date: formatted,
+      targetUserId: widget.targetUserId, // null이면 본인 fetch됨
+    );
   }
 
   String _formatDateForApi(DateTime date) {
@@ -51,83 +51,35 @@ class _UsageTimeChartSectionState
 
   @override
   Widget build(BuildContext context) {
-    // slots가 직접 제공되면 그것을 사용
     if (widget.slots != null) {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFF0F0F0)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF333333),
-              ),
-            ),
-            const SizedBox(height: 16),
-            DailyUsageChart(slots: widget.slots!),
-          ],
-        ),
+      return _buildContainer(
+        child: DailyUsageChart(slots: widget.slots!),
       );
     }
 
-    // targetUserId가 제공되면 데이터를 가져와서 사용
-    if (widget.targetUserId != null) {
-      final dailyState = ref.watch(dailyStatsViewModelProvider);
+    final dailyState = ref.watch(dailyStatsViewModelProvider);
 
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFF0F0F0)),
+    return _buildContainer(
+      child: dailyState.when(
+        data: (stats) => DailyUsageChart(slots: stats.slots),
+        loading: () => const SizedBox(
+          height: 120,
+          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF333333),
-              ),
+        error: (_, __) => const SizedBox(
+          height: 120,
+          child: Center(
+            child: Text(
+              '데이터를 불러올 수 없습니다.',
+              style: TextStyle(fontSize: 14, color: Color(0xFF666666)),
             ),
-            const SizedBox(height: 16),
-            dailyState.when(
-              data: (stats) => DailyUsageChart(slots: stats.slots),
-              loading: () => const SizedBox(
-                height: 120,
-                child: Center(
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
-              error: (_, __) => const SizedBox(
-                height: 120,
-                child: Center(
-                  child: Text(
-                    '데이터를 불러올 수 없습니다.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF666666),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
-      );
-    }
+      ),
+    );
+  }
 
-    // 둘 다 없으면 빈 리스트 사용
+  Widget _buildContainer({required Widget child}) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -147,10 +99,9 @@ class _UsageTimeChartSectionState
             ),
           ),
           const SizedBox(height: 16),
-          DailyUsageChart(slots: const <DailySlot>[]),
+          child,
         ],
       ),
     );
   }
 }
-

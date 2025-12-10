@@ -152,6 +152,7 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
           itemBuilder: (context, index) {
             final data = list[index];
             return RankingBar(
+              periodOption: widget.periodOption,
               dateTime: widget.selectedDate,
               ranking: data.rank,
               imgUrl: data.imageUrl,
@@ -183,6 +184,7 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
           itemBuilder: (context, index) {
             final data = list[index];
             return RankingBar(
+              periodOption: widget.periodOption,
               isDetailAvailable: false,
               dateTime: widget.selectedDate,
               ranking: data.rank,

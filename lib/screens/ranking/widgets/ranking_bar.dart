@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geumpumta/screens/ranking/ranking.dart';
 
 import 'details_in_modal.dart';
 
@@ -12,6 +13,7 @@ class RankingBar extends StatefulWidget {
     this.userId,
     required this.dateTime,
     this.isDetailAvailable = true,
+    required this.periodOption,
   });
 
   final int ranking;
@@ -21,6 +23,7 @@ class RankingBar extends StatefulWidget {
   final int? userId;
   final DateTime dateTime;
   final bool? isDetailAvailable;
+  final PeriodOption periodOption;
 
   @override
   State<RankingBar> createState() => _RankingBarState();
@@ -105,6 +108,7 @@ class _RankingBarState extends State<RankingBar> {
                       ),
                       builder: (context) {
                         return DetailsInModal(
+                          periodOption: widget.periodOption,
                           selectedDate: widget.dateTime,
                           nickname: widget.nickname,
                           recordedTime: widget.recordedTime,

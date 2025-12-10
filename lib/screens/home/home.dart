@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/dto/study/end_study_request_dto.dart';
 import 'package:geumpumta/models/dto/study/send_heart_beat_request_dto.dart';
@@ -10,6 +11,7 @@ import 'package:geumpumta/screens/home/widgets/total_progress_dot.dart';
 import 'package:geumpumta/viewmodel/study/study_viewmodel.dart';
 import 'package:geumpumta/widgets/error_dialog/error_dialog.dart';
 import 'package:geumpumta/widgets/loading_dialog/loading_dialog.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../provider/study/study_provider.dart';
 import '../../provider/userState/user_info_state.dart';
@@ -24,6 +26,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
+  static const MethodChannel platform = MethodChannel("network_monitor");
+
   bool _isTimerRunning = false;
 
   Duration _timerDuration = Duration.zero;
@@ -36,9 +40,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
 
   late final AppLifecycleListener _appLifecycleListener;
 
+  void _setupNetworkListener() {
+    platform.setMethodCallHandler((call) async {
+      if (!_isTimerRunning) return;
+
+      if (call.method == "network_changed") {
+        final data = Map<String, dynamic>.from(call.arguments ?? {});
+
+        if (mounted) {
+          ErrorDialog.show(
+              context,
+              "네트워크 변경 감지됨"
+          );
+        }
+
+        if (data["type"] == "lost") {
+          await _endStudyInternal(showDialog: false);
+          return;
+        }
+
+        final isWifi = data["isWifi"] ?? false;
+
+        if (!isWifi) {
+          await _endStudyInternal(showDialog: false);
+          return;
+        }
+      }
+    });
+  }
+
+  Future<void> _requestLocationPermission() async {
+    final status = await Permission.locationWhenInUse.request();
+
+    if (status.isDenied || status.isPermanentlyDenied) {
+      print("위치 권한이 거부됨 → SSID 확인 불가!");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+
+    _requestLocationPermission();
+
+    _setupNetworkListener();
 
     final totalMillis = ref.read(userInfoStateProvider)?.totalMillis ?? 0;
 
@@ -62,32 +107,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with RouteAware {
     super.dispose();
   }
 
+  AppLifecycleState? _lastState;
+  Timer? _pauseCheckTimer;
+
   Future<void> _onLifecycleChanged(AppLifecycleState state) async {
     print("Lifecycle: $state");
+
+    _lastState = state;
 
     if (!_isTimerRunning) return;
 
     switch (state) {
-      case AppLifecycleState.resumed:
-        _updateTimerUI();
-        break;
-
-      case AppLifecycleState.hidden:
-        print("화면 OFF 감지 → 타이머 유지");
-        break;
-
       case AppLifecycleState.inactive:
-        print("inactive 상태 → 유지");
         break;
 
       case AppLifecycleState.paused:
-        print("PAUSED 감지 (앱 이탈) → 공부 종료");
-        await _endStudyInternal(showDialog: true);
+        print("PAUSED 진입 → 홈 이동인지 화면 OFF인지 판단 중...");
+
+        _pauseCheckTimer?.cancel();
+        _pauseCheckTimer = Timer(const Duration(seconds: 1), () async {
+          if (_lastState != AppLifecycleState.resumed) {
+            print("홈 화면 이동으로 판단됨 → 공부 종료");
+            await _endStudyInternal(showDialog: true);
+          } else {
+            print("화면 꺼짐으로 판단됨 → 타이머 유지");
+          }
+        });
+
+        break;
+
+      case AppLifecycleState.resumed:
+        print("RESUMED → 앱이 다시 화면에 표시됨");
+
+        _lastState = AppLifecycleState.resumed;
+
+        _updateTimerUI();
         break;
 
       case AppLifecycleState.detached:
         print("DETACHED → 앱 종료 감지");
         await _endStudyInternal(showDialog: false);
+        break;
+
+      case AppLifecycleState.hidden:
+        print("hidden: 보통 화면 꺼짐과 무관");
         break;
     }
   }

@@ -1,4 +1,4 @@
-package com.example.app
+package com.geumpumgalchwi.geumpumta
 
 import android.net.*
 import android.os.Bundle
@@ -22,19 +22,27 @@ class MainActivity : FlutterActivity() {
             object : ConnectivityManager.NetworkCallback() {
 
                 override fun onLost(network: Network) {
-                    MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL)
-                        .invokeMethod("network_changed", mapOf("type" to "lost"))
+                    runOnUiThread {
+                        flutterEngine?.dartExecutor?.binaryMessenger?.let { messenger ->
+                            MethodChannel(messenger, CHANNEL)
+                                .invokeMethod("network_changed", mapOf("type" to "lost"))
+                        }
+                    }
                 }
 
                 override fun onAvailable(network: Network) {
-                    val activeNetwork = connectivityManager.activeNetworkInfo
-                    val isWifi = activeNetwork?.type == ConnectivityManager.TYPE_WIFI
+                    runOnUiThread {
+                        val activeNetwork = connectivityManager.activeNetworkInfo
+                        val isWifi = activeNetwork?.type == ConnectivityManager.TYPE_WIFI
 
-                    MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL)
-                        .invokeMethod("network_changed", mapOf(
-                            "type" to "changed",
-                            "isWifi" to isWifi
-                        ))
+                        flutterEngine?.dartExecutor?.binaryMessenger?.let { messenger ->
+                            MethodChannel(messenger, CHANNEL)
+                                .invokeMethod("network_changed", mapOf(
+                                    "type" to "changed",
+                                    "isWifi" to isWifi
+                                ))
+                        }
+                    }
                 }
             }
         )

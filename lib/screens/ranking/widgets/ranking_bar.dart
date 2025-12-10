@@ -10,6 +10,7 @@ class RankingBar extends StatefulWidget {
     required this.nickname,
     required this.recordedTime,
     this.userId,
+    required this.dateTime,
   });
 
   final int ranking;
@@ -17,6 +18,7 @@ class RankingBar extends StatefulWidget {
   final String nickname;
   final Duration recordedTime;
   final int? userId;
+  final DateTime dateTime;
 
   @override
   State<RankingBar> createState() => _RankingBarState();
@@ -98,6 +100,7 @@ class _RankingBarState extends State<RankingBar> {
                 ),
                 builder: (context) {
                   return DetailsInModal(
+                    selectedDate: widget.dateTime,
                     nickname: widget.nickname,
                     recordedTime: widget.recordedTime,
                     imageUrl: widget.imgUrl,

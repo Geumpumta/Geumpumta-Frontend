@@ -96,6 +96,7 @@ class _RankingScreenState extends ConsumerState<RankingScreen> {
           ),
 
           DetailRanking(
+            selectedTime: _selectedDate,
             nickname: userInfoState?.nickName ?? '알 수 없음',
             imageUrl:
                 userInfoState?.profileImage ??

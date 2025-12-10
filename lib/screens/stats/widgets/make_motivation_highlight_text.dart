@@ -10,18 +10,30 @@ class MakeMotivationHighlightText extends ConsumerWidget {
     super.key,
     required this.periodOption,
     required this.selectedDate,
+    this.targetUserId,
   });
 
   final PeriodOption periodOption;
   final DateTime selectedDate;
+  final int? targetUserId;
+
+  DateTime _normalize(DateTime d) => DateTime(d.year, d.month, d.day);
+
+  DateTime _startOfWeek(DateTime d) {
+    return _normalize(d.subtract(Duration(days: d.weekday - 1)));
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final effectiveDate = (periodOption == PeriodOption.weekly)
+        ? _startOfWeek(selectedDate)
+        : selectedDate;
+
     final grassThisMonth = ref.watch(
-      grassStatisticsProvider((selectedDate, null)),
+      grassStatisticsProvider((effectiveDate, targetUserId)),
     );
     final grassNextMonth = ref.watch(
-      grassStatisticsProvider((_nextMonth(selectedDate), null)),
+      grassStatisticsProvider((_nextMonth(effectiveDate), targetUserId)),
     );
 
     if (grassThisMonth.isLoading || grassNextMonth.isLoading) {
@@ -51,7 +63,7 @@ class MakeMotivationHighlightText extends ConsumerWidget {
       );
     }
 
-    final highlight = getHighlightText(ref);
+    final highlight = getHighlightText(ref, effectiveDate);
 
     if (highlight.trim().isEmpty) {
       return const BuildMotivationContentWithHighlight(
@@ -72,12 +84,12 @@ class MakeMotivationHighlightText extends ConsumerWidget {
     );
   }
 
-  String getHighlightText(WidgetRef ref) {
+  String getHighlightText(WidgetRef ref, DateTime effectiveDate) {
     final grassThisMonth = ref.read(
-      grassStatisticsProvider((selectedDate, null)),
+      grassStatisticsProvider((effectiveDate, targetUserId)),
     );
     final grassNextMonth = ref.read(
-      grassStatisticsProvider((_nextMonth(selectedDate), null)),
+      grassStatisticsProvider((_nextMonth(effectiveDate), targetUserId)),
     );
 
     if (grassThisMonth.isLoading || grassNextMonth.isLoading) return "";
@@ -89,26 +101,26 @@ class MakeMotivationHighlightText extends ConsumerWidget {
     if (thisMonth == null || nextMonth == null) return "";
 
     if (periodOption == PeriodOption.weekly) {
-      return _getWeeklyBestDay(thisMonth, nextMonth, selectedDate) ?? "";
-    } else if (periodOption == PeriodOption.monthly) {
-      return _getMonthlyBestDay(thisMonth, selectedDate) ?? "";
+      return _bestDayWeekly(thisMonth, nextMonth, effectiveDate) ?? "";
+    } else {
+      return _bestDayMonthly(thisMonth, effectiveDate) ?? "";
     }
-
-    return "";
   }
 
-  String? _getWeeklyBestDay(
+  String? _bestDayWeekly(
       GrassStatistics thisMonth,
       GrassStatistics nextMonth,
       DateTime weekStart,
       ) {
-    final weekEnd = weekStart.add(const Duration(days: 6));
+    final ws = _normalize(weekStart);
+    final we = _normalize(weekStart.add(const Duration(days: 6)));
 
     final entries = [...thisMonth.entries, ...nextMonth.entries];
 
     final filtered = entries.where((e) {
-      return !e.date.isBefore(weekStart) &&
-          !e.date.isAfter(weekEnd) &&
+      final d = _normalize(e.date);
+      return (d.isAtSameMomentAs(ws) || d.isAfter(ws)) &&
+          (d.isAtSameMomentAs(we) || d.isBefore(we)) &&
           e.level > 0;
     }).toList();
 
@@ -122,13 +134,10 @@ class MakeMotivationHighlightText extends ConsumerWidget {
     return _weekdayLabel(filtered.first.date.weekday);
   }
 
-  String? _getMonthlyBestDay(
-      GrassStatistics stats,
-      DateTime selectedMonth,
-      ) {
+  String? _bestDayMonthly(GrassStatistics stats, DateTime month) {
     final filtered = stats.entries.where((e) {
-      return e.date.year == selectedMonth.year &&
-          e.date.month == selectedMonth.month &&
+      return e.date.year == month.year &&
+          e.date.month == month.month &&
           e.level > 0;
     }).toList();
 

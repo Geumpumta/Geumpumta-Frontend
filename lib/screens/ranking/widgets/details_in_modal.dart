@@ -64,30 +64,16 @@ class _DetailsInModalState extends ConsumerState<DetailsInModal> {
 
     Widget _buildBottomWidget() {
       if (widget.periodOption == PeriodOption.daily) {
-        return UsageTimeChartSection(title: '사용 시간 그래프',targetUserId: widget.targetUserId);
-      }
-
-      final highlight = MakeMotivationHighlightText(
-        periodOption: widget.periodOption!,
-        selectedDate: widget.selectedDate,
-      ).getHighlightText(ref);
-
-      if (highlight.trim().isEmpty) {
-        return BuildMotivationContentWithHighlight(
-          icon: Icons.local_fire_department,
-          text: '기록된 공부 시간이 없어요!',
-          highlightText: '',
+        return UsageTimeChartSection(
+          title: '사용 시간 그래프',
+          targetUserId: widget.targetUserId,
         );
       }
 
-      final titleText = widget.periodOption == PeriodOption.weekly
-          ? "이번 주 가장 열심히 한 날은 "
-          : "이번 달 가장 열심히 한 날은 ";
-
-      return BuildMotivationContentWithHighlight(
-        icon: Icons.local_fire_department,
-        text: titleText,
-        highlightText: highlight,
+      return MakeMotivationHighlightText(
+        targetUserId: widget.targetUserId,
+        periodOption: widget.periodOption!,
+        selectedDate: widget.selectedDate,
       );
     }
 
@@ -110,7 +96,7 @@ class _DetailsInModalState extends ConsumerState<DetailsInModal> {
                       width: 40,
                       height: 40,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
+                      errorBuilder: (_, __, ___) {
                         return Image.asset(
                           'assets/image/login/main_img.png',
                           width: 40,
@@ -142,6 +128,7 @@ class _DetailsInModalState extends ConsumerState<DetailsInModal> {
                   ),
                 ],
               ),
+
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 style: TextButton.styleFrom(
@@ -156,9 +143,11 @@ class _DetailsInModalState extends ConsumerState<DetailsInModal> {
           ),
 
           const SizedBox(height: 30),
+
           ContinuousStudySection(targetUserId: widget.targetUserId),
 
           const SizedBox(height: 30),
+
           _buildBottomWidget(),
         ],
       ),

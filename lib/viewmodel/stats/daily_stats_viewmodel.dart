@@ -20,9 +20,15 @@ class DailyStatsViewModel extends StateNotifier<AsyncValue<DailyStatistics>> {
     : super(const AsyncLoading());
 
   Future<void> loadDailyStatistics({required String date}) async {
+    if (!mounted) return;
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => repo.fetchDailyStatistics(date: date, targetUserId: targetUserId),
+
+    final result = await AsyncValue.guard(
+          () => repo.fetchDailyStatistics(date: date, targetUserId: targetUserId),
     );
+
+    if (!mounted) return; 
+    state = result;
   }
+
 }

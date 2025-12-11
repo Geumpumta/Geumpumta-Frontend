@@ -45,13 +45,13 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
   void _fetchDailyStats() {
     final formatted = _formatDateForApi(_selectedDate);
     ref
-        .read(dailyStatsViewModelProvider.notifier)
+        .read(dailyStatsViewModelProvider(null).notifier)
         .loadDailyStatistics(date: formatted);
   }
 
   @override
   Widget build(BuildContext context) {
-    final dailyState = ref.watch(dailyStatsViewModelProvider);
+    final dailyState = ref.watch(dailyStatsViewModelProvider(null));
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),

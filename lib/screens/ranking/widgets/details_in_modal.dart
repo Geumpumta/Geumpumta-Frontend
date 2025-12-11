@@ -49,8 +49,9 @@ class _DetailsInModalState extends ConsumerState<DetailsInModal> {
 
   void _fetchDailyStats() {
     final formatted = _formatDateForApi(widget.selectedDate);
+
     ref
-        .read(dailyStatsViewModelProvider.notifier)
+        .read(dailyStatsViewModelProvider(widget.targetUserId).notifier)
         .loadDailyStatistics(date: formatted);
   }
 

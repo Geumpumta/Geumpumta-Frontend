@@ -37,11 +37,14 @@ class _UsageTimeChartSectionState extends ConsumerState<UsageTimeChartSection> {
     final today = DateTime.now();
     final formatted = _formatDateForApi(today);
 
-    ref.read(dailyStatsViewModelProvider.notifier).loadDailyStatistics(
+    ref
+        .read(dailyStatsViewModelProvider(widget.targetUserId).notifier)
+        .loadDailyStatistics(
       date: formatted,
-      targetUserId: widget.targetUserId, // null이면 본인 fetch됨
+      targetUserId: widget.targetUserId,
     );
   }
+
 
   String _formatDateForApi(DateTime date) {
     final month = date.month.toString().padLeft(2, '0');
@@ -57,7 +60,7 @@ class _UsageTimeChartSectionState extends ConsumerState<UsageTimeChartSection> {
       );
     }
 
-    final dailyState = ref.watch(dailyStatsViewModelProvider);
+    final dailyState = ref.watch(dailyStatsViewModelProvider(widget.targetUserId));
 
     return _buildContainer(
       child: dailyState.when(

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'package:geumpumta/provider/userState/user_info_state.dart';
 import 'package:geumpumta/screens/login/login.dart';
 import 'package:geumpumta/screens/main/main.dart';
@@ -49,7 +51,6 @@ void main() async {
   );
 }
 
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -59,7 +60,9 @@ class MyApp extends StatelessWidget {
       navigatorObservers: [routeObserver],
       theme: ThemeData(
         useMaterial3: false,
-        fontFamily: 'SCDream',
+        textTheme: GoogleFonts.notoSansKrTextTheme(
+          Theme.of(context).textTheme,
+        ),
       ),
       debugShowCheckedModeBanner: false,
       home: const MyHomePage(),
@@ -90,10 +93,9 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
     final accessToken = prefs.getString('accessToken');
     final userString = prefs.getString('userInfo');
 
-    // 토큰과 사용자 정보가 모두 있어야 메인 화면으로
-    final hasValidAuth = accessToken != null && 
-                        accessToken.isNotEmpty && 
-                        userString != null;
+    final hasValidAuth = accessToken != null &&
+        accessToken.isNotEmpty &&
+        userString != null;
 
     if (mounted) {
       setState(() {
@@ -115,7 +117,6 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
 
     final user = ref.watch(userInfoStateProvider);
 
-    // 토큰이 없거나 사용자 정보가 없으면 로그인 화면
     if (!_hasToken || user == null || user.userRole != 'USER') {
       return const LoginScreen();
     }

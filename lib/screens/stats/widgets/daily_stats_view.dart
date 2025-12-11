@@ -123,7 +123,7 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
 
   Widget _buildUsageTimeChart(AsyncValue<DailyStatistics> state) {
     return state.when(
-      data: (stats) => UsageTimeChartSection(slots: stats.slots),
+      data: (stats) => UsageTimeChartSection(slots: stats.slots, selectedDate: _selectedDate,),
       loading: () => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

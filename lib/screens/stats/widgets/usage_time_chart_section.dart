@@ -10,11 +10,13 @@ class UsageTimeChartSection extends ConsumerStatefulWidget {
     this.title = '오늘의 사용 시간 그래프',
     this.slots,
     this.targetUserId,
+    required this.selectedDate,
   });
 
   final String title;
   final List<DailySlot>? slots;
   final int? targetUserId;
+  final DateTime selectedDate;
 
   @override
   ConsumerState<UsageTimeChartSection> createState() =>
@@ -34,16 +36,13 @@ class _UsageTimeChartSectionState extends ConsumerState<UsageTimeChartSection> {
   }
 
   void _fetchDailyStats() {
-    final today = DateTime.now();
-    final formatted = _formatDateForApi(today);
+    final formatted = _formatDateForApi(widget.selectedDate);
 
     ref
         .read(dailyStatsViewModelProvider(widget.targetUserId).notifier)
-        .loadDailyStatistics(
-      date: formatted,
-      targetUserId: widget.targetUserId,
-    );
+        .loadDailyStatistics(date: formatted);
   }
+
 
 
   String _formatDateForApi(DateTime date) {

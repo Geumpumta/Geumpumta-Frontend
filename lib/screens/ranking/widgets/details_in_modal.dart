@@ -66,6 +66,7 @@ class _DetailsInModalState extends ConsumerState<DetailsInModal> {
     Widget _buildBottomWidget() {
       if (widget.periodOption == PeriodOption.daily) {
         return UsageTimeChartSection(
+          selectedDate: widget.selectedDate,
           title: '사용 시간 그래프',
           targetUserId: widget.targetUserId,
         );

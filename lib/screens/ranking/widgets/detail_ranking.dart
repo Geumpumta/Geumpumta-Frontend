@@ -7,11 +7,13 @@ class DetailRanking extends StatefulWidget {
     required this.nickname,
     required this.recordedTime,
     required this.imageUrl,
+    required this.selectedTime,
   });
 
   final String nickname;
   final Duration recordedTime;
   final String imageUrl;
+  final DateTime selectedTime;
 
   @override
   State<DetailRanking> createState() => _DetailRankingState();
@@ -97,6 +99,7 @@ class _DetailRankingState extends State<DetailRanking> {
                     nickname: widget.nickname,
                     recordedTime: widget.recordedTime,
                     imageUrl: widget.imageUrl,
+                    selectedDate: widget.selectedTime,
                   );
                 },
               );

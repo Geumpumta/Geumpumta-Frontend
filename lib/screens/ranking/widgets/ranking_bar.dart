@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geumpumta/screens/ranking/ranking.dart';
 
 import 'details_in_modal.dart';
 
@@ -10,6 +11,9 @@ class RankingBar extends StatefulWidget {
     required this.nickname,
     required this.recordedTime,
     this.userId,
+    required this.dateTime,
+    this.isDetailAvailable = true,
+    required this.periodOption,
   });
 
   final int ranking;
@@ -17,6 +21,9 @@ class RankingBar extends StatefulWidget {
   final String nickname;
   final Duration recordedTime;
   final int? userId;
+  final DateTime dateTime;
+  final bool? isDetailAvailable;
+  final PeriodOption periodOption;
 
   @override
   State<RankingBar> createState() => _RankingBarState();
@@ -80,34 +87,40 @@ class _RankingBarState extends State<RankingBar> {
               ),
             ],
           ),
-          TextButton(
-            style: TextButton.styleFrom(
-              fixedSize: Size(80, 40),
-              backgroundColor: Color(0xFFCEEFFF),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            onPressed: () {
-              showModalBottomSheet(
-                backgroundColor: Color(0xFFFFFFFF),
-                context: context,
-                isScrollControlled: true,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                builder: (context) {
-                  return DetailsInModal(
-                    nickname: widget.nickname,
-                    recordedTime: widget.recordedTime,
-                    imageUrl: widget.imgUrl,
-                    targetUserId: widget.userId,
-                  );
-                },
-              );
-            },
-            child: Text('상세보기', style: TextStyle(fontSize: 14)),
-          ),
+          (widget.isDetailAvailable == true)
+              ? TextButton(
+                  style: TextButton.styleFrom(
+                    fixedSize: Size(80, 40),
+                    backgroundColor: Color(0xFFCEEFFF),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      backgroundColor: Color(0xFFFFFFFF),
+                      context: context,
+                      isScrollControlled: true,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(20),
+                        ),
+                      ),
+                      builder: (context) {
+                        return DetailsInModal(
+                          periodOption: widget.periodOption,
+                          selectedDate: widget.dateTime,
+                          nickname: widget.nickname,
+                          recordedTime: widget.recordedTime,
+                          imageUrl: widget.imgUrl,
+                          targetUserId: widget.userId,
+                        );
+                      },
+                    );
+                  },
+                  child: Text('상세보기', style: TextStyle(fontSize: 14)),
+                )
+              : const SizedBox(),
         ],
       ),
     );

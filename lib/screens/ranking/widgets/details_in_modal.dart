@@ -1,36 +1,90 @@
 import 'package:flutter/material.dart';
-import 'package:geumpumta/models/entity/stats/daily_statistics.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geumpumta/screens/ranking/ranking.dart';
+import 'package:geumpumta/screens/stats/widgets/build_motivation_content_with_highlight.dart';
 import 'package:geumpumta/screens/stats/widgets/continuous_study_section.dart';
 import 'package:geumpumta/screens/stats/widgets/usage_time_chart_section.dart';
+import 'package:geumpumta/screens/stats/widgets/make_motivation_highlight_text.dart';
+import '../../../viewmodel/stats/daily_stats_viewmodel.dart';
+import '../../../viewmodel/stats/grass_stats_viewmodel.dart';
 
-class DetailsInModal extends StatelessWidget {
+class DetailsInModal extends ConsumerStatefulWidget {
   const DetailsInModal({
     super.key,
     required this.nickname,
     required this.recordedTime,
     required this.imageUrl,
     this.targetUserId,
+    this.periodOption = PeriodOption.daily,
+    required this.selectedDate,
   });
 
   final String nickname;
   final Duration recordedTime;
   final String imageUrl;
   final int? targetUserId;
+  final PeriodOption? periodOption;
+  final DateTime selectedDate;
+
+  @override
+  ConsumerState<DetailsInModal> createState() => _DetailsInModalState();
+}
+
+class _DetailsInModalState extends ConsumerState<DetailsInModal> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchDailyStats();
+      ref.refresh(currentStreakProvider(null));
+    });
+  }
+
+  String _formatDateForApi(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
+
+  void _fetchDailyStats() {
+    final formatted = _formatDateForApi(widget.selectedDate);
+
+    ref
+        .read(dailyStatsViewModelProvider(widget.targetUserId).notifier)
+        .loadDailyStatistics(date: formatted);
+  }
 
   @override
   Widget build(BuildContext context) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final hours = twoDigits(widget.recordedTime.inHours);
+    final minutes = twoDigits(widget.recordedTime.inMinutes.remainder(60));
+    final seconds = twoDigits(widget.recordedTime.inSeconds.remainder(60));
+    final formattedDuration = '$hours:$minutes:$seconds';
 
-    final hours = twoDigits(recordedTime.inHours);
-    final minutes = twoDigits(recordedTime.inMinutes.remainder(60));
-    final seconds = twoDigits(recordedTime.inSeconds.remainder(60));
+    Widget _buildBottomWidget() {
+      if (widget.periodOption == PeriodOption.daily) {
+        return UsageTimeChartSection(
+          selectedDate: widget.selectedDate,
+          title: '사용 시간 그래프',
+          targetUserId: widget.targetUserId,
+        );
+      }
 
-    String formattedDuration = '$hours:$minutes:$seconds';
+      return MakeMotivationHighlightText(
+        targetUserId: widget.targetUserId,
+        periodOption: widget.periodOption!,
+        selectedDate: widget.selectedDate,
+      );
+    }
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.85,
+      height: widget.periodOption == PeriodOption.daily
+          ? MediaQuery.of(context).size.height * 0.85
+          : MediaQuery.of(context).size.height * 0.65,
       child: Column(
         children: [
           Row(
@@ -42,11 +96,11 @@ class DetailsInModal extends StatelessWidget {
                 children: [
                   ClipOval(
                     child: Image.network(
-                      imageUrl,
+                      widget.imageUrl,
                       width: 40,
                       height: 40,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
+                      errorBuilder: (_, __, ___) {
                         return Image.asset(
                           'assets/image/login/main_img.png',
                           width: 40,
@@ -60,8 +114,8 @@ class DetailsInModal extends StatelessWidget {
                     spacing: 3,
                     children: [
                       Text(
-                        nickname,
-                        style: TextStyle(
+                        widget.nickname,
+                        style: const TextStyle(
                           color: Color(0xFF898989),
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -69,7 +123,7 @@ class DetailsInModal extends StatelessWidget {
                       ),
                       Text(
                         formattedDuration,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Color(0xFF0BAEFF),
                           fontWeight: FontWeight.w500,
                         ),
@@ -78,24 +132,27 @@ class DetailsInModal extends StatelessWidget {
                   ),
                 ],
               ),
+
               TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: () => Navigator.pop(context),
                 style: TextButton.styleFrom(
                   backgroundColor: const Color(0xFFF8F9F9),
                 ),
-                child: Text(
+                child: const Text(
                   '상대 순위 보기',
                   style: TextStyle(color: Color(0xFF898989)),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 30),
-          ContinuousStudySection(targetUserId: targetUserId),
-          SizedBox(height: 30),
-          UsageTimeChartSection(targetUserId: targetUserId),
+
+          const SizedBox(height: 30),
+
+          ContinuousStudySection(targetUserId: widget.targetUserId),
+
+          const SizedBox(height: 30),
+
+          _buildBottomWidget(),
         ],
       ),
     );

@@ -3,33 +3,32 @@ import 'package:geumpumta/models/entity/stats/daily_statistics.dart';
 import 'package:geumpumta/provider/repository_provider.dart';
 import 'package:geumpumta/repository/stats/daily_statistics_repository.dart';
 
-final dailyStatsViewModelProvider =
-    StateNotifierProvider<DailyStatsViewModel, AsyncValue<DailyStatistics>>(
-        (ref) {
-  final repo = ref.watch(dailyStatisticsRepositoryProvider);
-  return DailyStatsViewModel(repo);
-});
+final dailyStatsViewModelProvider = StateNotifierProvider.family
+    .autoDispose<DailyStatsViewModel, AsyncValue<DailyStatistics>, int?>((
+      ref,
+      targetUserId,
+    ) {
+      final repo = ref.watch(dailyStatisticsRepositoryProvider);
+      return DailyStatsViewModel(repo, targetUserId);
+    });
 
 class DailyStatsViewModel extends StateNotifier<AsyncValue<DailyStatistics>> {
-  DailyStatsViewModel(this._repository) : super(const AsyncLoading());
+  final DailyStatisticsRepository repo;
+  final int? targetUserId;
 
-  final DailyStatisticsRepository _repository;
+  DailyStatsViewModel(this.repo, this.targetUserId)
+    : super(const AsyncLoading());
 
-  Future<void> loadDailyStatistics({
-    required String date,
-    int? targetUserId,
-  }) async {
+  Future<void> loadDailyStatistics({required String date}) async {
+    if (!mounted) return;
     state = const AsyncLoading();
-    try {
-      final stats = await _repository.fetchDailyStatistics(
-        date: date,
-        targetUserId: targetUserId,
-      );
-      state = AsyncData(stats);
-    } catch (e, st) {
-      state = AsyncError(e, st);
-    }
+
+    final result = await AsyncValue.guard(
+          () => repo.fetchDailyStatistics(date: date, targetUserId: targetUserId),
+    );
+
+    if (!mounted) return; 
+    state = result;
   }
+
 }
-
-

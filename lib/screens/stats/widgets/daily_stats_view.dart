@@ -45,13 +45,13 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
   void _fetchDailyStats() {
     final formatted = _formatDateForApi(_selectedDate);
     ref
-        .read(dailyStatsViewModelProvider.notifier)
+        .read(dailyStatsViewModelProvider(null).notifier)
         .loadDailyStatistics(date: formatted);
   }
 
   @override
   Widget build(BuildContext context) {
-    final dailyState = ref.watch(dailyStatsViewModelProvider);
+    final dailyState = ref.watch(dailyStatsViewModelProvider(null));
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -123,7 +123,7 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
 
   Widget _buildUsageTimeChart(AsyncValue<DailyStatistics> state) {
     return state.when(
-      data: (stats) => UsageTimeChartSection(slots: stats.slots),
+      data: (stats) => UsageTimeChartSection(slots: stats.slots, selectedDate: _selectedDate,),
       loading: () => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

@@ -152,6 +152,8 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
           itemBuilder: (context, index) {
             final data = list[index];
             return RankingBar(
+              periodOption: widget.periodOption,
+              dateTime: widget.selectedDate,
               ranking: data.rank,
               imgUrl: data.imageUrl,
               nickname: data.username ?? '알 수 없음',
@@ -182,6 +184,9 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
           itemBuilder: (context, index) {
             final data = list[index];
             return RankingBar(
+              periodOption: widget.periodOption,
+              isDetailAvailable: false,
+              dateTime: widget.selectedDate,
               ranking: data.rank,
               imgUrl:
                   'https://i.namu.wiki/i/65UQVcoBA0aPl5FwSu5OvRT9v_B_yNBVs1VHah0ULM8ucqv95vBcMuzDDc8fb1ejGcrKNoa-IhsnMq5n7YEqwQ.webp',

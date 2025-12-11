@@ -16,7 +16,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.geumpumta"
+    namespace = "com.geumpumgalchwi.geumpumta"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

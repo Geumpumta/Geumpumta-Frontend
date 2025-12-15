@@ -130,9 +130,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     print("endStudyInternal 호출됨");
 
     final vm = ref.read(studyViewmodelProvider);
-
-    DateTime endTime = DateTime.now();
-
+    
     try {
       final res = await vm.endStudyTime(
         EndStudyRequestDto(

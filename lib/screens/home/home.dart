@@ -129,32 +129,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Future<void> _endStudyInternal() async {
     print("endStudyInternal 호출됨");
 
-    _stopLocalTimer();
-    _stopHeartBeat();
-
-    _isTimerRunning = false;
-    _sessionStartTime = null;
-    _accumulatedDuration = Duration.zero;
-
-    ref.read(studyRunningProvider.notifier).state = false;
-
     final vm = ref.read(studyViewmodelProvider);
 
+    DateTime endTime = DateTime.now();
+
     try {
-      await vm.endStudyTime(
+      final res = await vm.endStudyTime(
         EndStudyRequestDto(
           studySessionId: _sessionId,
-          endTime: DateTime.now(),
+          endTime: endTime,
         ),
       );
-      print("endStudyTime 성공");
-    } catch (e) {
-      print("endStudyTime 실패: $e");
-    }
 
-    _sessionId = 0;
-    await _refreshFromServer();
+      if (res == null || !res.success) {
+        print("endStudyTime 실패 (응답 실패)");
+        return;
+      }
+
+      print("endStudyTime 성공 → 로컬 종료 시작");
+
+      _stopLocalTimer();
+      _stopHeartBeat();
+
+      _isTimerRunning = false;
+      _sessionStartTime = null;
+      _accumulatedDuration = Duration.zero;
+
+      ref.read(studyRunningProvider.notifier).state = false;
+
+      _sessionId = 0;
+
+      await _refreshFromServer();
+    } catch (e) {
+      print("endStudyTime 예외 발생: $e");
+    }
   }
+
 
 
   void _startLocalTimer() {

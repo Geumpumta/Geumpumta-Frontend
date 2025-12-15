@@ -137,7 +137,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       final res = await vm.endStudyTime(
         EndStudyRequestDto(
           studySessionId: _sessionId,
-          endTime: endTime,
         ),
       );
 
@@ -267,7 +266,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
                       final res = await vm.startStudyTime(
                         StartStudyTimeRequestDto(
-                          startTime: now,
                           gatewayIp: wifi['gatewayIp'] ?? '',
                           clientIp: wifi['ip'] ?? '',
                         ),

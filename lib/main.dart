@@ -60,7 +60,7 @@ class MyApp extends StatelessWidget {
       navigatorObservers: [routeObserver],
       theme: ThemeData(
         useMaterial3: false,
-        textTheme: GoogleFonts.notoSansKrTextTheme(
+        textTheme: GoogleFonts.ibmPlexSansKrTextTheme(
           Theme.of(context).textTheme,
         ),
       ),

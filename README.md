@@ -89,7 +89,6 @@ lib/
 
 ---
 
-
 ## 6. 시연 영상
 
 - Demo Video: https://youtube.com/shorts/FN-SAg3qcQg

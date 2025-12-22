@@ -76,11 +76,9 @@ lib/
 ## 5. 시스템 아키텍처
 
 <p align="center">
-  <img
-    src="https://github.com/user-attachments/assets/7dadbbd9-430b-4703-b6a0-453365a58a98"
-    alt="Geumpumta System Architecture"
-    width="600"
-  />
+  <img src="https://github.com/user-attachments/assets/7dadbbd9-430b-4703-b6a0-453365a58a98"
+       alt="Geumpumta System Architecture"
+       width="600"/>
 </p>
 
 <p align="center">
@@ -95,7 +93,35 @@ lib/
 
 ---
 
-## 7. 팀 구성
+## 7. 스크린샷
+
+### 인증 / 로그인
+
+| 로그인 | 학과 선택 | 이메일 인증 | 약관 동의 |
+|---|---|---|---|
+| <img src="./doc/images/login.png" width="160"/> | <img src="./doc/images/select_department.png" width="160"/> | <img src="./doc/images/verify_school_email.png" width="160"/> | <img src="./doc/images/personal_information_consent.png" width="160"/> |
+
+### 메인 / 타이머
+
+| 메인 타이머 | 타이머 실행 | Wi-Fi 에러 | 종료 경고 |
+|---|---|---|---|
+| <img src="./doc/images/main_timer.png" width="160"/> | <img src="./doc/images/timer2.png" width="160"/> | <img src="./doc/images/main_timer_school_wifi_error.png" width="160"/> | <img src="./doc/images/timer_error_exit_app.png" width="160"/> |
+
+### 랭킹
+
+| 일간 | 주간 | 월간 | 개인 |
+|---|---|---|---|
+| <img src="./doc/images/ranking_daily_department.png" width="160"/> | <img src="./doc/images/ranking_weekly_department.png" width="160"/> | <img src="./doc/images/ranking_monthly_department.png" width="160"/> | <img src="./doc/images/ranking_personal.png" width="160"/> |
+
+### 통계
+
+| 일간 | 주간 | 월간 | 상세 그래프 |
+|---|---|---|---|
+| <img src="./doc/images/stats_daily.png" width="160"/> | <img src="./doc/images/stats_weekly.png" width="160"/> | <img src="./doc/images/stats_monthly.png" width="160"/> | <img src="./doc/images/stats_daily_graph.png" width="160"/> |
+
+---
+
+## 8. 팀 구성
 
 | 역할 | 담당 |
 |---|---|
@@ -104,9 +130,10 @@ lib/
 
 ---
 
-## 8. 향후 업데이트
+## 9. 향후 업데이트
 
 - GPS / Beacon 인증
 - 주간 목표 기능
 - 디자인 시스템 개선
 - Firebase Analytics / Crashlytics
+****

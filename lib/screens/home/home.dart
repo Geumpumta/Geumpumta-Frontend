@@ -90,6 +90,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       if (res == null || !res.success) {
         print("endStudyTime 실패");
+        if (!mounted) return;
         ErrorDialog.show(context, "공부 종료에 실패했습니다.");
         return;
       }
@@ -97,6 +98,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _stopLocalTimer();
       _stopHeartBeat();
 
+      if (!mounted) return;
       setState(() {
         _isTimerRunning = false;
         _sessionStartTime = null;
@@ -109,6 +111,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       await _refreshFromServer();
     } catch (e) {
       print("endStudyTime 예외: $e");
+      if (!mounted) return;
       ErrorDialog.show(context, "공부 종료 중 오류가 발생했습니다.");
     }
   }

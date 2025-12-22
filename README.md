@@ -7,14 +7,17 @@ Flutter 기반 모바일 앱으로 **SSID 기반 학습 검증**, **실시간 �
 
 ## 1. 프로젝트 개요
 
-| 항목 | 내용 |
-|---|---|
-| 프로젝트명 | **Geumpumta** |
-| 대상 | 공학 계열 대학생 |
-| 목적 | 실제 학습 시간의 정확한 측정 및 비교 |
-| 핵심 가치 | 부정 방지 · 공정한 랭킹 · 실시간 동기화 |
-| 인증 방식 | Wi-Fi SSID 기반 학습 인증 |
-| 시간 기록 | Timer + Heartbeat 기반 서버 동기화 |
+**Geumpumta**는 공학 계열 대학생을 대상으로  
+실제 학습 시간을 보다 정확하게 측정하고 비교할 수 있도록 설계된  
+**집중 학습 시간 검증 및 랭킹 서비스**입니다.
+
+본 서비스는 **Wi-Fi SSID 기반 인증**을 통해 학습 환경을 제한함으로써  
+부정한 시간 기록을 방지하고,  
+**Timer + Heartbeat 구조**를 이용해 서버와 학습 시간을 실시간으로 동기화합니다.
+
+이를 통해 개인 단위뿐만 아니라  
+**학과 및 전체 단위의 공정한 랭킹과 통계 정보**를 제공합니다.
+
 
 ---
 
@@ -53,21 +56,21 @@ lib/
 
 ## 4. 주요 기능
 
-### 🔐 인증 / 로그인
+### 인증 / 로그인
 - OAuth 로그인 (Kakao / Google / Apple)
 - Access / Refresh Token 관리
 - 중복 로그인 방지
 
-### ⏱ 학습 타이머 & Heartbeat
+### 학습 타이머 & Heartbeat
 - 서버 기반 학습 세션 관리
 - 주기적 Heartbeat 전송
 - 앱 재실행 시 시간 유지
 
-### 📶 Wi-Fi 기반 학습 인증
+### Wi-Fi 기반 학습 인증
 - SSID/BSSID 검증
 - 지정된 네트워크에서만 학습 허용
 
-### 🏆 랭킹 & 통계
+### 랭킹 & 통계
 - 개인 / 학과 / 전체 랭킹
 - 일간 / 주간 / 월간 통계
 
@@ -119,14 +122,13 @@ lib/
 |---|---|---|---|
 | <img src="./doc/images/stats_daily.png" width="160"/> | <img src="./doc/images/stats_weekly.png" width="160"/> | <img src="./doc/images/stats_monthly.png" width="160"/> | <img src="./doc/images/stats_daily_graph.png" width="160"/> |
 
----
-
 ## 8. 팀 구성
 
 | 역할 | 담당 |
 |---|---|
-| Frontend (메인, 랭킹) | 이민우 |
-| Frontend (통계, 더보기) | 허광민 |
+| Frontend (메인, 랭킹) | [이민우](https://github.com/minwoo1119) |
+| Frontend (통계, 더보기) | [허광민](https://github.com/Pangmin2) |
+
 
 ---
 

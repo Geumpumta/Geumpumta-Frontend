@@ -83,7 +83,7 @@ class _DetailsInModalState extends ConsumerState<DetailsInModal> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
       width: double.infinity,
       height: widget.periodOption == PeriodOption.daily
-          ? MediaQuery.of(context).size.height * 0.85
+          ? MediaQuery.of(context).size.height * 0.9
           : MediaQuery.of(context).size.height * 0.65,
       child: Column(
         children: [

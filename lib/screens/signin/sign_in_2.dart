@@ -35,6 +35,8 @@ class _SignIn2ScreenState extends ConsumerState<SignIn2Screen> {
 
   @override
   Widget build(BuildContext context) {
+    final email =
+    ModalRoute.of(context)!.settings.arguments as String;
     final emailViewModel = ref.watch(emailViewModelProvider);
     final signUpState = ref.watch(signUpProvider);
     final isVerifying = ref.watch(isVerifyingProvider);
@@ -112,6 +114,7 @@ class _SignIn2ScreenState extends ConsumerState<SignIn2Screen> {
                           isCodeValid = valid;
                         });
                       },
+                      onReLoad: ()=>emailViewModel.sendEmailVerification(email),
                       inputType: InputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,

@@ -7,6 +7,7 @@ import 'package:geumpumta/screens/ranking/widgets/per_day_or_week_or_month.dart'
 import 'package:geumpumta/screens/ranking/widgets/ranking_board.dart';
 import 'package:geumpumta/screens/ranking/widgets/ranking_my_info.dart';
 import 'package:geumpumta/widgets/text_header/text_header.dart';
+import 'package:collection/collection.dart';
 
 import '../../viewmodel/rank/rank_personal_viewmodel.dart';
 
@@ -48,6 +49,26 @@ class _RankingScreenState extends ConsumerState<RankingScreen> {
       vm.getDailyPersonalRanking(null);
     });
   }
+
+  int? _getMyTotalMillis() {
+    final asyncState = ref.watch(rankPersonalViewModelProvider);
+    final userInfoState = ref.watch(userInfoStateProvider);
+
+    return asyncState.maybeWhen(
+      data: (response) {
+        if (response == null) return null;
+
+        final myRank = response.data.topRanks.firstWhereOrNull(
+              (e) => e.username == userInfoState?.nickName,
+        );
+
+        return myRank?.totalMillis;
+      },
+      orElse: () => null,
+    );
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +123,7 @@ class _RankingScreenState extends ConsumerState<RankingScreen> {
                 userInfoState?.profileImage ??
                 'https://i.namu.wiki/i/65UQVcoBA0aPl5FwSu5OvRT9v_B_yNBVs1VHah0ULM8ucqv95vBcMuzDDc8fb1ejGcrKNoa-IhsnMq5n7YEqwQ.webp',
             recordedTime: Duration(
-              milliseconds: userInfoState?.totalMillis ?? 0,
+              milliseconds: _getMyTotalMillis() ?? 0,
             ),
           ),
         ],

@@ -72,9 +72,7 @@ class UserRepository {
         success: false,
         data: null,
         code: data?['code'],
-        msg: data?['code'] == 'C001'
-            ? '이미 다른 계정으로 가입된 회원입니다.'
-            : '서버 오류가 발생했습니다.',
+        msg: data?['msg'],
       );
     }
   }

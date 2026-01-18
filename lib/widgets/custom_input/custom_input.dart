@@ -14,6 +14,7 @@ class CustomInput extends StatelessWidget {
     this.inputType = InputType.text,
     this.inputFormatters,
     this.errorText,
+    this.onReLoad,
   });
 
   final String title;
@@ -24,6 +25,7 @@ class CustomInput extends StatelessWidget {
   final InputType inputType;
   final String? errorText;
   final List<TextInputFormatter>? inputFormatters;
+  final VoidCallback? onReLoad;
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +78,7 @@ class CustomInput extends StatelessWidget {
               focusedBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: Color(0xFF0BAEFF)),
               ),
+              suffixIcon: onReLoad!=null?TextButton(onPressed: onReLoad, child: const Text('재전송')):null
             ),
           ),
         ],

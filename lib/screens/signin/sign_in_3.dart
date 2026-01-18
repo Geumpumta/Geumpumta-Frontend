@@ -7,7 +7,6 @@ import 'package:geumpumta/widgets/custom_search_bar/custom_search_bar.dart';
 import '../../provider/signin/signin_provider.dart';
 import '../../widgets/back_and_progress/back_and_progress.dart';
 import '../../widgets/custom_button/custom_button.dart';
-import '../../widgets/error_dialog/error_dialog.dart';
 
 class SignIn3Screen extends ConsumerStatefulWidget {
   const SignIn3Screen({super.key});

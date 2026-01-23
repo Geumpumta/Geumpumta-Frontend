@@ -27,6 +27,8 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
     <string>학교 WiFi 인증을 위해 위치 정보 접근이 필요합니다.</string>
+    <key>NSFamilyControlsUsageDescription</key>
+    <string>집중 시간 동안 방해되는 앱을 제한하기 위해 필요합니다.</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>

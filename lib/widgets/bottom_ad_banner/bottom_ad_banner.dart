@@ -116,7 +116,7 @@ class _BottomAdBannerState extends State<BottomAdBanner>
                         ),
                         child: const Center(
                           child: Text(
-                            '광고 배너',
+                            '임시 배너입니다.',
                             style: TextStyle(
                               fontSize: 16,
                               color: Color(0xFF999999),

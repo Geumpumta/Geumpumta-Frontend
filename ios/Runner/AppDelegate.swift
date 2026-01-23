@@ -3,32 +3,32 @@ import Flutter
 import Network
 
 @UIApplicationMain
-class AppDelegate: FlutterAppDelegate {
-    let monitor = NWPathMonitor()
+@objc class AppDelegate: FlutterAppDelegate {
+    private let monitor = NWPathMonitor()
+    private var networkChannel: FlutterMethodChannel?
 
     override func application(
         _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
 
-        // 1) Flutter plugin 등록 (shared_preferences 포함)
         GeneratedPluginRegistrant.register(with: self)
 
-        // 2) Flutter 엔진 가져오기
+        // 네트워크 변경 감지 관련 swift 코드
         let controller = window?.rootViewController as! FlutterViewController
 
-        // 3) MethodChannel 생성
-        let channel = FlutterMethodChannel(
+        networkChannel = FlutterMethodChannel(
             name: "network_monitor",
             binaryMessenger: controller.binaryMessenger
         )
 
-        // 4) 네트워크 모니터링 핸들러
-        monitor.pathUpdateHandler = { path in
+        monitor.pathUpdateHandler = { [weak self] path in
+            guard let self = self else { return }
+
             DispatchQueue.main.async {
                 if path.status == .satisfied {
                     let isWifi = path.usesInterfaceType(.wifi)
-                    channel.invokeMethod(
+                    self.networkChannel?.invokeMethod(
                         "network_changed",
                         arguments: [
                             "type": "changed",
@@ -36,7 +36,7 @@ class AppDelegate: FlutterAppDelegate {
                         ]
                     )
                 } else {
-                    channel.invokeMethod(
+                    self.networkChannel?.invokeMethod(
                         "network_changed",
                         arguments: [
                             "type": "lost",
@@ -47,10 +47,52 @@ class AppDelegate: FlutterAppDelegate {
             }
         }
 
-        // 5) 모니터 시작
         monitor.start(queue: DispatchQueue.global(qos: .background))
 
-        // 6) Flutter 기본 동작 이어가기
+
+
+        // Focus Control 관련 Swift 코드
+        let focusChannel = FlutterMethodChannel(
+            name: "focus_control",
+            binaryMessenger: controller.binaryMessenger
+        )
+
+        focusChannel.setMethodCallHandler { call, result in
+            Task { @MainActor in
+                switch call.method {
+
+                case "requestAuthorization":
+                    do {
+                        try await FocusControl.shared.requestAuthorization()
+                        result(true)
+                    } catch {
+                        result(
+                            FlutterError(
+                                code: "AUTH_FAILED",
+                                message: "Family Controls authorization failed",
+                                details: nil
+                            )
+                        )
+                    }
+
+                case "selectApps":
+                    FocusControl.shared.selectApps(from: controller)
+                    result(true)
+
+                case "startFocus":
+                    FocusControl.shared.startFocus()
+                    result(true)
+
+                case "stopFocus":
+                    FocusControl.shared.stopFocus()
+                    result(true)
+
+                default:
+                    result(FlutterMethodNotImplemented)
+                }
+            }
+        }
+
         return super.application(
             application,
             didFinishLaunchingWithOptions: launchOptions

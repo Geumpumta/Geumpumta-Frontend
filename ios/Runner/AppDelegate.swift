@@ -2,7 +2,7 @@ import UIKit
 import Flutter
 import Network
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate {
     private let monitor = NWPathMonitor()
     private var networkChannel: FlutterMethodChannel?

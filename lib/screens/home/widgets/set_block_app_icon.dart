@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geumpumta/util/ios_channels.dart';
-import 'package:geumpumta/util/focus_setup_store.dart';
 
 class SetBlockAppIcon extends StatelessWidget {
   const SetBlockAppIcon({super.key});
 
-  Future<void> _openBlockAppPicker(BuildContext context) async {
+  Future<void> _openPicker(BuildContext context) async {
     if (defaultTargetPlatform != TargetPlatform.iOS) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('iOS에서만 지원되는 기능이에요.')),
@@ -17,11 +16,10 @@ class SetBlockAppIcon extends StatelessWidget {
     try {
       await IosFocusControl.requestAuthorization();
       await IosFocusControl.selectApps();
-      await FocusSetupStore.setDone(true);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('차단 앱 설정 화면을 열었어요.')),
+          const SnackBar(content: Text('차단 앱 선택 화면을 열었어요.')),
         );
       }
     } catch (e) {
@@ -36,7 +34,7 @@ class SetBlockAppIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextButton.icon(
-      onPressed: () => _openBlockAppPicker(context),
+      onPressed: () => _openPicker(context),
       style: TextButton.styleFrom(
         foregroundColor: Colors.grey[600],
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

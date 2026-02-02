@@ -9,7 +9,6 @@ import 'package:geumpumta/screens/home/widgets/custom_timer_widget.dart';
 import 'package:geumpumta/screens/home/widgets/set_block_app_icon.dart';
 import 'package:geumpumta/screens/home/widgets/start_and_stop_btn.dart';
 import 'package:geumpumta/screens/home/widgets/total_progress_dot.dart';
-import 'package:geumpumta/screens/onboarding/onboarding_page.dart';
 import 'package:geumpumta/viewmodel/study/study_viewmodel.dart';
 import 'package:geumpumta/widgets/error_dialog/error_dialog.dart';
 import 'package:geumpumta/widgets/loading_dialog/loading_dialog.dart';
@@ -17,7 +16,6 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../provider/study/study_provider.dart';
 import '../../provider/userState/user_info_state.dart';
-import '../../util/focus_setup_store.dart';
 import '../../util/ios_channels.dart';
 import '../../widgets/top_logo_bar/top_logo_bar.dart';
 
@@ -81,7 +79,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     WidgetsBinding.instance.addObserver(this);
 
-    _maybeShowFocusOnboarding();
 
     _requestLocationPermission();
     _setupNetworkListener();
@@ -102,17 +99,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     _timer?.cancel();
     _heartBeatTimer?.cancel();
     super.dispose();
-  }
-
-  Future<void> _maybeShowFocusOnboarding() async {
-    final done = await FocusSetupStore.isDone();
-    if (done) return;
-    if (!mounted) return;
-
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const OnboardingPage()),
-    );
   }
 
   Future<void> _endStudyInternal() async {

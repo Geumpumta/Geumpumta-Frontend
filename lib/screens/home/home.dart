@@ -46,10 +46,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if (!_isTimerRunning) return;
     if (Theme.of(context).platform != TargetPlatform.iOS) return;
 
-    if (state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached) {
-      IosFocusControl.stopFocus();
+
+    if (state == AppLifecycleState.resumed) {
+      IosFocusControl.startFocus();
     }
   }
 
@@ -93,9 +92,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
 
-    if (Theme.of(context).platform == TargetPlatform.iOS) {
-      IosFocusControl.stopFocus();
-    }
+    // if (Theme.of(context).platform == TargetPlatform.iOS && !_isTimerRunning) {
+    //   IosFocusControl.stopFocus();
+    // }
     _timer?.cancel();
     _heartBeatTimer?.cancel();
     super.dispose();
@@ -142,12 +141,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       print("endStudyTime 예외: $e");
       if (!mounted) return;
       ErrorDialog.show(context, "공부 종료 중 오류가 발생했습니다.");
-    } finally {
-      if (Theme.of(context).platform == TargetPlatform.iOS && _isTimerRunning) {
-        try {
-          await IosFocusControl.stopFocus();
-        } catch (_) {}
-      }
     }
   }
 

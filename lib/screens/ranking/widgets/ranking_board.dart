@@ -82,6 +82,10 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
     }
   }
 
+  String _convertDeletedNickname(String nickname){
+    return nickname.replaceAll('deleted_', '');
+  }
+
   void _fetchRanking() {
     final period = widget.periodOption;
 
@@ -156,7 +160,7 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
               dateTime: widget.selectedDate,
               ranking: data.rank,
               imgUrl: data.imageUrl,
-              nickname: data.username ?? '알 수 없음',
+              nickname: _convertDeletedNickname(data.username??'알 수 없음'),
               recordedTime: Duration(milliseconds: data.totalMillis),
               userId: data.userId,
             );

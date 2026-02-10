@@ -42,7 +42,7 @@ class _SeasonRankingState extends State<SeasonRanking> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         child: Column(
-          spacing: 20,
+          spacing: 10,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

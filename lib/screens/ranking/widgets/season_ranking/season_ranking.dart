@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geumpumta/screens/ranking/widgets/season_ranking/my_info_in_season_rank.dart';
 import 'package:geumpumta/screens/ranking/widgets/season_ranking/remain_time.dart';
 import 'package:geumpumta/widgets/custom_dropdown/custom_dropdown.dart';
 
@@ -57,6 +58,15 @@ class _SeasonRankingState extends State<SeasonRanking> {
             ],
           ),
           RemainTime(dueDate: DateTime(2026, 03, 04)),
+          // 일단 더미 데이터로 넣어둠
+          MyInfoInSeasonRank(
+            imageUrl:
+                'https://fastly.picsum.photos/id/974/200/300.jpg?hmac=QEuRqsjG8spkqu72dWfkl4m-kSl5p-CEfHgx9dnnZLo',
+            nickname: '하이요',
+            rank: '1',
+            percentage: '82.9%',
+            totalStudyTime: Duration(hours: 49,minutes: 28,seconds: 19),
+          ),
         ],
       ),
     );

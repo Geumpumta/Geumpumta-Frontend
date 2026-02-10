@@ -1,32 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geumpumta/models/department.dart';
-import 'package:geumpumta/provider/userState/user_info_state.dart';
-import 'package:geumpumta/screens/ranking/widgets/detail_ranking.dart';
-import 'package:geumpumta/screens/ranking/widgets/per_day_or_week_or_month.dart';
-import 'package:geumpumta/screens/ranking/widgets/ranking_board.dart';
-import 'package:geumpumta/screens/ranking/widgets/ranking_my_info.dart';
-import 'package:geumpumta/widgets/text_header/text_header.dart';
-import 'package:collection/collection.dart';
+import 'package:geumpumta/screens/ranking/widgets/default_ranking.dart';
+import 'package:geumpumta/screens/ranking/widgets/season_ranking.dart';
 
-import '../../viewmodel/rank/rank_personal_viewmodel.dart';
+enum RankingTab { ranking, season }
 
-enum PeriodOption { daily, weekly, monthly }
-
-extension PeriodOptionExtension on PeriodOption {
-  String get koreanName {
+extension RankingTabExtension on RankingTab {
+  String get label {
     switch (this) {
-      case PeriodOption.daily:
-        return '일간';
-      case PeriodOption.weekly:
-        return '주간';
-      case PeriodOption.monthly:
-        return '월간';
+      case RankingTab.ranking:
+        return '랭킹';
+      case RankingTab.season:
+        return '시즌';
     }
   }
 }
-
-enum GroupOption { personal, department }
 
 class RankingScreen extends ConsumerStatefulWidget {
   const RankingScreen({super.key});
@@ -36,98 +24,190 @@ class RankingScreen extends ConsumerStatefulWidget {
 }
 
 class _RankingScreenState extends ConsumerState<RankingScreen> {
-  PeriodOption _selectedPeriod = PeriodOption.daily;
-  DateTime _selectedDate = DateTime.now();
-  GroupOption _selectedGroup = GroupOption.personal;
-
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final vm = ref.read(rankPersonalViewModelProvider.notifier);
-      vm.getDailyPersonalRanking(null);
-    });
-  }
-
-  int? _getMyTotalMillis() {
-    final asyncState = ref.watch(rankPersonalViewModelProvider);
-    final userInfoState = ref.watch(userInfoStateProvider);
-
-    return asyncState.maybeWhen(
-      data: (response) {
-        if (response == null) return null;
-
-        final myRank = response.data.topRanks.firstWhereOrNull(
-              (e) => e.username == userInfoState?.nickName,
-        );
-
-        return myRank?.totalMillis;
-      },
-      orElse: () => null,
-    );
-  }
-
-
+  RankingTab _selectedTab = RankingTab.ranking;
 
   @override
   Widget build(BuildContext context) {
-    final asyncState = ref.watch(rankPersonalViewModelProvider);
-    final userInfoState = ref.watch(userInfoStateProvider);
-
-    final myRanking = asyncState.when(
-      data: (response) => response?.data.myRanking,
-      loading: () => null,
-      error: (e, st) => null,
-    );
-
     return SafeArea(
       child: Column(
         children: [
-          const TextHeader(text: '랭킹'),
-
-          RankingMyInfo(
-            department: userInfoState?.department ?? Department.none,
-            nickname: userInfoState?.nickName ?? '알 수 없음',
-            duration: Duration(milliseconds: userInfoState?.totalMillis ?? 0),
-            ranking: myRanking?.rank ?? 5,
+          _RankingPopupHeader(
+            value: _selectedTab,
+            onSelected: (v) => setState(() => _selectedTab = v),
           ),
-
-          PerDayOrWeekOrMonth(
-            selectedOption: _selectedPeriod,
-            onChange: (option) {
-              setState(() {
-                _selectedPeriod = option;
-              });
-            },
-          ),
-
           Expanded(
-            child: RankingBoard(
-              periodOption: _selectedPeriod,
-              selectedDate: _selectedDate,
-              selectedGroup: _selectedGroup,
-              onGroupChanged: (g) {
-                setState(() => _selectedGroup = g);
-              },
-              onDateChanged: (d) {
-                setState(() => _selectedDate = d);
-              },
-            ),
-          ),
-
-          DetailRanking(
-            selectedTime: _selectedDate,
-            nickname: userInfoState?.nickName ?? '알 수 없음',
-            imageUrl:
-                userInfoState?.profileImage ??
-                'https://i.namu.wiki/i/65UQVcoBA0aPl5FwSu5OvRT9v_B_yNBVs1VHah0ULM8ucqv95vBcMuzDDc8fb1ejGcrKNoa-IhsnMq5n7YEqwQ.webp',
-            recordedTime: Duration(
-              milliseconds: _getMyTotalMillis() ?? 0,
-            ),
+            child: _selectedTab == RankingTab.ranking
+                ? const DefaultRanking()
+                : const SeasonRanking(),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _RankingPopupHeader extends StatelessWidget {
+  final RankingTab value;
+  final ValueChanged<RankingTab> onSelected;
+
+  const _RankingPopupHeader({
+    required this.value,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      child: Center(
+        child: Builder(
+          builder: (btnContext) {
+            return GestureDetector(
+              onTap: () => _showCenteredMenu(
+                context: btnContext,
+                current: value,
+                onSelected: onSelected,
+              ),
+              behavior: HitTestBehavior.opaque,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    value.label,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.expand_more, size: 24),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showCenteredMenu({
+    required BuildContext context,
+    required RankingTab current,
+    required ValueChanged<RankingTab> onSelected,
+  }) async {
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+    Overlay.of(context).context.findRenderObject() as RenderBox;
+
+    final Offset buttonTopLeft = button.localToGlobal(
+      Offset.zero,
+      ancestor: overlay,
+    );
+
+    const double menuWidth = 180;
+    const double menuTopGap = 8;
+
+    final double buttonCenterX = buttonTopLeft.dx + button.size.width / 2;
+    final double left = buttonCenterX - menuWidth / 2;
+    final double top = buttonTopLeft.dy + button.size.height + menuTopGap;
+
+    final double safeLeft = left.clamp(8.0, overlay.size.width - menuWidth - 8);
+    final double right = overlay.size.width - safeLeft - menuWidth;
+
+    final RelativeRect position = RelativeRect.fromLTRB(
+      safeLeft,
+      top,
+      right,
+      0,
+    );
+
+    final result = await showMenu<RankingTab>(
+      context: context,
+      position: position,
+      color: Colors.white,
+      elevation: 6,
+      constraints: const BoxConstraints.tightFor(width: menuWidth),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
+
+      items: RankingTab.values.map((e) {
+        final isSelected = e == current;
+
+        return _MenuEntry<RankingTab>(
+          value: e,
+          height: 48,
+          child: Container(
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: isSelected ? const Color(0xFFEAF6FF) : Colors.transparent,
+            ),
+            child: Row(
+              children: [
+                Text(
+                  e.label,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Spacer(),
+                if (isSelected)
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF2F80ED),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+
+    if (result != null) {
+      onSelected(result);
+    }
+  }
+}
+
+class _MenuEntry<T> extends PopupMenuEntry<T> {
+  final T value;
+  final Widget child;
+  final double _height;
+
+  const _MenuEntry({
+    required this.value,
+    required this.child,
+    double height = 48,
+  }) : _height = height;
+
+  @override
+  double get height => _height;
+
+  @override
+  bool represents(T? value) => this.value == value;
+
+  @override
+  State<_MenuEntry<T>> createState() => _MenuEntryState<T>();
+}
+
+class _MenuEntryState<T> extends State<_MenuEntry<T>> {
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => Navigator.pop<T>(context, widget.value),
+      child: widget.child,
     );
   }
 }

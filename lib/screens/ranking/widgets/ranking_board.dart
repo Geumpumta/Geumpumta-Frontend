@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/department.dart';
+import 'package:geumpumta/screens/ranking/widgets/period_option.dart';
 import 'package:geumpumta/screens/ranking/widgets/ranking_bar.dart';
 import 'package:geumpumta/screens/ranking/widgets/square_option_button.dart';
 
 import '../../../viewmodel/rank/rank_department_viewmodel.dart';
 import '../../../viewmodel/rank/rank_personal_viewmodel.dart';
-import '../ranking.dart';
 import 'custom_period_picker.dart';
+import 'group_option.dart';
 
 class RankingBoard extends ConsumerStatefulWidget {
   const RankingBoard({

@@ -6,6 +6,7 @@ import 'package:geumpumta/models/dto/study/end_study_request_dto.dart';
 import 'package:geumpumta/models/dto/study/send_heart_beat_request_dto.dart';
 import 'package:geumpumta/models/dto/study/start_study_time_request_dto.dart';
 import 'package:geumpumta/screens/home/widgets/custom_timer_widget.dart';
+import 'package:geumpumta/screens/home/widgets/set_block_app_icon.dart';
 import 'package:geumpumta/screens/home/widgets/start_and_stop_btn.dart';
 import 'package:geumpumta/screens/home/widgets/total_progress_dot.dart';
 import 'package:geumpumta/viewmodel/study/study_viewmodel.dart';
@@ -15,6 +16,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../provider/study/study_provider.dart';
 import '../../provider/userState/user_info_state.dart';
+import '../../util/ios_channels.dart';
 import '../../widgets/top_logo_bar/top_logo_bar.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -24,7 +26,8 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver {
   static const MethodChannel platform = MethodChannel("network_monitor");
 
   bool _isTimerRunning = false;
@@ -37,6 +40,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Timer? _timer;
   Timer? _heartBeatTimer;
   int _sessionId = 0;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!_isTimerRunning) return;
+    if (Theme.of(context).platform != TargetPlatform.iOS) return;
+
+
+    if (state == AppLifecycleState.resumed) {
+      IosFocusControl.startFocus();
+    }
+  }
 
   void _setupNetworkListener() {
     platform.setMethodCallHandler((call) async {
@@ -62,6 +76,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
 
+    WidgetsBinding.instance.addObserver(this);
+
+
     _requestLocationPermission();
     _setupNetworkListener();
 
@@ -73,6 +90,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+
+    // if (Theme.of(context).platform == TargetPlatform.iOS && !_isTimerRunning) {
+    //   IosFocusControl.stopFocus();
+    // }
     _timer?.cancel();
     _heartBeatTimer?.cancel();
     super.dispose();
@@ -95,6 +117,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return;
       }
 
+      if (Theme.of(context).platform == TargetPlatform.iOS) {
+        try {
+          await IosFocusControl.stopFocus();
+        } catch (_) {}
+      }
+
       _stopLocalTimer();
       _stopHeartBeat();
 
@@ -115,7 +143,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ErrorDialog.show(context, "공부 종료 중 오류가 발생했습니다.");
     }
   }
-
 
   void _startLocalTimer() {
     _timer?.cancel();
@@ -195,10 +222,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 60,
+              spacing: 30,
               children: [
                 const SizedBox(height: 60),
-
                 Column(
                   children: [
                     CustomTimerWidget(duration: _timerDuration),
@@ -206,6 +232,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     TotalProgressDot(duration: _timerDuration),
                   ],
                 ),
+                SetBlockAppIcon(),
                 StartAndStopBtn(
                   isTimerRunning: _isTimerRunning,
                   onStart: () async {
@@ -230,6 +257,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                       _sessionId = res.data!.studySessionId;
 
+                      if (Theme.of(context).platform == TargetPlatform.iOS) {
+                        try {
+                          await IosFocusControl.startFocus();
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  '차단 기능을 활성화하지 못했어요.\n'
+                                      '집중 차단 설정을 다시 확인해주세요.',
+                                ),
+                                behavior: SnackBarBehavior.floating,
+                                duration: Duration(seconds: 3),
+                              ),
+                            );
+                          }
+                        }
+                      }
+
                       setState(() {
                         _isTimerRunning = true;
                         _sessionStartTime = now;
@@ -253,7 +299,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ],
             ),
-
             const Positioned(top: 0, left: 0, right: 0, child: TopLogoBar()),
           ],
         ),

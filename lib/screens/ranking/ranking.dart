@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/screens/ranking/widgets/default_ranking.dart';
-import 'package:geumpumta/screens/ranking/widgets/season_ranking.dart';
+import 'package:geumpumta/screens/ranking/widgets/season_ranking/season_ranking.dart';
 
 import '../../widgets/custom_dropdown/custom_dropdown.dart';
 
@@ -36,28 +36,31 @@ class _RankingScreenState extends ConsumerState<RankingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-            child: Center(
-              child: CustomDropdown(
-                value: _selectedTab.label,
-                items: const ['랭킹', '시즌'],
-                onTap: (v) {
-                  if (v == null) return;
-                  setState(() => _selectedTab = _tabFromLabel(v));
-                },
+    return Container(
+      color: Colors.white,
+      child: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: Center(
+                child: CustomDropdown(
+                  value: _selectedTab.label,
+                  items: const ['랭킹', '시즌'],
+                  onTap: (v) {
+                    if (v == null) return;
+                    setState(() => _selectedTab = _tabFromLabel(v));
+                  },
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: _selectedTab == RankingTab.ranking
-                ? const DefaultRanking()
-                : const SeasonRanking(),
-          ),
-        ],
+            Expanded(
+              child: _selectedTab == RankingTab.ranking
+                  ? const DefaultRanking()
+                  : const SeasonRanking(),
+            ),
+          ],
+        ),
       ),
     );
   }

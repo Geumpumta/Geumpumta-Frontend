@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:geumpumta/screens/ranking/widgets/remain_time.dart';
+import 'package:geumpumta/screens/ranking/widgets/season_ranking/remain_time.dart';
 import 'package:geumpumta/widgets/custom_dropdown/custom_dropdown.dart';
 
 class SeasonRanking extends StatefulWidget {

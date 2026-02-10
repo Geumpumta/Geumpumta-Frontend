@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/entity/stats/grass_statistics.dart';
-import 'package:geumpumta/screens/ranking/ranking.dart';
 import 'package:geumpumta/screens/stats/widgets/build_motivation_content_with_highlight.dart';
 import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
+
+import '../../ranking/widgets/period_option.dart';
 
 class MakeMotivationHighlightText extends ConsumerWidget {
   const MakeMotivationHighlightText({

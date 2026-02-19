@@ -7,6 +7,7 @@ import 'package:geumpumta/repository/stats/grass_statistics_repository.dart';
 import 'package:geumpumta/repository/stats/monthly_statistics_repository.dart';
 import 'package:geumpumta/repository/stats/weekly_statistics_repository.dart';
 import 'package:geumpumta/repository/study/study_repository.dart';
+import 'package:geumpumta/repository/rank/season_rank_repository.dart';
 
 import '../repository/auth/auth_repository.dart';
 import '../repository/user/user_repository.dart';
@@ -67,4 +68,9 @@ final grassStatisticsRepositoryProvider = Provider<GrassStatisticsRepository>((
 ) {
   final api = ref.watch(grassStatisticsApiProvider);
   return GrassStatisticsRepository(api);
+});
+
+final seasonRankRepositoryProvider = Provider<SeasonRankRepository>((ref) {
+  final api = ref.watch(seasonRankApiProvider);
+  return SeasonRankRepository(seasonRankApi: api);
 });

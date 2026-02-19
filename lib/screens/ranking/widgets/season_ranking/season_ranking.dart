@@ -111,7 +111,7 @@ class _SeasonRankingState extends ConsumerState<SeasonRanking> {
   }
 
   String _seasonLabel(int year, int seasonNumber) {
-    return '$year-${seasonNumber}시즌';
+    return '$year-$seasonNumber시즌';
   }
 
   Future<void> _onDropdownTap(String? newValue) async {
@@ -170,7 +170,6 @@ class _SeasonRankingState extends ConsumerState<SeasonRanking> {
 
     final isLoading = seasonState.isLoading;
     final rankings = data?.rankings ?? <SeasonRankingItem>[];
-    final hasRankingData = rankings.isNotEmpty;
 
     final seasonItems = <String>[
       _seasonLabel(_selectedYear, 1),
@@ -245,14 +244,6 @@ class _SeasonRankingState extends ConsumerState<SeasonRanking> {
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 24),
                 child: CircularProgressIndicator(),
-              )
-            else if (!hasRankingData)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: Text(
-                  '데이터가 없습니다.',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
               )
             else
               MyInfoInSeasonRank(

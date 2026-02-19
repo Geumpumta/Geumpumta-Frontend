@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../core/api/fcm_api.dart';
@@ -24,8 +23,8 @@ final fcmApiProvider = Provider<FcmApi>((ref) {
 
 final fcmServiceProvider = Provider<FcmService>((ref) {
   return FcmService(
-    messaging: FirebaseMessaging.instance,
     fcmApi: ref.watch(fcmApiProvider),
     localNoti: ref.watch(localNotificationServiceProvider),
+    ref: ref,
   );
 });

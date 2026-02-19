@@ -146,9 +146,10 @@ class MoreScreen extends ConsumerWidget {
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
     final viewModel = ref.watch(authViewModelProvider.notifier);
+    final parentContext = context;
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: const Text(
             '로그아웃',
@@ -163,7 +164,7 @@ class MoreScreen extends ConsumerWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text(
                 '취소',
                 style: TextStyle(
@@ -174,22 +175,11 @@ class MoreScreen extends ConsumerWidget {
             ),
             TextButton(
               onPressed: () async {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
                 try {
-                  await viewModel.logout(context);
-                  if (context.mounted) {
-                    await Flushbar(
-                      message: '로그아웃되었습니다.',
-                      backgroundColor: Colors.green.shade600,
-                      flushbarPosition: FlushbarPosition.TOP,
-                      margin: const EdgeInsets.all(10),
-                      borderRadius: BorderRadius.circular(10),
-                      duration: const Duration(seconds: 2),
-                      icon: const Icon(Icons.check_circle, color: Colors.white),
-                    ).show(context);
-                  }
+                  await viewModel.logout(parentContext);
                 } catch (e) {
-                  if (context.mounted) {
+                  if (parentContext.mounted) {
                     await Flushbar(
                       message: '로그아웃 중 오류가 발생했습니다: $e',
                       backgroundColor: Colors.red.shade700,
@@ -198,7 +188,7 @@ class MoreScreen extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(10),
                       duration: const Duration(seconds: 2),
                       icon: const Icon(Icons.error_outline, color: Colors.white),
-                    ).show(context);
+                    ).show(parentContext);
                   }
                 }
               },
@@ -373,4 +363,3 @@ class MoreScreen extends ConsumerWidget {
     );
   }
 }
-

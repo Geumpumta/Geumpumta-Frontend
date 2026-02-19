@@ -14,18 +14,19 @@ class TopThreeAndRankings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SeasonRankingItem? byRank(int r) {
-      for (final x in rankings) {
-        if (x.rank == r) {
-          return x;
-        }
-      }
-      return null;
-    }
-
-    final first = byRank(1);
-    final second = byRank(2);
-    final third = byRank(3);
+    final sortedRankings = [...rankings]..sort((a, b) => a.rank.compareTo(b.rank));
+    final topThree = sortedRankings.take(3).toList();
+    final first = topThree.isNotEmpty ? topThree[0] : null;
+    final second = topThree.length > 1 ? topThree[1] : null;
+    final third = topThree.length > 2 ? topThree[2] : null;
+    final excludedUserIds = <int>{
+      if (first != null) first.userId,
+      if (second != null) second.userId,
+      if (third != null) third.userId,
+    };
+    final rankingBars = sortedRankings
+        .where((item) => !excludedUserIds.contains(item.userId))
+        .toList();
 
     if (rankings.isEmpty) {
       return const Padding(
@@ -103,7 +104,7 @@ class TopThreeAndRankings extends StatelessWidget {
           ),
         ),
 
-        ...rankings.map((item) {
+        ...rankingBars.map((item) {
           return RankingBar(
             ranking: item.rank,
             imgUrl: item.imageUrl.isEmpty

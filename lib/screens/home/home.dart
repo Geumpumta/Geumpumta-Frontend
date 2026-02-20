@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:geumpumta/models/dto/study/end_study_request_dto.dart';
 import 'package:geumpumta/models/dto/study/send_heart_beat_request_dto.dart';
 import 'package:geumpumta/models/dto/study/start_study_time_request_dto.dart';
 import 'package:geumpumta/screens/home/widgets/custom_timer_widget.dart';
+import 'package:geumpumta/screens/home/widgets/set_block_app_icon.dart';
 import 'package:geumpumta/screens/home/widgets/start_and_stop_btn.dart';
 import 'package:geumpumta/screens/home/widgets/total_progress_dot.dart';
 import 'package:geumpumta/viewmodel/study/study_viewmodel.dart';
@@ -15,6 +17,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../provider/study/study_provider.dart';
 import '../../provider/userState/user_info_state.dart';
+import '../../util/ios_channels.dart';
 import '../../widgets/top_logo_bar/top_logo_bar.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -28,7 +31,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const MethodChannel platform = MethodChannel("network_monitor");
 
   bool _isTimerRunning = false;
-  ProviderSubscription<bool>? _studyRunningSub;
 
   Duration _timerDuration = Duration.zero;
   Duration _accumulatedDuration = Duration.zero;
@@ -41,7 +43,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void _setupNetworkListener() {
     platform.setMethodCallHandler((call) async {
-      if (!mounted) return;
       if (!_isTimerRunning) return;
 
       if (call.method == "network_changed") {
@@ -64,40 +65,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
 
-    _isTimerRunning = ref.read(studyRunningProvider);
     _requestLocationPermission();
     _setupNetworkListener();
 
     final totalMillis = ref.read(userInfoStateProvider)?.totalMillis ?? 0;
     _timerDuration = Duration(milliseconds: totalMillis);
 
-    _studyRunningSub = ref.listenManual<bool>(
-      studyRunningProvider,
-      (previous, next) {
-        if (!next) {
-          _stopLocalTimer();
-          _stopHeartBeat();
-          if (!mounted) return;
-          setState(() {
-            _isTimerRunning = false;
-            _sessionStartTime = null;
-            _accumulatedDuration = Duration.zero;
-          });
-          _sessionId = 0;
-        }
-      },
-    );
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _refreshFromServer();
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshFromServer());
   }
 
   @override
   void dispose() {
-    platform.setMethodCallHandler(null);
-    _studyRunningSub?.close();
     _timer?.cancel();
     _heartBeatTimer?.cancel();
     super.dispose();
@@ -118,6 +96,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (!mounted) return;
         ErrorDialog.show(context, "공부 종료에 실패했습니다.");
         return;
+      }
+
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        try {
+          await IosFocusControl.stopFocus();
+        } catch (_) {}
       }
 
       _stopLocalTimer();
@@ -151,7 +135,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _updateTimerUI() {
-    if (!mounted) return;
     if (_sessionStartTime == null) return;
 
     setState(() {
@@ -171,10 +154,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _stopHeartBeat() => _heartBeatTimer?.cancel();
 
   Future<void> _sendHeartBeat() async {
-    if (!mounted) return;
     final vm = ref.read(studyViewmodelProvider);
     final wifi = await vm.getWIFIInfo();
-    if (!mounted) return;
 
     final res = await vm.sendHeartBeat(
       SendHeartBeatRequestDto(
@@ -185,7 +166,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
 
     if (res == null || !res.success) {
-      if (!mounted) return;
       ErrorDialog.show(context, res?.data.message ?? "하트비트 실패");
       await _endStudyInternal();
     }
@@ -193,7 +173,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _refreshFromServer() async {
     final response = await ref.read(studyViewmodelProvider).getStudyTime();
-    if (!mounted || response == null) return;
+    if (response == null) return;
 
     final totalMillis = response.data.totalStudySession;
 
@@ -224,17 +204,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 60,
+              spacing: 30,
               children: [
-                const SizedBox(height: 60),
+                const SizedBox(height: 30),
 
                 Column(
                   children: [
                     CustomTimerWidget(duration: _timerDuration),
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 40),
                     TotalProgressDot(duration: _timerDuration),
                   ],
                 ),
+                const SetBlockAppIcon(),
                 StartAndStopBtn(
                   isTimerRunning: _isTimerRunning,
                   onStart: () async {
@@ -242,7 +223,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     try {
                       final now = DateTime.now();
                       final wifi = await vm.getWIFIInfo();
-                      if (!mounted) return;
 
                       final res = await vm.startStudyTime(
                         StartStudyTimeRequestDto(
@@ -251,7 +231,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       );
 
-                      if (!mounted) return;
                       LoadingDialog.hide(context);
 
                       if (res == null || !res.success) {
@@ -261,7 +240,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                       _sessionId = res.data!.studySessionId;
 
-                      if (!mounted) return;
+                      if (defaultTargetPlatform == TargetPlatform.iOS) {
+                        try {
+                          await IosFocusControl.startFocus();
+                        } catch (_) {}
+                      }
+
                       setState(() {
                         _isTimerRunning = true;
                         _sessionStartTime = now;
@@ -273,16 +257,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       _startLocalTimer();
                       _startHeartBeat();
                     } catch (e) {
-                      if (!mounted) return;
                       LoadingDialog.hide(context);
                       ErrorDialog.show(context, "시작 실패: $e");
                     }
                   },
                   onStop: () async {
-                    if (!mounted) return;
                     LoadingDialog.show(context);
                     await _endStudyInternal();
-                    if (!mounted) return;
                     LoadingDialog.hide(context);
                   },
                 ),

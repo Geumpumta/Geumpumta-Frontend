@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -42,13 +43,11 @@ void main() async {
   runApp(
     ProviderScope(
       overrides: [
-        userInfoStateProvider.overrideWith(
-              (ref) {
-            final notifier = UserInfoNotifier();
-            if (initialUser != null) notifier.setUser(initialUser);
-            return notifier;
-          },
-        ),
+        userInfoStateProvider.overrideWith((ref) {
+          final notifier = UserInfoNotifier();
+          if (initialUser != null) notifier.setUser(initialUser);
+          return notifier;
+        }),
       ],
       child: const MyApp(),
     ),
@@ -94,34 +93,51 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
   }
 
   Future<void> _checkAuth() async {
-    final prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('accessToken');
-    final userString = prefs.getString('userInfo');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('accessToken');
+      final userString = prefs.getString('userInfo');
 
-    final hasValidAuth = accessToken != null &&
-        accessToken.isNotEmpty &&
-        userString != null;
+      final hasValidAuth =
+          accessToken != null && accessToken.isNotEmpty && userString != null;
 
-    if (mounted) {
-      setState(() {
-        _hasToken = hasValidAuth;
-        _isChecking = false;
-      });
-    }
+      if (mounted) {
+        setState(() {
+          _hasToken = hasValidAuth;
+        });
+      }
 
-    if (hasValidAuth) {
-      await ref.read(fcmServiceProvider).initAndRegisterToken();
+      if (hasValidAuth) {
+        unawaited(
+          ref.read(fcmServiceProvider).initAndRegisterToken().catchError((
+            Object error,
+            StackTrace stackTrace,
+          ) {
+            debugPrint('FCM init failed: $error');
+          }),
+        );
+      }
+    } catch (error, stackTrace) {
+      debugPrint('Auth check failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (mounted) {
+        setState(() {
+          _hasToken = false;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isChecking = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isChecking) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final user = ref.watch(userInfoStateProvider);

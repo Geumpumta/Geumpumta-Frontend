@@ -47,20 +47,20 @@ final class FocusControl {
 
         let now = Date()
         let cal = Calendar.current
-        let startDate = cal.date(byAdding: .minute, value: 1, to: now) ?? now
-        let startComp = cal.dateComponents([.hour, .minute], from: startDate)
-
-        let endComp = DateComponents(hour: 23, minute: 59)
+        let endDate = cal.date(byAdding: .hour, value: 12, to: now) ?? now
+        let startComp = cal.dateComponents([.year, .month, .day, .hour, .minute], from: now)
+        let endComp = cal.dateComponents([.year, .month, .day, .hour, .minute], from: endDate)
 
         let schedule = DeviceActivitySchedule(
             intervalStart: startComp,
             intervalEnd: endComp,
-            repeats: true
+            repeats: false
         )
 
         do {
-            try center.startMonitoring(DeviceActivityName("study"), during: schedule)
-            print("startMonitoring ok (start=\(startComp.hour ?? -1):\(startComp.minute ?? -1))")
+            center.stopMonitoring([STUDY_ACTIVITY_NAME])
+            try center.startMonitoring(STUDY_ACTIVITY_NAME, during: schedule)
+            print("startMonitoring ok (start=\(startComp), end=\(endComp))")
         } catch {
             print("startMonitoring failed: \(error)")
         }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:geumpumta/models/dto/study/end_study_request_dto.dart';
 import 'package:geumpumta/models/dto/study/send_heart_beat_request_dto.dart';
 import 'package:geumpumta/models/dto/study/start_study_time_request_dto.dart';
 import 'package:geumpumta/screens/home/widgets/custom_timer_widget.dart';
+import 'package:geumpumta/screens/home/widgets/set_block_app_icon.dart';
 import 'package:geumpumta/screens/home/widgets/start_and_stop_btn.dart';
 import 'package:geumpumta/screens/home/widgets/total_progress_dot.dart';
 import 'package:geumpumta/viewmodel/study/study_viewmodel.dart';
@@ -15,6 +17,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../provider/study/study_provider.dart';
 import '../../provider/userState/user_info_state.dart';
+import '../../util/ios_channels.dart';
 import '../../widgets/top_logo_bar/top_logo_bar.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -93,6 +96,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (!mounted) return;
         ErrorDialog.show(context, "공부 종료에 실패했습니다.");
         return;
+      }
+
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        try {
+          await IosFocusControl.stopFocus();
+        } catch (_) {}
       }
 
       _stopLocalTimer();
@@ -195,17 +204,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 60,
+              spacing: 30,
               children: [
-                const SizedBox(height: 60),
+                const SizedBox(height: 30),
 
                 Column(
                   children: [
                     CustomTimerWidget(duration: _timerDuration),
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 40),
                     TotalProgressDot(duration: _timerDuration),
                   ],
                 ),
+                const SetBlockAppIcon(),
                 StartAndStopBtn(
                   isTimerRunning: _isTimerRunning,
                   onStart: () async {
@@ -229,6 +239,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       }
 
                       _sessionId = res.data!.studySessionId;
+
+                      if (defaultTargetPlatform == TargetPlatform.iOS) {
+                        try {
+                          await IosFocusControl.startFocus();
+                        } catch (_) {}
+                      }
 
                       setState(() {
                         _isTimerRunning = true;

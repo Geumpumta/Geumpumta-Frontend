@@ -2,20 +2,20 @@ import 'package:geumpumta/models/dto/stats/daily_statistics_response_dto.dart';
 
 class DailyStatistics {
   final List<DailySlot> slots;
-  final int totalStudySeconds;
-  final int maxFocusSeconds;
+  final int totalStudyMilliseconds;
+  final int maxFocusMilliseconds;
 
   DailyStatistics({
     required this.slots,
-    required this.totalStudySeconds,
-    required this.maxFocusSeconds,
+    required this.totalStudyMilliseconds,
+    required this.maxFocusMilliseconds,
   });
 
   factory DailyStatistics.fromDto(DailyStatisticsDataDto dto, DateTime date) {
     return DailyStatistics(
       slots: dto.statisticsList.map((e) => DailySlot.fromDto(e, date)).toList(),
-      totalStudySeconds: dto.dayMaxFocusAndFullTimeStatistics.totalStudySeconds,
-      maxFocusSeconds: dto.dayMaxFocusAndFullTimeStatistics.maxFocusSeconds,
+      totalStudyMilliseconds: dto.dayMaxFocusAndFullTimeStatistics.totalStudyMilliseconds,
+      maxFocusMilliseconds: dto.dayMaxFocusAndFullTimeStatistics.maxFocusMilliseconds,
     );
   }
 }
@@ -23,12 +23,12 @@ class DailyStatistics {
 class DailySlot {
   final DateTime start;
   final DateTime end;
-  final int secondsStudied;
+  final int millisecondsStudied;
 
   DailySlot({
     required this.start,
     required this.end,
-    required this.secondsStudied,
+    required this.millisecondsStudied,
   });
 
   factory DailySlot.fromDto(DailySlotDto dto, DateTime date) {
@@ -69,7 +69,7 @@ class DailySlot {
     return DailySlot(
       start: start,
       end: end,
-      secondsStudied: dto.secondsStudied,
+      millisecondsStudied: dto.millisecondsStudied,
     );
   }
 }

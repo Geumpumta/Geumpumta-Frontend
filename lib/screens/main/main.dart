@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/screens/home/home.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../provider/study/study_provider.dart';
 import '../../viewmodel/stats/grass_stats_viewmodel.dart';
 import '../../widgets/error_dialog/error_dialog.dart';
+import '../../widgets/bottom_ad_banner/bottom_ad_banner.dart';
 import '../more/more.dart';
 import '../ranking/ranking.dart';
 import '../stats/stats.dart';
@@ -18,6 +20,7 @@ class MainScreen extends ConsumerStatefulWidget {
 
 class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
+  bool _showAdBanner = true;
 
   final List<Widget> _pages = const [
     HomeScreen(),
@@ -25,6 +28,26 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     RankingScreen(),
     MoreScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // 앱 시작 시 광고 배너 표시 여부 확인
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndShowAdBanner();
+    });
+  }
+
+  Future<void> _checkAndShowAdBanner() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hideAdBanner = prefs.getBool('hideAdBanner') ?? false;
+    
+    if (mounted) {
+      setState(() {
+        _showAdBanner = !hideAdBanner;
+      });
+    }
+  }
 
   void _onItemTapped(int index) {
     final isRunning = ref.read(studyRunningProvider);
@@ -47,7 +70,20 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final bool isRankingPage = _selectedIndex == 2;
 
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: Stack(
+        children: [
+          _pages[_selectedIndex],
+          // 하단 광고 배너 모달
+          if (_showAdBanner)
+            BottomAdBanner(
+              onClosed: () {
+                setState(() {
+                  _showAdBanner = false;
+                });
+              },
+            ),
+        ],
+      ),
       bottomNavigationBar: Container(
         padding: EdgeInsets.symmetric(vertical: 10),
         decoration: isRankingPage

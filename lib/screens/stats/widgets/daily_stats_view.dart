@@ -82,11 +82,11 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
     return state.when(
       data: (stats) => _buildStatsContainer(
         children: [
-          _buildStatRow('총 공부 시간', _formatDuration(stats.totalStudySeconds)),
+          _buildStatRow('총 공부 시간', _formatDuration(stats.totalStudyMilliseconds)),
           const SizedBox(height: 12),
-          _buildStatRow('최대 집중 시간', _formatDuration(stats.maxFocusSeconds)),
+          _buildStatRow('최대 집중 시간', _formatDuration(stats.maxFocusMilliseconds)),
           const SizedBox(height: 12),
-          _buildStatRow('집중 시간 합계', _formatDuration(stats.totalStudySeconds)),
+          _buildStatRow('집중 시간 합계', _formatDuration(stats.totalStudyMilliseconds)),
         ],
       ),
       loading: () => _buildStatsContainer(
@@ -202,8 +202,8 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
     );
   }
 
-  String _formatDuration(int seconds) {
-    final duration = Duration(seconds: seconds);
+  String _formatDuration(int milliseconds) {
+    final duration = Duration(milliseconds: milliseconds);
     final hours = duration.inHours.toString().padLeft(2, '0');
     final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
     final secs = (duration.inSeconds % 60).toString().padLeft(2, '0');
@@ -219,11 +219,11 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
   Widget _buildMotivationalMessage(AsyncValue<DailyStatistics> state) {
     return state.when(
       data: (stats) {
-        // 12시간 = 43200초
-        const targetSeconds = 12 * 3600;
-        final missedSeconds = targetSeconds - stats.totalStudySeconds;
+        // 12시간 = 43200000ms
+        const targetMilliseconds = 12 * 3600 * 1000;
+        final missedMilliseconds = targetMilliseconds - stats.totalStudyMilliseconds;
         final missedDuration = Duration(
-          seconds: missedSeconds < 0 ? 0 : missedSeconds,
+          milliseconds: missedMilliseconds < 0 ? 0 : missedMilliseconds,
         );
         final hours = missedDuration.inHours.toString().padLeft(2, '0');
         final minutes = (missedDuration.inMinutes % 60).toString().padLeft(

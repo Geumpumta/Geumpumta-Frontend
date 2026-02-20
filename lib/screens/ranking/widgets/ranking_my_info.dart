@@ -45,7 +45,7 @@ class _RankingMyInfoState extends State<RankingMyInfo> {
 
     return Container(
       padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-      color: Color(0xFFF8F9F9),
+      color: Colors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

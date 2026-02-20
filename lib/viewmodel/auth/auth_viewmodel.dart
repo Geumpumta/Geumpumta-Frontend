@@ -6,11 +6,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/entity/user/user.dart';
 import '../../provider/userState/user_info_state.dart';
+import '../../provider/notification/fcm_provider.dart';
 import '../../provider/repository_provider.dart';
 import '../../repository/auth/auth_repository.dart';
 import '../../repository/user/user_repository.dart';
 import '../../viewmodel/user/user_viewmodel.dart';
 import '../../routes/app_routes.dart';
+import '../../core/navigation/app_navigator.dart';
 
 final authViewModelProvider = StateNotifierProvider<AuthViewModel, bool>(
   (ref) => AuthViewModel(ref),
@@ -196,6 +198,8 @@ class AuthViewModel extends StateNotifier<bool> {
       await prefs.setString('userInfo', jsonString);
       debugPrint("userInfo 저장 완료: $jsonString");
 
+      await ref.read(fcmServiceProvider).initAndRegisterToken();
+
       if (userInfo.userRole == "GUEST") {
         Navigator.pushNamed(context, AppRoutes.signin1);
       } else {
@@ -220,15 +224,32 @@ class AuthViewModel extends StateNotifier<bool> {
   }
 
   Future<void> logout(BuildContext context) async {
+    await ref.read(fcmServiceProvider).deleteTokenOnServer();
     final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('accessToken');
+    await prefs.remove('refreshToken');
     await prefs.remove('userInfo');
-    ref.read(userInfoStateProvider.notifier).clear();
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+    await ref.read(userInfoStateProvider.notifier).clear();
+
+    final nav = rootNavigatorKey.currentState;
+    if (nav != null) {
+      nav.pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
+      return;
+    }
+
+    if (context.mounted) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.login,
+        (route) => false,
+      );
+    }
   }
 
   Future<void> deleteAccount(String accessToken) async {
     try {
       debugPrint('deleteAccount 시작');
+      await ref.read(fcmServiceProvider).deleteTokenOnServer();
       final userRepository = ref.read(userRepositoryProvider);
       final response = await userRepository.withdrawUser();
       debugPrint('deleteAccount 응답: success=${response.success}, message=${response.message}');

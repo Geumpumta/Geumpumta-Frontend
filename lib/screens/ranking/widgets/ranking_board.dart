@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/department.dart';
+import 'package:geumpumta/screens/ranking/widgets/period_option.dart';
 import 'package:geumpumta/screens/ranking/widgets/ranking_bar.dart';
 import 'package:geumpumta/screens/ranking/widgets/square_option_button.dart';
 
 import '../../../viewmodel/rank/rank_department_viewmodel.dart';
 import '../../../viewmodel/rank/rank_personal_viewmodel.dart';
-import '../ranking.dart';
 import 'custom_period_picker.dart';
+import 'group_option.dart';
 
 class RankingBoard extends ConsumerStatefulWidget {
   const RankingBoard({
@@ -80,6 +81,10 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
         if (isSameMonth(date, now)) return null;
         return date;
     }
+  }
+
+  String _convertDeletedNickname(String nickname){
+    return nickname.replaceAll('deleted_', '');
   }
 
   void _fetchRanking() {
@@ -156,7 +161,7 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
               dateTime: widget.selectedDate,
               ranking: data.rank,
               imgUrl: data.imageUrl,
-              nickname: data.username ?? '알 수 없음',
+              nickname: _convertDeletedNickname(data.username??'알 수 없음'),
               recordedTime: Duration(milliseconds: data.totalMillis),
               userId: data.userId,
             );

@@ -29,7 +29,7 @@ class DailyUsageChart extends StatelessWidget {
       final slotTotalHours = slotEndDecimal - slotStartDecimal;
       
       // slot의 집중 시간(시간 단위)
-      final focusHours = slot.secondsStudied / 3600.0;
+      final focusHours = slot.millisecondsStudied / 3600000.0;
       
       // slot이 걸치는 모든 2시간 구간 찾기
       final startIntervalIndex = (startHour ~/ 2).clamp(0, hours.length - 1);

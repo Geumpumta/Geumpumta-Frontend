@@ -42,36 +42,36 @@ class DailyStatisticsDataDto {
 class DailySlotDto {
   final String slotStart;
   final String slotEnd;
-  final int secondsStudied;
+  final int millisecondsStudied;
 
   DailySlotDto({
     required this.slotStart,
     required this.slotEnd,
-    required this.secondsStudied,
+    required this.millisecondsStudied,
   });
 
   factory DailySlotDto.fromJson(Map<String, dynamic> json) {
     return DailySlotDto(
       slotStart: json['slotStart'] as String? ?? '',
       slotEnd: json['slotEnd'] as String? ?? '',
-      secondsStudied: (json['secondsStudied'] as num?)?.toInt() ?? 0,
+      millisecondsStudied: (json['millisecondsStudied'] as num?)?.toInt() ?? 0,
     );
   }
 }
 
 class DaySummaryDto {
-  final int totalStudySeconds;
-  final int maxFocusSeconds;
+  final int totalStudyMilliseconds;
+  final int maxFocusMilliseconds;
 
   DaySummaryDto({
-    required this.totalStudySeconds,
-    required this.maxFocusSeconds,
+    required this.totalStudyMilliseconds,
+    required this.maxFocusMilliseconds,
   });
 
   factory DaySummaryDto.fromJson(Map<String, dynamic> json) {
     return DaySummaryDto(
-      totalStudySeconds: (json['totalStudySeconds'] as num?)?.toInt() ?? 0,
-      maxFocusSeconds: (json['maxFocusSeconds'] as num?)?.toInt() ?? 0,
+      totalStudyMilliseconds: (json['totalStudyMilliseconds'] as num?)?.toInt() ?? 0,
+      maxFocusMilliseconds: (json['maxFocusMilliseconds'] as num?)?.toInt() ?? 0,
     );
   }
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "446126843123",
+    "project_id": "opensw-9289b",
+    "storage_bucket": "opensw-9289b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446126843123:android:922366943cf588fe158386",
+        "android_client_info": {
+          "package_name": "com.geumpumgalchwi.geumpumta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_LcBrx_o_xheXGkLtxBuwss-lpclNVls"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

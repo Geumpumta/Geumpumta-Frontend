@@ -1,0 +1,2 @@
+enum GroupOption { personal, department }
+

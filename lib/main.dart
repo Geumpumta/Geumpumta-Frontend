@@ -3,10 +3,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:geumpumta/provider/userState/user_info_state.dart';
+import 'package:geumpumta/provider/notification/fcm_provider.dart';
+import 'package:geumpumta/core/navigation/app_navigator.dart';
 import 'package:geumpumta/screens/login/login.dart';
 import 'package:geumpumta/screens/main/main.dart';
 import 'package:geumpumta/routes/app_routes.dart';
@@ -18,6 +21,7 @@ final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
   final prefs = await SharedPreferences.getInstance();
   final userString = prefs.getString('userInfo');
@@ -57,6 +61,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: rootNavigatorKey,
       navigatorObservers: [routeObserver],
       theme: ThemeData(
         useMaterial3: false,
@@ -102,6 +107,10 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
         _hasToken = hasValidAuth;
         _isChecking = false;
       });
+    }
+
+    if (hasValidAuth) {
+      await ref.read(fcmServiceProvider).initAndRegisterToken();
     }
   }
 

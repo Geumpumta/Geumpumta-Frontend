@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:geumpumta/screens/ranking/ranking.dart';
+import 'package:geumpumta/screens/ranking/widgets/period_option.dart';
 
 class CustomPeriodPicker extends StatefulWidget {
   const CustomPeriodPicker({

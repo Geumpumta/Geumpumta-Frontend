@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geumpumta/screens/ranking/ranking.dart';
-import 'package:geumpumta/screens/stats/widgets/build_motivation_content_with_highlight.dart';
+import 'package:geumpumta/screens/ranking/widgets/period_option.dart';
 import 'package:geumpumta/screens/stats/widgets/continuous_study_section.dart';
 import 'package:geumpumta/screens/stats/widgets/usage_time_chart_section.dart';
 import 'package:geumpumta/screens/stats/widgets/make_motivation_highlight_text.dart';

@@ -10,7 +10,8 @@ import 'local_notification_service.dart';
 import '../../provider/study/study_provider.dart';
 import '../../viewmodel/study/study_viewmodel.dart';
 import '../../provider/userState/user_info_state.dart';
-import '../../widgets/notification_dialog/notification_dialog.dart';
+import '../../util/ios_channels.dart';
+import '../../widgets/common_dialog/common_dialog.dart';
 
 class FcmService {
   FcmService({
@@ -203,7 +204,7 @@ class FcmService {
       final context = rootNavigatorKey.currentContext;
       if (context != null) {
         final title = notification?.title ?? '알림';
-        NotificationDialog.show(context, title: title, body: notificationBody);
+        CommonDialog.show(context, title: title, message: notificationBody);
         _log('notification dialog shown: "$title"');
       } else {
         _log('notification dialog skipped: no navigator context');
@@ -216,6 +217,12 @@ class FcmService {
 
     if (type == 'STUDY_SESSION_FORCE_ENDED') {
       _log('force-ended message handling start');
+      try {
+        await IosFocusControl.stopFocus();
+        _log('ios focus stopped');
+      } catch (e) {
+        _log('ios focus stop failed: $e');
+      }
       await _refreshStudyState();
       _log('study state refreshed (stay on current screen)');
       return;

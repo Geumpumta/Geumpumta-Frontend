@@ -74,7 +74,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       previous,
       next,
     ) {
-      if (!next) {
+      if (previous == true && !next) {
         _applyStoppedStateFromProvider();
       }
     });
@@ -153,10 +153,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _applyStoppedStateFromProvider() async {
     if (!mounted) return;
-    if (!_isTimerRunning) {
-      await _refreshFromServer();
-      return;
-    }
+    if (!_isTimerRunning) return;
 
     _stopLocalTimer();
     setState(() {
@@ -173,11 +170,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (response == null) return;
 
     final totalMillis = response.data.totalStudySession;
+    final isStudying = response.data.isStudying;
+    final totalDuration = Duration(milliseconds: totalMillis);
 
-    if (!_isTimerRunning) {
+    if (!mounted) return;
+
+    if (isStudying) {
       setState(() {
-        _timerDuration = Duration(milliseconds: totalMillis);
+        _isTimerRunning = true;
+        _accumulatedDuration = totalDuration;
+        _sessionStartTime = DateTime.now();
+        _timerDuration = totalDuration;
       });
+      _startLocalTimer();
+      ref.read(studyRunningProvider.notifier).state = true;
+    } else {
+      _stopLocalTimer();
+      setState(() {
+        _isTimerRunning = false;
+        _sessionStartTime = null;
+        _accumulatedDuration = Duration.zero;
+        _sessionId = 0;
+        _timerDuration = totalDuration;
+      });
+      ref.read(studyRunningProvider.notifier).state = false;
     }
 
     ref.read(userInfoStateProvider.notifier).updateTotalMillis(totalMillis);

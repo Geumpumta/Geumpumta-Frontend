@@ -72,7 +72,7 @@ class AuthViewModel extends StateNotifier<bool> {
       }
 
       User? userInfo;
-      
+
       // 회원탈퇴 상태인 경우 바로 복구 다이얼로그 표시
       if (isWithdrawn) {
         if (context.mounted) {
@@ -92,7 +92,9 @@ class AuthViewModel extends StateNotifier<bool> {
                     .loadUserProfile();
                 debugPrint('복구 후 프로필 로드 성공: ${userInfo != null}');
               } on UserProfileException catch (e) {
-                debugPrint("복구 후 프로필 로드 실패 (UserProfileException): ${e.message}");
+                debugPrint(
+                  "복구 후 프로필 로드 실패 (UserProfileException): ${e.message}",
+                );
                 if (context.mounted) {
                   await Flushbar(
                     message: '프로필을 불러올 수 없습니다: ${e.message}',
@@ -140,7 +142,9 @@ class AuthViewModel extends StateNotifier<bool> {
               .loadUserProfile();
         } on UserProfileException catch (e) {
           // 회원탈퇴 관련 에러 코드 확인
-          if (e.code == 'WITHDRAWN' || e.code == '5001' || e.message.contains('탈퇴')) {
+          if (e.code == 'WITHDRAWN' ||
+              e.code == '5001' ||
+              e.message.contains('탈퇴')) {
             // 회원탈퇴 상태인 경우 복구 다이얼로그 표시
             if (context.mounted) {
               final shouldRestore = await _showRestoreAccountDialog(context);
@@ -165,10 +169,7 @@ class AuthViewModel extends StateNotifier<bool> {
             // 다른 에러인 경우
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(e.message),
-                  backgroundColor: Colors.red,
-                ),
+                SnackBar(content: Text(e.message), backgroundColor: Colors.red),
               );
             }
             return false;
@@ -199,11 +200,18 @@ class AuthViewModel extends StateNotifier<bool> {
       debugPrint("userInfo 저장 완료: $jsonString");
 
       await ref.read(fcmServiceProvider).initAndRegisterToken();
+      await ref
+          .read(fcmServiceProvider)
+          .registerCurrentTokenToServer(reason: 'after_login');
 
       if (userInfo.userRole == "GUEST") {
         Navigator.pushNamed(context, AppRoutes.signin1);
       } else {
-        Navigator.pushNamedAndRemoveUntil(context, AppRoutes.main, (route) => false);
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.main,
+          (route) => false,
+        );
       }
 
       return true;
@@ -252,14 +260,16 @@ class AuthViewModel extends StateNotifier<bool> {
       await ref.read(fcmServiceProvider).deleteTokenOnServer();
       final userRepository = ref.read(userRepositoryProvider);
       final response = await userRepository.withdrawUser();
-      debugPrint('deleteAccount 응답: success=${response.success}, message=${response.message}');
-      
+      debugPrint(
+        'deleteAccount 응답: success=${response.success}, message=${response.message}',
+      );
+
       // 회원탈퇴 성공 여부와 관계없이 모든 데이터 삭제
       final prefs = await SharedPreferences.getInstance();
       await prefs.clear();
       ref.read(userInfoStateProvider.notifier).clear();
       debugPrint('회원탈퇴: 로컬 데이터 삭제 완료');
-      
+
       if (!response.success) {
         throw Exception(response.message ?? '회원탈퇴에 실패했습니다.');
       }
@@ -278,26 +288,17 @@ class AuthViewModel extends StateNotifier<bool> {
         return AlertDialog(
           title: const Text(
             '계정 복구',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           content: const Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '탈퇴한 계정입니다.',
-                style: TextStyle(fontSize: 16),
-              ),
+              Text('탈퇴한 계정입니다.', style: TextStyle(fontSize: 16)),
               SizedBox(height: 12),
               Text(
                 '계정을 복구하시겠습니까?',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF666666),
-                ),
+                style: TextStyle(fontSize: 14, color: Color(0xFF666666)),
               ),
             ],
           ),
@@ -306,10 +307,7 @@ class AuthViewModel extends StateNotifier<bool> {
               onPressed: () => Navigator.of(context).pop(false),
               child: const Text(
                 '취소',
-                style: TextStyle(
-                  color: Color(0xFF999999),
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Color(0xFF999999), fontSize: 16),
               ),
             ),
             TextButton(
@@ -334,9 +332,11 @@ class AuthViewModel extends StateNotifier<bool> {
       debugPrint('계정 복구 시작');
       final userRepository = ref.read(userRepositoryProvider);
       final response = await userRepository.restoreUser();
-      
-      debugPrint('계정 복구 응답: success=${response.success}, msg=${response.msg}, code=${response.code}');
-      
+
+      debugPrint(
+        '계정 복구 응답: success=${response.success}, msg=${response.msg}, code=${response.code}',
+      );
+
       if (response.success) {
         debugPrint('계정 복구 성공');
         if (context.mounted) {
@@ -411,7 +411,7 @@ class AuthViewModel extends StateNotifier<bool> {
 
       final decoded = utf8.decode(base64Decode(normalized));
       final payloadMap = jsonDecode(decoded) as Map<String, dynamic>;
-      
+
       // WITHDRAWN 필드 확인
       final withdrawn = payloadMap['WITHDRAWN'];
       return withdrawn == true || withdrawn == 'true';

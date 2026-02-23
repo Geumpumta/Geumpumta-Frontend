@@ -7,7 +7,10 @@ class FcmApi {
   Future<void> registerToken({required String token}) async {
     await _dio.post(
       '/api/v1/fcm/token',
-      data: {'token': token},
+      data: {
+        // backend expects `fcmToken` (not `token`)
+        'fcmToken': token,
+      },
     );
   }
 

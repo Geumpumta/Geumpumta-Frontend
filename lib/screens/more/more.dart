@@ -373,4 +373,3 @@ class MoreScreen extends ConsumerWidget {
     );
   }
 }
-

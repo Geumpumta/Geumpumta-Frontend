@@ -217,9 +217,7 @@ class FcmService {
     if (type == 'STUDY_SESSION_FORCE_ENDED') {
       _log('force-ended message handling start');
       await _refreshStudyState();
-      _log('study state refreshed');
-      await AppNavigator.goToForceEnded();
-      _log('navigated to force-ended screen');
+      _log('study state refreshed (stay on current screen)');
       return;
     }
 

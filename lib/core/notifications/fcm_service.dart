@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -33,7 +34,8 @@ class FcmService {
 
   Future<void> initAndRegisterToken() async {
     if (_initialized) {
-      _log('init skipped: already initialized');
+      _log('init skipped: already initialized, retry token register');
+      await _registerTokenWhenAvailable();
       return;
     }
     _log('init start');
@@ -80,6 +82,18 @@ class FcmService {
     _log('init done');
   }
 
+  Future<void> registerCurrentTokenToServer({String reason = 'manual'}) async {
+    await _ensureFirebaseInitialized();
+    final token = await _getTokenSafely();
+    if (token == null || token.isEmpty) {
+      _log('registerCurrentTokenToServer skipped ($reason): token unavailable');
+      return;
+    }
+
+    _log('registerCurrentTokenToServer start ($reason): ${_maskToken(token)}');
+    await _safeRegisterToken(token);
+  }
+
   Future<NotificationSettings> _requestPermission() async {
     final settings = await _messaging.requestPermission(
       alert: true,
@@ -100,8 +114,12 @@ class FcmService {
     try {
       await _fcmApi.registerToken(token: token);
       _log('token registered: ${_maskToken(token)}');
-    } catch (_) {
-      _log('token register failed');
+    } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      final data = e.response?.data;
+      _log('token register failed: status=$status, type=${e.type}, data=$data');
+    } catch (e) {
+      _log('token register failed: $e');
     }
   }
 

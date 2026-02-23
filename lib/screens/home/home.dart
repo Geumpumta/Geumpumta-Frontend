@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/dto/study/end_study_request_dto.dart';
-import 'package:geumpumta/models/dto/study/send_heart_beat_request_dto.dart';
 import 'package:geumpumta/models/dto/study/start_study_time_request_dto.dart';
 import 'package:geumpumta/screens/home/widgets/custom_timer_widget.dart';
 import 'package:geumpumta/screens/home/widgets/set_block_app_icon.dart';
@@ -38,7 +37,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   DateTime? _sessionStartTime;
 
   Timer? _timer;
-  Timer? _heartBeatTimer;
   int _sessionId = 0;
 
   void _setupNetworkListener() {
@@ -77,7 +75,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void dispose() {
     _timer?.cancel();
-    _heartBeatTimer?.cancel();
     super.dispose();
   }
 
@@ -105,7 +102,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
 
       _stopLocalTimer();
-      _stopHeartBeat();
 
       if (!mounted) return;
       setState(() {
@@ -125,12 +121,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-
   void _startLocalTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(
       const Duration(seconds: 1),
-          (_) => _updateTimerUI(),
+      (_) => _updateTimerUI(),
     );
   }
 
@@ -144,32 +139,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _stopLocalTimer() => _timer?.cancel();
-
-  void _startHeartBeat() {
-    _heartBeatTimer?.cancel();
-    _heartBeatTimer =
-        Timer.periodic(const Duration(seconds: 30), (_) => _sendHeartBeat());
-  }
-
-  void _stopHeartBeat() => _heartBeatTimer?.cancel();
-
-  Future<void> _sendHeartBeat() async {
-    final vm = ref.read(studyViewmodelProvider);
-    final wifi = await vm.getWIFIInfo();
-
-    final res = await vm.sendHeartBeat(
-      SendHeartBeatRequestDto(
-        sessionId: _sessionId,
-        gatewayIp: wifi['gatewayIp'] ?? '',
-        clientIp: wifi['ip'] ?? '',
-      ),
-    );
-
-    if (res == null || !res.success) {
-      ErrorDialog.show(context, res?.data.message ?? "하트비트 실패");
-      await _endStudyInternal();
-    }
-  }
 
   Future<void> _refreshFromServer() async {
     final response = await ref.read(studyViewmodelProvider).getStudyTime();
@@ -255,7 +224,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ref.read(studyRunningProvider.notifier).state = true;
 
                       _startLocalTimer();
-                      _startHeartBeat();
                     } catch (e) {
                       LoadingDialog.hide(context);
                       ErrorDialog.show(context, "시작 실패: $e");

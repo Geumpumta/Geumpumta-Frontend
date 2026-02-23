@@ -40,14 +40,6 @@ class ProfilePageScreen extends ConsumerWidget {
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
-                Positioned(
-                  right: 0,
-                  child: IconButton(
-                    icon: const Icon(Icons.upload, color: Color(0xFF0BAEFF)),
-                    onPressed: () {
-                    },
-                  ),
-                ),
               ],
             ),
             Expanded(

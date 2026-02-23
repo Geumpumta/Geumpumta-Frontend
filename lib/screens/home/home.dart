@@ -217,12 +217,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 30,
+              spacing: 10,
               children: [
-                const SizedBox(height: 30),
-
                 Column(
                   children: [
+                    SizedBox(height: 100),
                     CustomTimerWidget(duration: _timerDuration),
                     const SizedBox(height: 40),
                     TotalProgressDot(duration: _timerDuration),

@@ -230,16 +230,19 @@ class FcmService {
     final response = await _ref.read(studyViewmodelProvider).getStudyTime();
     if (response != null) {
       final totalMillis = response.data.totalStudySession;
+      final isStudying = response.data.isStudying;
       await _ref
           .read(userInfoStateProvider.notifier)
           .updateTotalMillis(totalMillis);
-      _log('study state synced: totalMillis=$totalMillis');
+      _ref.read(studyRunningProvider.notifier).state = isStudying;
+      _log(
+        'study state synced: totalMillis=$totalMillis, isStudying=$isStudying',
+      );
     } else {
       _log('study state sync failed: null response');
+      _ref.read(studyRunningProvider.notifier).state = false;
+      _log('studyRunningProvider set to false (fallback)');
     }
-
-    _ref.read(studyRunningProvider.notifier).state = false;
-    _log('studyRunningProvider set to false');
   }
 
   Future<void> _ensureFirebaseInitialized() async {

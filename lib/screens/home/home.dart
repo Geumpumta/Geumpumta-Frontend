@@ -37,6 +37,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   DateTime? _sessionStartTime;
 
   Timer? _timer;
+  ProviderSubscription<bool>? _studyRunningSubscription;
   int _sessionId = 0;
 
   void _setupNetworkListener() {
@@ -69,12 +70,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final totalMillis = ref.read(userInfoStateProvider)?.totalMillis ?? 0;
     _timerDuration = Duration(milliseconds: totalMillis);
 
+    _studyRunningSubscription = ref.listenManual<bool>(studyRunningProvider, (
+      previous,
+      next,
+    ) {
+      if (!next) {
+        _applyStoppedStateFromProvider();
+      }
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) => _refreshFromServer());
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _studyRunningSubscription?.close();
     super.dispose();
   }
 
@@ -139,6 +150,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _stopLocalTimer() => _timer?.cancel();
+
+  Future<void> _applyStoppedStateFromProvider() async {
+    if (!mounted) return;
+    if (!_isTimerRunning) {
+      await _refreshFromServer();
+      return;
+    }
+
+    _stopLocalTimer();
+    setState(() {
+      _isTimerRunning = false;
+      _sessionStartTime = null;
+      _accumulatedDuration = Duration.zero;
+      _sessionId = 0;
+    });
+    await _refreshFromServer();
+  }
 
   Future<void> _refreshFromServer() async {
     final response = await ref.read(studyViewmodelProvider).getStudyTime();

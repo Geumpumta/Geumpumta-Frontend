@@ -1,63 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/entity/badge/activity_badge.dart';
+import 'package:geumpumta/viewmodel/badge/badge_viewmodel.dart';
 import 'package:geumpumta/widgets/text_header/text_header.dart';
 
-class ActivityBadgeScreen extends StatelessWidget {
+class ActivityBadgeScreen extends ConsumerStatefulWidget {
   const ActivityBadgeScreen({super.key});
 
   static List<ActivityBadge> _mockBadges() {
     return [
       // [출석 관련]
-      const ActivityBadge(id: 'att_1', name: '7일 연속 출석 (첫 주)', description: '첫 주 7일 연속 출석을 달성했어요.', isUnlocked: true, iconCodePoint: 0xe8b5),
-      const ActivityBadge(id: 'att_2', name: '30일 연속 출석', description: '30일 연속 출석으로 잔디를 심었어요.', isUnlocked: false, iconCodePoint: 0xe9e2),
-      const ActivityBadge(id: 'att_3', name: '출석 30일 누적', description: '총 30일 출석을 달성했어요.', isUnlocked: true, iconCodePoint: 0xe8b5),
-      const ActivityBadge(id: 'att_4', name: '출석 120일 누적', description: '총 120일 출석을 달성했어요.', isUnlocked: false, iconCodePoint: 0xe8b5),
-      const ActivityBadge(id: 'att_5', name: '출석 365일 누적', description: '1년 내내 출석한 당신, 대단해요!', isUnlocked: false, iconCodePoint: 0xe8b5),
-      const ActivityBadge(id: 'att_6', name: '30일 연속 출석 기록', description: '30일 연속으로 출석 기록을 세웠어요.', isUnlocked: false, iconCodePoint: 0xe9e2),
-      const ActivityBadge(id: 'att_7', name: '60일 연속 출석 기록', description: '60일 연속 출석을 달성했어요.', isUnlocked: false, iconCodePoint: 0xe9e2),
-      const ActivityBadge(id: 'att_8', name: '100일 연속 출석 기록', description: '100일 연속 출석, 정말 대단해요!', isUnlocked: false, iconCodePoint: 0xe9e2),
-      const ActivityBadge(id: 'att_9', name: '새벽 출석', description: '자정~06시에 접속했어요. 올빼미족!', isUnlocked: false, iconCodePoint: 0xe1b6),
-      const ActivityBadge(id: 'att_10', name: '주말 출석', description: '토요일과 일요일 모두 출석했어요.', isUnlocked: true, iconCodePoint: 0xe16b),
+      const ActivityBadge(id: 'att_1', name: '7일 연속 출석 (첫 주)', description: '첫 주 7일 연속 출석을 달성했어요.', iconCodePoint: 0xe8b5),
+      const ActivityBadge(id: 'att_2', name: '30일 연속 출석', description: '30일 연속 출석으로 잔디를 심었어요.', iconCodePoint: 0xe9e2),
+      const ActivityBadge(id: 'att_3', name: '출석 30일 누적', description: '총 30일 출석을 달성했어요.', iconCodePoint: 0xe8b5),
+      const ActivityBadge(id: 'att_4', name: '출석 120일 누적', description: '총 120일 출석을 달성했어요.', iconCodePoint: 0xe8b5),
+      const ActivityBadge(id: 'att_5', name: '출석 365일 누적', description: '1년 내내 출석한 당신, 대단해요!', iconCodePoint: 0xe8b5),
+      const ActivityBadge(id: 'att_6', name: '30일 연속 출석 기록', description: '30일 연속으로 출석 기록을 세웠어요.', iconCodePoint: 0xe9e2),
+      const ActivityBadge(id: 'att_7', name: '60일 연속 출석 기록', description: '60일 연속 출석을 달성했어요.', iconCodePoint: 0xe9e2),
+      const ActivityBadge(id: 'att_8', name: '100일 연속 출석 기록', description: '100일 연속 출석, 정말 대단해요!', iconCodePoint: 0xe9e2),
+      const ActivityBadge(id: 'att_9', name: '새벽 출석', description: '자정~06시에 접속했어요. 올빼미족!', iconCodePoint: 0xe1b6),
+      const ActivityBadge(id: 'att_10', name: '주말 출석', description: '토요일과 일요일 모두 출석했어요.', iconCodePoint: 0xe16b),
       // [학습 시간 관련]
-      const ActivityBadge(id: 'time_1', name: '시즌 100시간', description: '이번 시즌 100시간 학습을 달성했어요.', isUnlocked: true, iconCodePoint: 0xe425),
-      const ActivityBadge(id: 'time_2', name: '시즌 300시간', description: '이번 시즌 300시간 학습을 달성했어요.', isUnlocked: false, iconCodePoint: 0xe425),
-      const ActivityBadge(id: 'time_3', name: '시즌 500시간', description: '이번 시즌 500시간 학습을 달성했어요.', isUnlocked: false, iconCodePoint: 0xe425),
-      const ActivityBadge(id: 'time_4', name: '시즌 1000시간', description: '이번 시즌 1000시간, 정말 대단해요!', isUnlocked: false, iconCodePoint: 0xe425),
-      const ActivityBadge(id: 'time_5', name: '누적 1000시간', description: '총 학습 시간 1000시간을 달성했어요.', isUnlocked: false, iconCodePoint: 0xe425),
-      const ActivityBadge(id: 'time_6', name: '누적 3000시간', description: '총 학습 시간 3000시간을 달성했어요.', isUnlocked: false, iconCodePoint: 0xe425),
-      const ActivityBadge(id: 'time_7', name: '누적 5000시간', description: '총 학습 시간 5000시간을 달성했어요.', isUnlocked: false, iconCodePoint: 0xe425),
-      const ActivityBadge(id: 'time_8', name: '누적 10000시간', description: '1만 시간의 법칙, 당신이 해냈어요!', isUnlocked: false, iconCodePoint: 0xe425),
-      const ActivityBadge(id: 'time_9', name: '하루 10시간 달성', description: '하루에 10시간 이상 학습했어요.', isUnlocked: false, iconCodePoint: 0xe425),
-      const ActivityBadge(id: 'time_10', name: '한달 300시간', description: '한 달에 300시간 학습을 달성했어요.', isUnlocked: false, iconCodePoint: 0xe425),
+      const ActivityBadge(id: 'time_1', name: '시즌 100시간', description: '이번 시즌 100시간 학습을 달성했어요.', iconCodePoint: 0xe425),
+      const ActivityBadge(id: 'time_2', name: '시즌 300시간', description: '이번 시즌 300시간 학습을 달성했어요.', iconCodePoint: 0xe425),
+      const ActivityBadge(id: 'time_3', name: '시즌 500시간', description: '이번 시즌 500시간 학습을 달성했어요.', iconCodePoint: 0xe425),
+      const ActivityBadge(id: 'time_4', name: '시즌 1000시간', description: '이번 시즌 1000시간, 정말 대단해요!', iconCodePoint: 0xe425),
+      const ActivityBadge(id: 'time_5', name: '누적 1000시간', description: '총 학습 시간 1000시간을 달성했어요.', iconCodePoint: 0xe425),
+      const ActivityBadge(id: 'time_6', name: '누적 3000시간', description: '총 학습 시간 3000시간을 달성했어요.', iconCodePoint: 0xe425),
+      const ActivityBadge(id: 'time_7', name: '누적 5000시간', description: '총 학습 시간 5000시간을 달성했어요.', iconCodePoint: 0xe425),
+      const ActivityBadge(id: 'time_8', name: '누적 10000시간', description: '1만 시간의 법칙, 당신이 해냈어요!', iconCodePoint: 0xe425),
+      const ActivityBadge(id: 'time_9', name: '하루 10시간 달성', description: '하루에 10시간 이상 학습했어요.', iconCodePoint: 0xe425),
+      const ActivityBadge(id: 'time_10', name: '한달 300시간', description: '한 달에 300시간 학습을 달성했어요.', iconCodePoint: 0xe425),
       // [랭킹 관련]
-      const ActivityBadge(id: 'rank_1', name: '시즌 개인 랭킹 1위', description: '이번 시즌 개인 랭킹 1위를 달성했어요!', isUnlocked: false, iconCodePoint: 0xea79),
-      const ActivityBadge(id: 'rank_2', name: '시즌 개인 랭킹 2위', description: '이번 시즌 개인 랭킹 2위를 달성했어요.', isUnlocked: false, iconCodePoint: 0xea79),
-      const ActivityBadge(id: 'rank_3', name: '시즌 개인 랭킹 3위', description: '이번 시즌 개인 랭킹 3위를 달성했어요.', isUnlocked: true, iconCodePoint: 0xea79),
-      const ActivityBadge(id: 'rank_4', name: '시즌 학과 랭킹 1위', description: '이번 시즌 학과 랭킹 1위를 달성했어요!', isUnlocked: false, iconCodePoint: 0xea79),
-      const ActivityBadge(id: 'rank_5', name: '시즌 학과 랭킹 2위', description: '이번 시즌 학과 랭킹 2위를 달성했어요.', isUnlocked: false, iconCodePoint: 0xea79),
-      const ActivityBadge(id: 'rank_6', name: '시즌 학과 랭킹 3위', description: '이번 시즌 학과 랭킹 3위를 달성했어요.', isUnlocked: false, iconCodePoint: 0xea79),
-      const ActivityBadge(id: 'rank_7', name: '시즌 TOP 10% 진입', description: '이번 시즌 상위 10%에 진입했어요.', isUnlocked: false, iconCodePoint: 0xe838),
-      const ActivityBadge(id: 'rank_8', name: '시즌 TOP 1% 진입', description: '이번 시즌 상위 1%에 진입했어요!', isUnlocked: false, iconCodePoint: 0xe838),
+      const ActivityBadge(id: 'rank_1', name: '시즌 개인 랭킹 1위', description: '이번 시즌 개인 랭킹 1위를 달성했어요!', iconCodePoint: 0xea79),
+      const ActivityBadge(id: 'rank_2', name: '시즌 개인 랭킹 2위', description: '이번 시즌 개인 랭킹 2위를 달성했어요.', iconCodePoint: 0xea79),
+      const ActivityBadge(id: 'rank_3', name: '시즌 개인 랭킹 3위', description: '이번 시즌 개인 랭킹 3위를 달성했어요.', iconCodePoint: 0xea79),
+      const ActivityBadge(id: 'rank_4', name: '시즌 학과 랭킹 1위', description: '이번 시즌 학과 랭킹 1위를 달성했어요!', iconCodePoint: 0xea79),
+      const ActivityBadge(id: 'rank_5', name: '시즌 학과 랭킹 2위', description: '이번 시즌 학과 랭킹 2위를 달성했어요.', iconCodePoint: 0xea79),
+      const ActivityBadge(id: 'rank_6', name: '시즌 학과 랭킹 3위', description: '이번 시즌 학과 랭킹 3위를 달성했어요.', iconCodePoint: 0xea79),
+      const ActivityBadge(id: 'rank_7', name: '시즌 TOP 10% 진입', description: '이번 시즌 상위 10%에 진입했어요.', iconCodePoint: 0xe838),
+      const ActivityBadge(id: 'rank_8', name: '시즌 TOP 1% 진입', description: '이번 시즌 상위 1%에 진입했어요!', iconCodePoint: 0xe838),
       // [학과/그룹 관련]
-      const ActivityBadge(id: 'dept_1', name: '학과 내 1등', description: '이번 시즌 학과 1위를 달성했어요.', isUnlocked: false, iconCodePoint: 0xe80c),
-      const ActivityBadge(id: 'dept_2', name: '학과 출석률 1위', description: '학과 출석률 1위를 달성했어요.', isUnlocked: false, iconCodePoint: 0xe80c),
+      const ActivityBadge(id: 'dept_1', name: '학과 내 1등', description: '이번 시즌 학과 1위를 달성했어요.', iconCodePoint: 0xe80c),
+      const ActivityBadge(id: 'dept_2', name: '학과 출석률 1위', description: '학과 출석률 1위를 달성했어요.', iconCodePoint: 0xe80c),
       // [성장/첫 경험 관련]
-      const ActivityBadge(id: 'first_1', name: '첫 로그인', description: '금풀타에 처음 로그인했어요. 환영해요!', isUnlocked: true, iconCodePoint: 0xe77e),
-      const ActivityBadge(id: 'first_2', name: '첫 1시간 달성', description: '처음으로 1시간 학습을 달성했어요.', isUnlocked: true, iconCodePoint: 0xe425),
-      const ActivityBadge(id: 'first_3', name: '첫 10시간 달성', description: '처음으로 10시간 학습을 달성했어요.', isUnlocked: false, iconCodePoint: 0xe425),
-      const ActivityBadge(id: 'first_4', name: '첫 시즌 완주', description: '첫 시즌을 끝까지 완주했어요!', isUnlocked: false, iconCodePoint: 0xe153),
+      const ActivityBadge(id: 'first_1', name: '첫 로그인', description: '금풀타에 처음 로그인했어요. 환영해요!', iconCodePoint: 0xe77e),
+      const ActivityBadge(id: 'first_2', name: '첫 1시간 달성', description: '처음으로 1시간 학습을 달성했어요.', iconCodePoint: 0xe425),
+      const ActivityBadge(id: 'first_3', name: '첫 10시간 달성', description: '처음으로 10시간 학습을 달성했어요.', iconCodePoint: 0xe425),
+      const ActivityBadge(id: 'first_4', name: '첫 시즌 완주', description: '첫 시즌을 끝까지 완주했어요!', iconCodePoint: 0xe153),
       // [특별/이벤트 관련]
-      const ActivityBadge(id: 'evt_1', name: '1시즌 참여자', description: '1시즌에 참여한 특별한 기념 배지예요.', isUnlocked: false, iconCodePoint: 0xe8f6),
-      const ActivityBadge(id: 'evt_2', name: '베타 참여자', description: '베타 테스트에 참여해 주셔서 감사해요!', isUnlocked: true, iconCodePoint: 0xe8f6),
-      const ActivityBadge(id: 'evt_3', name: '시험 기간 집중', description: '기말고사 기간 N시간 달성 배지예요.', isUnlocked: false, iconCodePoint: 0xe80c),
-      const ActivityBadge(id: 'evt_4', name: '새해 첫날 출석', description: '새해 첫날에도 출석한 당신!', isUnlocked: false, iconCodePoint: 0xe8b5),
-      const ActivityBadge(id: 'evt_5', name: '크리스마스 출석', description: '크리스마스에도 함께해 줘서 고마워요.', isUnlocked: false, iconCodePoint: 0xe8f6),
+      const ActivityBadge(id: 'evt_1', name: '1시즌 참여자', description: '1시즌에 참여한 특별한 기념 배지예요.', iconCodePoint: 0xe8f6),
+      const ActivityBadge(id: 'evt_2', name: '베타 참여자', description: '베타 테스트에 참여해 주셔서 감사해요!', iconCodePoint: 0xe8f6),
+      const ActivityBadge(id: 'evt_3', name: '시험 기간 집중', description: '기말고사 기간 N시간 달성 배지예요.', iconCodePoint: 0xe80c),
+      const ActivityBadge(id: 'evt_4', name: '새해 첫날 출석', description: '새해 첫날에도 출석한 당신!', iconCodePoint: 0xe8b5),
+      const ActivityBadge(id: 'evt_5', name: '크리스마스 출석', description: '크리스마스에도 함께해 줘서 고마워요.', iconCodePoint: 0xe8f6),
     ];
   }
 
   @override
+  ConsumerState<ActivityBadgeScreen> createState() =>
+      _ActivityBadgeScreenState();
+}
+
+class _ActivityBadgeScreenState extends ConsumerState<ActivityBadgeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(badgeViewModelProvider.notifier).loadMyBadge();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final badges = _mockBadges();
+    final badges = ActivityBadgeScreen._mockBadges();
+    final badgeState = ref.watch(badgeViewModelProvider);
+    final representativeCode = badgeState.maybeWhen(
+      data: (badge) => badge?.code,
+      orElse: () => null,
+    );
     final Map<String, List<ActivityBadge>> sections = {
       '출석 관련': badges.where((b) => b.id.startsWith('att_')).toList(),
       '학습 시간 관련': badges.where((b) => b.id.startsWith('time_')).toList(),
@@ -122,9 +143,16 @@ class ActivityBadgeScreen extends StatelessWidget {
                           itemCount: list.length,
                           itemBuilder: (context, badgeIndex) {
                             final badge = list[badgeIndex];
+                            final isRepresentative = representativeCode != null &&
+                                badge.id == representativeCode;
                             return _BadgeGridItem(
                               badge: badge,
-                              onTap: () => _showBadgeDetail(context, badge),
+                              isRepresentative: isRepresentative,
+                              onTap: () => _showBadgeDetail(
+                                context,
+                                badge,
+                                isRepresentative,
+                              ),
                             );
                           },
                         ),
@@ -140,12 +168,17 @@ class ActivityBadgeScreen extends StatelessWidget {
     );
   }
 
-  void _showBadgeDetail(BuildContext context, ActivityBadge badge) {
+  void _showBadgeDetail(
+    BuildContext context,
+    ActivityBadge badge,
+    bool isRepresentative,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => _BadgeDetailSheet(badge: badge),
+      builder: (context) =>
+          _BadgeDetailSheet(badge: badge, isRepresentative: isRepresentative),
     );
   }
 }
@@ -153,10 +186,12 @@ class ActivityBadgeScreen extends StatelessWidget {
 class _BadgeGridItem extends StatelessWidget {
   const _BadgeGridItem({
     required this.badge,
+    required this.isRepresentative,
     required this.onTap,
   });
 
   final ActivityBadge badge;
+  final bool isRepresentative;
   final VoidCallback onTap;
 
   @override
@@ -169,7 +204,7 @@ class _BadgeGridItem extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFFE0E0E0), 
+            color: const Color(0xFFE0E0E0),
             width: 1,
           ),
           boxShadow: [
@@ -180,46 +215,78 @@ class _BadgeGridItem extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: isLocked
-                    ? const Color(0xFFE0E0E0)
-                    : const Color(0xFFFFE082),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: isLocked
-                  ? const Icon(Icons.lock, color: Color(0xFF9E9E9E), size: 28)
-                  : Icon(
-                      IconData(
-                        badge.iconCodePoint ?? 0xe8b5,
-                        fontFamily: 'MaterialIcons',
-                      ),
-                      color: const Color(0xFFE65100),
-                      size: 28,
+            Align(
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: isLocked
+                          ? const Color(0xFFE0E0E0)
+                          : const Color(0xFFFFE082),
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    child: isLocked
+                        ? const Icon(
+                            Icons.lock,
+                            color: Color(0xFF9E9E9E),
+                            size: 28,
+                          )
+                        : Icon(
+                            IconData(
+                              badge.iconCodePoint ?? 0xe8b5,
+                              fontFamily: 'MaterialIcons',
+                            ),
+                            color: const Color(0xFFE65100),
+                            size: 28,
+                          ),
+                  ),
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Text(
+                      badge.name,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: isLocked
+                            ? const Color(0xFF9E9E9E)
+                            : const Color(0xFF333333),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Text(
-                badge.name,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: isLocked ? const Color(0xFF9E9E9E) : const Color(0xFF333333),
+            if (isRepresentative)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0BAEFF),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    '대표',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 12),
           ],
         ),
       ),
@@ -227,13 +294,17 @@ class _BadgeGridItem extends StatelessWidget {
   }
 }
 
-class _BadgeDetailSheet extends StatelessWidget {
-  const _BadgeDetailSheet({required this.badge});
+class _BadgeDetailSheet extends ConsumerWidget {
+  const _BadgeDetailSheet({
+    required this.badge,
+    required this.isRepresentative,
+  });
 
   final ActivityBadge badge;
+  final bool isRepresentative;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isLocked = !badge.isUnlocked;
     return Container(
       padding: EdgeInsets.only(
@@ -313,17 +384,35 @@ class _BadgeDetailSheet extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: badge.canSelectAsRepresentative
-                  ? () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${badge.name}을(를) 대표 배지로 설정했어요.'),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    }
-                  : null,
+              onPressed: !badge.canSelectAsRepresentative || isRepresentative
+                  ? null
+                  : () async {
+                      try {
+                        await ref
+                            .read(badgeViewModelProvider.notifier)
+                            .setRepresentativeBadge(badge.id);
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                  '${badge.name}을(를) 대표 배지로 설정했어요.'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content:
+                                  const Text('대표 배지 설정에 실패했어요. 다시 시도해 주세요.'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      }
+                    },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 backgroundColor: const Color(0xFF0BAEFF),
@@ -335,9 +424,11 @@ class _BadgeDetailSheet extends StatelessWidget {
                 elevation: 0,
               ),
               child: Text(
-                badge.canSelectAsRepresentative
-                    ? '나의 대표 배지로 사용하기'
-                    : '잠금 해제 후 선택할 수 있어요',
+                !badge.canSelectAsRepresentative
+                    ? '잠금 해제 후 선택할 수 있어요'
+                    : isRepresentative
+                        ? '현재 대표 배지입니다'
+                        : '나의 대표 배지로 사용하기',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

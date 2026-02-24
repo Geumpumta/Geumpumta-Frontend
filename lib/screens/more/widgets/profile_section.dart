@@ -36,71 +36,74 @@ class _ProfileSectionContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFF0BAEFF).withValues(alpha: 0.2),
-          width: 1,
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, AppRoutes.profilePage),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: const Color(0xFF0BAEFF).withValues(alpha: 0.2),
+            width: 1,
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: const BoxDecoration(
-              color: Color(0xFFE6F7FF),
-              shape: BoxShape.circle,
+        child: Row(
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: const BoxDecoration(
+                color: Color(0xFFE6F7FF),
+                shape: BoxShape.circle,
+              ),
+              child: profileImageUrl != null && profileImageUrl!.isNotEmpty
+                  ? ClipOval(
+                      child: Image.network(
+                        profileImageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            _buildDefaultIcon(),
+                      ),
+                    )
+                  : _buildDefaultIcon(),
             ),
-            child: profileImageUrl != null && profileImageUrl!.isNotEmpty
-                ? ClipOval(
-                    child: Image.network(
-                      profileImageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          _buildDefaultIcon(),
+            const SizedBox(width: 18),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    nickname,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF333333),
                     ),
-                  )
-                : _buildDefaultIcon(),
-          ),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  nickname,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF333333),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  department.isEmpty ? '학과 정보 없음' : department,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF999999),
+                  const SizedBox(height: 4),
+                  Text(
+                    department.isEmpty ? '학과 정보 없음' : department,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF999999),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.edit,
-              color: Color(0xFF0BAEFF),
-              size: 24,
+            IconButton(
+              icon: const Icon(
+                Icons.arrow_forward_ios,
+                color: Color(0xFF0BAEFF),
+                size: 20,
+              ),
+              onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.profilePage);
+              },
             ),
-            onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.profileEdit);
-            },
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -163,4 +166,3 @@ class _ProfileSectionSkeleton extends StatelessWidget {
     );
   }
 }
-

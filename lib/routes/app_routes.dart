@@ -7,6 +7,8 @@ import 'package:geumpumta/screens/signin/sign_in_3.dart';
 import 'package:geumpumta/screens/more/more.dart';
 import 'package:geumpumta/screens/more/widgets/placeholder_screen.dart';
 import 'package:geumpumta/screens/more/widgets/profile_edit_screen.dart';
+import 'package:geumpumta/screens/more/widgets/profile_page_screen.dart';
+import 'package:geumpumta/screens/more/widgets/activity_badge_screen.dart';
 import 'package:geumpumta/screens/board/board_list_screen.dart';
 import 'package:geumpumta/screens/board/board_detail_screen.dart';
 
@@ -19,6 +21,8 @@ class AppRoutes{
   static const String more = '/more';
   static const String placeholder = '/placeholder';
   static const String profileEdit = '/profile_edit';
+  static const String profilePage = '/profile_page';
+  static const String activityBadge = '/activity_badge';
   static const String boardList = '/board_list';
   static const String boardDetail = '/board_detail';
 
@@ -35,6 +39,8 @@ class AppRoutes{
       return PlaceholderScreen(title: title);
     },
     profileEdit : (context)=> const ProfileEditScreen(),
+    profilePage : (context) => const ProfilePageScreen(),
+    activityBadge : (context) => const ActivityBadgeScreen(),
     boardList : (context) => const BoardListScreen(),
     boardDetail : (context) {
       final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;

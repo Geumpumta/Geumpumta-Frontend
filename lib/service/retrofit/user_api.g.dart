@@ -119,20 +119,15 @@ class _UserApi implements UserApi {
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late CompleteRegistrationResponseDto _value;
     try {
-      final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-      late CompleteRegistrationResponseDto _value;
-      try {
-        _value = CompleteRegistrationResponseDto.fromJson(_result.data!);
-      } on Object catch (e, s) {
-        errorLogger?.logError(e, s, _options);
-        rethrow;
-      }
-      return _value;
-    } on DioException catch (e) {
-      // DioException을 그대로 전달하여 repository에서 처리하도록 함
+      _value = CompleteRegistrationResponseDto.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
       rethrow;
     }
+    return _value;
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {

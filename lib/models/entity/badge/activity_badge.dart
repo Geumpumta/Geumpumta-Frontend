@@ -5,7 +5,7 @@ class ActivityBadge {
     required this.name,
     required this.description,
     this.subDescription,
-    required this.isUnlocked,
+    this.isUnlocked = false,
     this.iconCodePoint,
   });
 

@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'season_rank_api.dart';
+part of 'badge_api.dart';
 
 // dart format off
 
@@ -10,8 +10,8 @@ part of 'season_rank_api.dart';
 
 // ignore_for_file: unnecessary_brace_in_string_interps,no_leading_underscores_for_local_identifiers,unused_element,unnecessary_string_interpolations,unused_element_parameter,avoid_unused_constructor_parameters,unreachable_from_main
 
-class _SeasonRankApi implements SeasonRankApi {
-  _SeasonRankApi(this._dio, {this.baseUrl, this.errorLogger});
+class _BadgeApi implements BadgeApi {
+  _BadgeApi(this._dio, {this.baseUrl, this.errorLogger});
 
   final Dio _dio;
 
@@ -20,25 +20,25 @@ class _SeasonRankApi implements SeasonRankApi {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<GetSeasonRankingResponseDto> getCurrentSeasonRanking() async {
+  Future<BadgeResponseDto> getMyBadge() async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<GetSeasonRankingResponseDto>(
+    final _options = _setStreamType<BadgeResponseDto>(
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/api/v1/rank/season/current',
+            '/api/v1/badge/me',
             queryParameters: queryParameters,
             data: _data,
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late GetSeasonRankingResponseDto _value;
+    late BadgeResponseDto _value;
     try {
-      _value = GetSeasonRankingResponseDto.fromJson(_result.data!);
+      _value = BadgeResponseDto.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;
@@ -47,27 +47,28 @@ class _SeasonRankApi implements SeasonRankApi {
   }
 
   @override
-  Future<GetSeasonRankingResponseDto> getClosedSeasonRanking(
-    int seasonId,
+  Future<BadgeResponseDto> setRepresentativeBadge(
+    SetRepresentativeBadgeRequestDto request,
   ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
-    const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<GetSeasonRankingResponseDto>(
-      Options(method: 'GET', headers: _headers, extra: _extra)
+    final _data = <String, dynamic>{};
+    _data.addAll(request.toJson());
+    final _options = _setStreamType<BadgeResponseDto>(
+      Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/api/v1/rank/season/${seasonId}',
+            '/api/v1/badge/me/representative-badge',
             queryParameters: queryParameters,
             data: _data,
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late GetSeasonRankingResponseDto _value;
+    late BadgeResponseDto _value;
     try {
-      _value = GetSeasonRankingResponseDto.fromJson(_result.data!);
+      _value = BadgeResponseDto.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;

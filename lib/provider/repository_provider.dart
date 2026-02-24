@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geumpumta/repository/badge/badge_repository.dart';
 import 'package:geumpumta/repository/email/email_repository.dart';
 import 'package:geumpumta/repository/rank/rank_repository.dart';
 import 'package:geumpumta/repository/profile/profile_repository.dart';
@@ -73,4 +74,9 @@ final grassStatisticsRepositoryProvider = Provider<GrassStatisticsRepository>((
 final seasonRankRepositoryProvider = Provider<SeasonRankRepository>((ref) {
   final api = ref.watch(seasonRankApiProvider);
   return SeasonRankRepository(seasonRankApi: api);
+});
+
+final badgeRepositoryProvider = Provider<BadgeRepository>((ref) {
+  final api = ref.watch(badgeApiProvider);
+  return BadgeRepository(api);
 });

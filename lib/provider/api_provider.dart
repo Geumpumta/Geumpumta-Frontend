@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geumpumta/service/retrofit/badge_api.dart';
 import 'package:geumpumta/service/retrofit/daily_statistics_api.dart';
 import 'package:geumpumta/service/retrofit/email_api.dart';
 import 'package:geumpumta/service/retrofit/rank_api.dart';
@@ -66,4 +67,9 @@ final boardApiProvider = Provider<BoardApi>((ref) {
 final seasonRankApiProvider = Provider<SeasonRankApi>((ref) {
   final dio = ref.watch(dioProvider);
   return SeasonRankApi(dio);
+});
+
+final badgeApiProvider = Provider<BadgeApi>((ref) {
+  final dio = ref.watch(dioProvider);
+  return BadgeApi(dio);
 });

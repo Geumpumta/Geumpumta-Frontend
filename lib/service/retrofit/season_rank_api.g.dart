@@ -47,7 +47,9 @@ class _SeasonRankApi implements SeasonRankApi {
   }
 
   @override
-  Future<GetSeasonRankingResponseDto> getClosedSeasonRanking(int seasonId) async {
+  Future<GetSeasonRankingResponseDto> getClosedSeasonRanking(
+    int seasonId,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};

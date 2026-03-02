@@ -80,7 +80,12 @@ class UserViewModel extends StateNotifier<void> {
       ).show(context);
 
       await Future.delayed(const Duration(seconds: 1));
-      Navigator.pushNamedAndRemoveUntil(context, '/main', (route) => false);
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/main',
+        (route) => false,
+        arguments: {'checkUnnotifiedBadgesOnEnter': true},
+      );
 
       return response;
     } on DioException catch (e) {

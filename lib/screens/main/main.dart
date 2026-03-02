@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/screens/home/home.dart';
+import 'package:geumpumta/viewmodel/badge/unnotified_badge_check_viewmodel.dart';
+import 'package:geumpumta/widgets/badge/unnotified_badge_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../provider/study/study_provider.dart';
@@ -12,7 +14,9 @@ import '../ranking/ranking.dart';
 import '../stats/stats.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
-  const MainScreen({super.key});
+  const MainScreen({super.key, this.checkUnnotifiedBadgesOnEnter = false});
+
+  final bool checkUnnotifiedBadgesOnEnter;
 
   @override
   ConsumerState<MainScreen> createState() => _MainScreenState();
@@ -21,6 +25,7 @@ class MainScreen extends ConsumerStatefulWidget {
 class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
   bool _showAdBanner = true;
+  bool _didCheckUnnotifiedOnEnter = false;
 
   final List<Widget> _pages = const [
     HomeScreen(),
@@ -35,13 +40,28 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     // 앱 시작 시 광고 배너 표시 여부를 확인하는 콜백
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAndShowAdBanner();
+      _checkUnnotifiedBadgesOnEnterIfNeeded();
     });
+  }
+
+  Future<void> _checkUnnotifiedBadgesOnEnterIfNeeded() async {
+    if (!widget.checkUnnotifiedBadgesOnEnter || _didCheckUnnotifiedOnEnter) {
+      return;
+    }
+    _didCheckUnnotifiedOnEnter = true;
+
+    final badges = await ref
+        .read(unnotifiedBadgeCheckViewModelProvider.notifier)
+        .checkUnnotifiedBadges();
+
+    if (!mounted || badges.isEmpty) return;
+    await UnnotifiedBadgeModal.showSequence(context, badges);
   }
 
   Future<void> _checkAndShowAdBanner() async {
     final prefs = await SharedPreferences.getInstance();
     final hideAdBanner = prefs.getBool('hideAdBanner') ?? false;
-    
+
     if (mounted) {
       setState(() {
         _showAdBanner = !hideAdBanner;
@@ -59,7 +79,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     // 통계 탭으로 이동할 때마다 연속공부현황 provider 새로고침
     if (index == 1) {
-      ref.refresh(currentStreakProvider(null));
+      final _ = ref.refresh(currentStreakProvider(null));
     }
 
     setState(() => _selectedIndex = index);

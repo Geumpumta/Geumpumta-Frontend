@@ -45,15 +45,26 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   Future<void> _checkUnnotifiedBadgesOnEnterIfNeeded() async {
-    if (!widget.checkUnnotifiedBadgesOnEnter || _didCheckUnnotifiedOnEnter) {
+    if (_didCheckUnnotifiedOnEnter) {
       return;
     }
+
+    final prefs = await SharedPreferences.getInstance();
+    final todayKey = _localDateKey(DateTime.now());
+    final lastCheckedDate =
+        prefs.getString('lastUnnotifiedBadgeCheckDate');
+    final isFirstLaunchToday = lastCheckedDate != todayKey;
+    final shouldCheck =
+        widget.checkUnnotifiedBadgesOnEnter || isFirstLaunchToday;
+
+    if (!shouldCheck) return;
     _didCheckUnnotifiedOnEnter = true;
 
     final badges = await ref
         .read(unnotifiedBadgeCheckViewModelProvider.notifier)
         .checkUnnotifiedBadges();
 
+    await prefs.setString('lastUnnotifiedBadgeCheckDate', todayKey);
     if (!mounted || badges.isEmpty) return;
     await UnnotifiedBadgeModal.showSequence(context, badges);
   }
@@ -83,6 +94,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     }
 
     setState(() => _selectedIndex = index);
+  }
+
+  String _localDateKey(DateTime dateTime) {
+    final year = dateTime.year.toString().padLeft(4, '0');
+    final month = dateTime.month.toString().padLeft(2, '0');
+    final day = dateTime.day.toString().padLeft(2, '0');
+    return '$year-$month-$day';
   }
 
   Widget _buildBottomNavBar() {

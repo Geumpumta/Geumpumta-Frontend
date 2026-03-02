@@ -59,12 +59,17 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     if (!shouldCheck) return;
     _didCheckUnnotifiedOnEnter = true;
+    debugPrint(
+      'UnnotifiedBadgeCheck: today=$todayKey last=$lastCheckedDate '
+      'firstLaunchToday=$isFirstLaunchToday forced=${widget.checkUnnotifiedBadgesOnEnter}',
+    );
 
     final badges = await ref
         .read(unnotifiedBadgeCheckViewModelProvider.notifier)
         .checkUnnotifiedBadges();
 
     await prefs.setString('lastUnnotifiedBadgeCheckDate', todayKey);
+    debugPrint('UnnotifiedBadgeCheck: saved lastUnnotifiedBadgeCheckDate=$todayKey');
     if (!mounted || badges.isEmpty) return;
     await UnnotifiedBadgeModal.showSequence(context, badges);
   }

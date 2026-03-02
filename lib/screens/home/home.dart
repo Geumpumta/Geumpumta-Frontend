@@ -9,7 +9,9 @@ import 'package:geumpumta/screens/home/widgets/custom_timer_widget.dart';
 import 'package:geumpumta/screens/home/widgets/set_block_app_icon.dart';
 import 'package:geumpumta/screens/home/widgets/start_and_stop_btn.dart';
 import 'package:geumpumta/screens/home/widgets/total_progress_dot.dart';
+import 'package:geumpumta/viewmodel/badge/unnotified_badge_check_viewmodel.dart';
 import 'package:geumpumta/viewmodel/study/study_viewmodel.dart';
+import 'package:geumpumta/widgets/badge/unnotified_badge_modal.dart';
 import 'package:geumpumta/widgets/error_dialog/error_dialog.dart';
 import 'package:geumpumta/widgets/loading_dialog/loading_dialog.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -125,11 +127,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _sessionId = 0;
 
       await _refreshFromServer();
+      await _checkAndShowUnnotifiedBadges();
     } catch (e) {
       print("endStudyTime 예외: $e");
       if (!mounted) return;
       ErrorDialog.show(context, "공부 종료 중 오류가 발생했습니다.");
     }
+  }
+
+  Future<void> _checkAndShowUnnotifiedBadges() async {
+    final badges = await ref
+        .read(unnotifiedBadgeCheckViewModelProvider.notifier)
+        .checkUnnotifiedBadges();
+
+    if (!mounted || badges.isEmpty) return;
+    await UnnotifiedBadgeModal.showSequence(context, badges);
   }
 
   void _startLocalTimer() {

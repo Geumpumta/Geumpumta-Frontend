@@ -1,4 +1,5 @@
-import 'package:another_flushbar/flushbar.dart';
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -67,25 +68,13 @@ class UserViewModel extends StateNotifier<void> {
         return response;
       }
 
-      await updateUserInfo();
-
-      await Flushbar(
-        message: '계정 생성 완료!',
-        backgroundColor: Colors.green.shade600,
-        flushbarPosition: FlushbarPosition.TOP,
-        margin: const EdgeInsets.all(10),
-        borderRadius: BorderRadius.circular(10),
-        duration: const Duration(seconds: 1),
-        icon: const Icon(Icons.check_circle, color: Colors.white),
-      ).show(context);
-
-      await Future.delayed(const Duration(seconds: 1));
       Navigator.pushNamedAndRemoveUntil(
         context,
         '/main',
         (route) => false,
         arguments: {'checkUnnotifiedBadgesOnEnter': true},
       );
+      unawaited(updateUserInfo());
 
       return response;
     } on DioException catch (e) {

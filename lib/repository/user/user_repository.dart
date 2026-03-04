@@ -62,8 +62,8 @@ class UserRepository {
       );
 
       _authRepository.updateTokens(
-        response.data?.accessToken ?? '',
-        response.data?.refreshToken ?? '',
+        response.data?.token?.accessToken ?? '',
+        response.data?.token?.refreshToken ?? '',
       );
       return response;
     } on DioException catch (e) {
@@ -119,8 +119,8 @@ class UserRepository {
       if (response.success && response.data != null) {
         debugPrint('토큰 업데이트 시작');
         _authRepository.updateTokens(
-          response.data!.accessToken,
-          response.data!.refreshToken,
+          response.data!.token?.accessToken ?? '',
+          response.data!.token?.refreshToken ?? '',
         );
         debugPrint('토큰 업데이트 완료');
       }

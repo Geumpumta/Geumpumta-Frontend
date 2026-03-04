@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:geumpumta/models/dto/badge/badge_response_dto.dart';
+import 'package:geumpumta/models/dto/badge/my_badge_list_response_dto.dart';
 import 'package:geumpumta/models/dto/badge/set_representative_badge_request_dto.dart';
 import 'package:geumpumta/models/dto/badge/unnotified_badge_list_response_dto.dart';
 import 'package:retrofit/retrofit.dart';
@@ -10,9 +11,9 @@ part 'badge_api.g.dart';
 abstract class BadgeApi {
   factory BadgeApi(Dio dio, {String baseUrl}) = _BadgeApi;
 
-  /// 내 현재 대표 배지 조회
+  /// 내 활동 배지 전체 조회
   @GET('/api/v1/badge/me')
-  Future<BadgeResponseDto> getMyBadge();
+  Future<MyBadgeListResponseDto> getMyBadge();
 
   /// 미확인 배지 조회
   @GET('/api/v1/badge/unnotified')

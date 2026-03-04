@@ -10,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:geumpumta/provider/userState/user_info_state.dart';
 import 'package:geumpumta/provider/notification/fcm_provider.dart';
+import 'package:geumpumta/provider/repository_provider.dart';
 import 'package:geumpumta/core/navigation/app_navigator.dart';
 import 'package:geumpumta/screens/login/login.dart';
 import 'package:geumpumta/screens/main/main.dart';
@@ -85,15 +86,35 @@ class MyHomePage extends ConsumerStatefulWidget {
 class _MyHomePageState extends ConsumerState<MyHomePage> {
   bool _isChecking = true;
   bool _hasToken = false;
+  bool _isMaintenance = false;
+  String _maintenanceMessage = '서버 점검 중입니다.';
+  bool _didShowMaintenanceDialog = false;
 
   @override
   void initState() {
     super.initState();
-    _checkAuth();
+    _checkInitialState();
   }
 
-  Future<void> _checkAuth() async {
+  Future<void> _checkInitialState() async {
     try {
+      final maintenanceRepo = ref.read(maintenanceRepositoryProvider);
+      final maintenanceStatus = await maintenanceRepo.getMaintenanceStatus();
+
+      if (maintenanceStatus.isMaintenance) {
+        if (mounted) {
+          final serverMessage = maintenanceStatus.message?.trim();
+          setState(() {
+            _isMaintenance = true;
+            _maintenanceMessage =
+                (serverMessage == null || serverMessage.isEmpty)
+                ? '서버 점검 중입니다.'
+                : serverMessage;
+          });
+        }
+        return;
+      }
+
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('accessToken');
       final userString = prefs.getString('userInfo');
@@ -123,6 +144,7 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
       if (mounted) {
         setState(() {
           _hasToken = false;
+          _isMaintenance = false;
         });
       }
     } finally {
@@ -137,7 +159,12 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     if (_isChecking) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return _buildSplashScaffold();
+    }
+
+    if (_isMaintenance) {
+      _showMaintenanceDialogIfNeeded(context);
+      return _buildSplashScaffold();
     }
 
     final user = ref.watch(userInfoStateProvider);
@@ -147,5 +174,50 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
     }
 
     return const MainScreen();
+  }
+
+  void _showMaintenanceDialogIfNeeded(BuildContext context) {
+    if (_didShowMaintenanceDialog) {
+      return;
+    }
+    _didShowMaintenanceDialog = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text('서비스 점검 안내'),
+            content: Text(_maintenanceMessage),
+            actions: [
+              TextButton(
+                onPressed: () => SystemNavigator.pop(),
+                child: const Text('앱 종료'),
+              ),
+            ],
+          );
+        },
+      );
+    });
+  }
+
+  Widget _buildSplashScaffold() {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset('assets/splash/splash_logo.png', fit: BoxFit.cover),
+          if (_isChecking)
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
+        ],
+      ),
+    );
   }
 }

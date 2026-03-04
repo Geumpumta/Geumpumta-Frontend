@@ -91,6 +91,7 @@ flutter:
    - assets/image/signin/
    - assets/image/home/
    - assets/image/ranking/
+   - assets/image/maintenance/
    - assets/splash/
    - .env
   #   - images/a_dot_burr.jpeg

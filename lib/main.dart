@@ -190,15 +190,67 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
         context: context,
         barrierDismissible: false,
         builder: (dialogContext) {
-          return AlertDialog(
-            title: const Text('서비스 점검 안내'),
-            content: Text(_maintenanceMessage),
-            actions: [
-              TextButton(
-                onPressed: () => SystemNavigator.pop(),
-                child: const Text('앱 종료'),
+          return Dialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x22000000),
+                    blurRadius: 24,
+                    offset: Offset(0, 8),
+                  ),
+                ],
               ),
-            ],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 18),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      'assets/image/maintenance/maintenance_icon.png',
+                      width: 80,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    '서비스 점검 중입니다',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF222222),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _maintenanceMessage,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      height: 1.55,
+                      color: Color(0xFF555555),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    '앱을 종료한 뒤 잠시 후 다시 실행해 주세요.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF7A7A7A),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
         },
       );

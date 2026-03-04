@@ -20,12 +20,12 @@ class _BadgeApi implements BadgeApi {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<BadgeResponseDto> getMyBadge() async {
+  Future<MyBadgeListResponseDto> getMyBadge() async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<BadgeResponseDto>(
+    final _options = _setStreamType<MyBadgeListResponseDto>(
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
@@ -36,9 +36,36 @@ class _BadgeApi implements BadgeApi {
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late BadgeResponseDto _value;
+    late MyBadgeListResponseDto _value;
     try {
-      _value = BadgeResponseDto.fromJson(_result.data!);
+      _value = MyBadgeListResponseDto.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<UnnotifiedBadgeListResponseDto> getUnnotifiedBadges() async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<UnnotifiedBadgeListResponseDto>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/api/v1/badge/unnotified',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late UnnotifiedBadgeListResponseDto _value;
+    try {
+      _value = UnnotifiedBadgeListResponseDto.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;

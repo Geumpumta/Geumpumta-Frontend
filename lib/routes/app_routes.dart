@@ -31,7 +31,15 @@ class AppRoutes{
     signin1:(context)=>const SignIn1Screen(),
     signin2:(context)=>const SignIn2Screen(),
     signin3:(context)=>const SignIn3Screen(),
-    main : (context)=> const MainScreen(),
+    main : (context) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final checkUnnotifiedBadgesOnEnter =
+          args?['checkUnnotifiedBadgesOnEnter'] as bool? ?? false;
+      return MainScreen(
+        checkUnnotifiedBadgesOnEnter: checkUnnotifiedBadgesOnEnter,
+      );
+    },
     more : (context)=> const MoreScreen(),
     placeholder : (context) {
       final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?; // 타입검증 해야함

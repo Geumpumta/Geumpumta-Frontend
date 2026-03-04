@@ -4,6 +4,7 @@ import 'package:geumpumta/service/retrofit/daily_statistics_api.dart';
 import 'package:geumpumta/service/retrofit/email_api.dart';
 import 'package:geumpumta/service/retrofit/rank_api.dart';
 import 'package:geumpumta/service/retrofit/grass_statistics_api.dart';
+import 'package:geumpumta/service/retrofit/maintenance_api.dart';
 import 'package:geumpumta/service/retrofit/monthly_statistics_api.dart';
 import 'package:geumpumta/service/retrofit/profile_api.dart';
 import 'package:geumpumta/service/retrofit/study_api.dart';
@@ -72,4 +73,9 @@ final seasonRankApiProvider = Provider<SeasonRankApi>((ref) {
 final badgeApiProvider = Provider<BadgeApi>((ref) {
   final dio = ref.watch(dioProvider);
   return BadgeApi(dio);
+});
+
+final maintenanceApiProvider = Provider<MaintenanceApi>((ref) {
+  final dio = ref.watch(dioProvider);
+  return MaintenanceApi(dio);
 });

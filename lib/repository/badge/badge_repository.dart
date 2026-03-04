@@ -8,12 +8,12 @@ class BadgeRepository {
 
   final BadgeApi _api;
 
-  Future<MyBadge?> fetchMyBadge() async {
+  Future<List<MyBadge>> fetchMyBadges() async {
     final response = await _api.getMyBadge();
-    if (!response.success || response.data == null) {
-      return null;
+    if (!response.success) {
+      return const <MyBadge>[];
     }
-    return MyBadge.fromDto(response.data!);
+    return response.data.map(MyBadge.fromDto).toList();
   }
 
   Future<List<UnnotifiedBadge>> fetchUnnotifiedBadges() async {

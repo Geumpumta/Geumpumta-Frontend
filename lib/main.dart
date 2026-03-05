@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:new_version_plus/new_version_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:geumpumta/provider/userState/user_info_state.dart';
 import 'package:geumpumta/provider/notification/fcm_provider.dart';
@@ -89,6 +92,10 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
   bool _isMaintenance = false;
   String _maintenanceMessage = '서버 점검 중입니다.';
   bool _didShowMaintenanceDialog = false;
+  bool _shouldShowUpdateDialog = false;
+  bool _didShowUpdateDialog = false;
+  String? _updateStoreUrl;
+  String? _latestStoreVersion;
 
   @override
   void initState() {
@@ -114,6 +121,8 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
         }
         return;
       }
+
+      await _checkForAppUpdate();
 
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('accessToken');
@@ -156,6 +165,38 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
     }
   }
 
+  Future<void> _checkForAppUpdate() async {
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      return;
+    }
+
+    try {
+      final newVersion = NewVersionPlus(
+        androidId: 'com.geumpumgalchwi.geumpumta',
+        iOSAppStoreCountry: 'kr',
+      );
+
+      final status = await newVersion.getVersionStatus();
+      if (!mounted || status == null || !status.canUpdate) {
+        return;
+      }
+
+      final appStoreLink = status.appStoreLink;
+      if (appStoreLink.isEmpty) {
+        return;
+      }
+
+      setState(() {
+        _shouldShowUpdateDialog = true;
+        _updateStoreUrl = appStoreLink;
+        _latestStoreVersion = status.storeVersion;
+      });
+    } catch (error, stackTrace) {
+      debugPrint('App update check failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isChecking) {
@@ -167,6 +208,8 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
       return _buildSplashScaffold();
     }
 
+    _showUpdateDialogIfNeeded(context);
+
     final user = ref.watch(userInfoStateProvider);
 
     if (!_hasToken || user == null || user.userRole != 'USER') {
@@ -174,6 +217,94 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
     }
 
     return const MainScreen();
+  }
+
+  void _showUpdateDialogIfNeeded(BuildContext context) {
+    if (!_shouldShowUpdateDialog || _didShowUpdateDialog) {
+      return;
+    }
+    _didShowUpdateDialog = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text(
+              '새 업데이트가 있어요',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            content: Text(
+              _latestStoreVersion == null
+                  ? '더 좋은 사용성을 위해 최신 버전으로 업데이트해 주세요.'
+                  : '최신 버전(v$_latestStoreVersion)이 출시되었습니다.\n업데이트 후 더 안정적으로 이용할 수 있어요.',
+              style: const TextStyle(fontSize: 15, height: 1.5),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text(
+                  '나중에 하기',
+                  style: TextStyle(
+                    color: Color(0xFF888888),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(dialogContext).pop();
+                  await _openStoreForUpdate();
+                },
+                child: const Text(
+                  '업데이트 하러가기',
+                  style: TextStyle(
+                    color: Color(0xFF0BAEFF),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    });
+  }
+
+  Future<void> _openStoreForUpdate() async {
+    final storeUrl = _updateStoreUrl;
+    if (storeUrl == null || storeUrl.isEmpty) {
+      return;
+    }
+
+    final uri = Uri.tryParse(storeUrl);
+    if (uri == null) {
+      return;
+    }
+
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('스토어를 열 수 없습니다.')));
+      }
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('스토어 이동에 실패했습니다: $error')));
+    }
   }
 
   void _showMaintenanceDialogIfNeeded(BuildContext context) {
@@ -254,10 +385,7 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
         fit: StackFit.expand,
         children: [
           Image.asset('assets/splash/splash_logo.png', fit: BoxFit.cover),
-          if (_isChecking)
-            const Center(
-              child: CircularProgressIndicator(),
-            ),
+          if (_isChecking) const Center(child: CircularProgressIndicator()),
         ],
       ),
     );

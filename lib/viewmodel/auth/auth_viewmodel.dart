@@ -221,7 +221,7 @@ class AuthViewModel extends StateNotifier<bool> {
       if (context.mounted) {
         ErrorDialog.show(
           context,
-          '이미 로그인되어 있는 계정입니다.',
+          '다른 계정에서 이미 로그인되어있습니다!',
           title: '로그인할 수 없습니다!',
         );
       }

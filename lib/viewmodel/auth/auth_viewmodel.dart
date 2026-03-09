@@ -9,10 +9,12 @@ import '../../provider/userState/user_info_state.dart';
 import '../../provider/notification/fcm_provider.dart';
 import '../../provider/repository_provider.dart';
 import '../../repository/auth/auth_repository.dart';
+import '../../service/auth/auth_service.dart';
 import '../../repository/user/user_repository.dart';
 import '../../viewmodel/user/user_viewmodel.dart';
 import '../../routes/app_routes.dart';
 import '../../core/navigation/app_navigator.dart';
+import '../../widgets/error_dialog/error_dialog.dart';
 
 final authViewModelProvider = StateNotifierProvider<AuthViewModel, bool>(
   (ref) => AuthViewModel(ref),
@@ -53,7 +55,6 @@ class AuthViewModel extends StateNotifier<bool> {
         }
         return false;
       }
-
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('accessToken');
       print("로그인 후 accessToken: $accessToken");
@@ -215,6 +216,16 @@ class AuthViewModel extends StateNotifier<bool> {
       }
 
       return true;
+    } on AlreadyLoggedInException {
+      debugPrint('$provider 이미 로그인된 계정');
+      if (context.mounted) {
+        ErrorDialog.show(
+          context,
+          '이미 로그인되어 있는 계정입니다.',
+          title: '로그인할 수 없습니다!',
+        );
+      }
+      return false;
     } catch (e, st) {
       debugPrint('$provider 로그인 중 오류: $e\n$st');
       if (context.mounted) {

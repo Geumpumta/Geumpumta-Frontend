@@ -13,15 +13,18 @@ abstract class UserApi {
 
   @GET("/api/v1/user/profile")
   Future<GetUserInfoResponseDto> getUserProfile();
-  
+
   @POST('/api/v1/user/complete-registration')
   Future<CompleteRegistrationResponseDto> completeRegistration(
-      @Body() CompleteRegistrationRequestDto request
-      );
-  
+    @Body() CompleteRegistrationRequestDto request,
+  );
+
   @DELETE('/api/v1/user/withdraw')
   Future<CommonDto> withdrawUser();
-  
+
+  @DELETE('/api/v1/user/logout')
+  Future<CommonDto> logoutUser();
+
   @POST('/api/v1/user/restore')
   Future<CompleteRegistrationResponseDto> restoreUser();
 }

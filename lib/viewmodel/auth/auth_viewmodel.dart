@@ -243,6 +243,15 @@ class AuthViewModel extends StateNotifier<bool> {
   }
 
   Future<void> logout(BuildContext context) async {
+    try {
+      final response = await ref.read(userRepositoryProvider).logoutUser();
+      if (!response.success) {
+        debugPrint('서버 로그아웃 실패: ${response.message}');
+      }
+    } catch (e) {
+      debugPrint('서버 로그아웃 호출 중 예외 발생: $e');
+    }
+
     await ref.read(fcmServiceProvider).deleteTokenOnServer();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('accessToken');

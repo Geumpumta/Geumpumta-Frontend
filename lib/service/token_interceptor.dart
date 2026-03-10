@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/maintenance/maintenance_guard.dart';
+
 class TokenInterceptor extends Interceptor {
   final Dio dio;
   bool _isRefreshing = false;
@@ -10,7 +12,9 @@ class TokenInterceptor extends Interceptor {
 
   @override
   void onRequest(
-      RequestOptions options, RequestInterceptorHandler handler) async {
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
     // 토큰 갱신 요청은 Authorization 헤더를 추가 X
     if (options.path == '/auth/token/refresh') {
       return handler.next(options);
@@ -28,6 +32,11 @@ class TokenInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
+    if (MaintenanceGuard.isMaintenancePayload(err.response?.data)) {
+      MaintenanceGuard.showIfMaintenance(err.response?.data);
+      return handler.next(err);
+    }
+
     // 토큰 갱신 요청 자체가 실패한 경우 -> 그대로 전달
     if (err.requestOptions.path == '/auth/token/refresh') {
       return handler.next(err);
@@ -52,29 +61,28 @@ class TokenInterceptor extends Interceptor {
       }
 
       try {
-        final refreshDio = Dio(BaseOptions(
-          baseUrl: dio.options.baseUrl,
-          connectTimeout: const Duration(seconds: 10),
-          receiveTimeout: const Duration(seconds: 10),
-          headers: {'Content-Type': 'application/json'},
-        ));
+        final refreshDio = Dio(
+          BaseOptions(
+            baseUrl: dio.options.baseUrl,
+            connectTimeout: const Duration(seconds: 10),
+            receiveTimeout: const Duration(seconds: 10),
+            headers: {'Content-Type': 'application/json'},
+          ),
+        );
 
         final res = await refreshDio.post(
           '/auth/token/refresh',
-          data: {
-            'accessToken': oldAccessToken,
-            'refreshToken': refreshToken,
-          },
+          data: {'accessToken': oldAccessToken, 'refreshToken': refreshToken},
         );
 
         final raw = res.data;
         Map<String, dynamic>? tokenData;
-        
+
         if (raw is Map) {
           // success 필드 확인
           final success = raw['success'];
           final isSuccess = success == true || success == 'true';
-          
+
           if (isSuccess && raw['data'] is Map) {
             // { success: "true", data: { accessToken, refreshToken } } 형태
             tokenData = raw['data'] as Map<String, dynamic>;
@@ -126,6 +134,12 @@ class TokenInterceptor extends Interceptor {
     }
 
     handler.next(err);
+  }
+
+  @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    MaintenanceGuard.showIfMaintenance(response.data);
+    handler.next(response);
   }
 
   void _addToPendingRequests(

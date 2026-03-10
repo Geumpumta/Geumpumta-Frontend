@@ -389,11 +389,11 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
 
   Widget _buildSplashScaffold() {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFC7E5FA),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset('assets/splash/splash_logo.png', fit: BoxFit.cover),
+          Image.asset('assets/splash/splash_logo.png', fit: BoxFit.contain,alignment: Alignment.topCenter,),
           if (_isChecking) const Center(child: CircularProgressIndicator()),
         ],
       ),

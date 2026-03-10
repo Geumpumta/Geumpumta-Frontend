@@ -1,10 +1,19 @@
 class StudyTimeData {
   final int totalStudySession;
+  final bool isStudying;
 
-  StudyTimeData({required this.totalStudySession});
+  StudyTimeData({required this.totalStudySession, required this.isStudying});
 
-  factory StudyTimeData.fromJson(Map<String, dynamic> json) =>
-      StudyTimeData(totalStudySession: json['totalStudySession'] as int);
+  factory StudyTimeData.fromJson(Map<String, dynamic> json) => StudyTimeData(
+    totalStudySession: json['totalStudySession'] as int,
+    isStudying: _parseBool(json['isStudying']),
+  );
+
+  static bool _parseBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is String) return value.toLowerCase() == 'true';
+    return false;
+  }
 }
 
 class GetStudyTimeResponseDto {

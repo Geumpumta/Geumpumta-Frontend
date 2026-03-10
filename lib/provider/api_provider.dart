@@ -1,14 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geumpumta/service/retrofit/badge_api.dart';
 import 'package:geumpumta/service/retrofit/daily_statistics_api.dart';
 import 'package:geumpumta/service/retrofit/email_api.dart';
 import 'package:geumpumta/service/retrofit/rank_api.dart';
 import 'package:geumpumta/service/retrofit/grass_statistics_api.dart';
+import 'package:geumpumta/service/retrofit/maintenance_api.dart';
 import 'package:geumpumta/service/retrofit/monthly_statistics_api.dart';
 import 'package:geumpumta/service/retrofit/profile_api.dart';
 import 'package:geumpumta/service/retrofit/study_api.dart';
 import 'package:geumpumta/service/retrofit/user_api.dart';
 import 'package:geumpumta/service/retrofit/weekly_statistics_api.dart';
 import 'package:geumpumta/service/retrofit/board_api.dart';
+import 'package:geumpumta/service/retrofit/season_rank_api.dart';
 
 import 'dio_provider.dart';
 
@@ -60,4 +63,19 @@ final grassStatisticsApiProvider = Provider<GrassStatisticsApi>((ref) {
 final boardApiProvider = Provider<BoardApi>((ref) {
   final dio = ref.watch(dioProvider);
   return BoardApi(dio);
+});
+
+final seasonRankApiProvider = Provider<SeasonRankApi>((ref) {
+  final dio = ref.watch(dioProvider);
+  return SeasonRankApi(dio);
+});
+
+final badgeApiProvider = Provider<BadgeApi>((ref) {
+  final dio = ref.watch(dioProvider);
+  return BadgeApi(dio);
+});
+
+final maintenanceApiProvider = Provider<MaintenanceApi>((ref) {
+  final dio = ref.watch(dioProvider);
+  return MaintenanceApi(dio);
 });

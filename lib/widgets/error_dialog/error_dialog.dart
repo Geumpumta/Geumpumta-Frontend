@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 class ErrorDialog {
-  static void show(BuildContext context, String message) {
+  static void show(
+    BuildContext context,
+    String message, {
+    String title = "오류가 발생했습니다",
+  }) {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -35,9 +39,9 @@ class ErrorDialog {
                     size: 46,
                   ),
                   const SizedBox(height: 15),
-                  const Text(
-                    "오류가 발생했습니다",
-                    style: TextStyle(
+                  Text(
+                    title,
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,

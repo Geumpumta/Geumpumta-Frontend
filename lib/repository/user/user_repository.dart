@@ -62,8 +62,8 @@ class UserRepository {
       );
 
       _authRepository.updateTokens(
-        response.data?.accessToken ?? '',
-        response.data?.refreshToken ?? '',
+        response.data?.token?.accessToken ?? '',
+        response.data?.token?.refreshToken ?? '',
       );
       return response;
     } on DioException catch (e) {
@@ -81,7 +81,9 @@ class UserRepository {
     try {
       debugPrint('withdrawUser API 호출 시작');
       final response = await _api.withdrawUser();
-      debugPrint('withdrawUser API 응답: success=${response.success}, message=${response.message}');
+      debugPrint(
+        'withdrawUser API 응답: success=${response.success}, message=${response.message}',
+      );
       return response;
     } on DioException catch (e) {
       debugPrint('withdrawUser DioException 발생: ${e.response?.statusCode}');
@@ -102,10 +104,35 @@ class UserRepository {
     } catch (e, stackTrace) {
       debugPrint('withdrawUser 예외 발생: $e');
       debugPrint('스택 트레이스: $stackTrace');
+      return CommonDto(success: false, message: '회원탈퇴 중 오류가 발생했습니다: $e');
+    }
+  }
+
+  Future<CommonDto> logoutUser() async {
+    try {
+      debugPrint('logoutUser API 호출 시작');
+      final response = await _api.logoutUser();
+      debugPrint(
+        'logoutUser API 응답: success=${response.success}, message=${response.message}',
+      );
+      return response;
+    } on DioException catch (e) {
+      debugPrint('logoutUser DioException 발생: ${e.response?.statusCode}');
+      debugPrint('응답 데이터: ${e.response?.data}');
+      final data = e.response?.data;
+      if (data != null && data is Map<String, dynamic>) {
+        try {
+          return CommonDto.fromJson(data);
+        } catch (_) {}
+      }
       return CommonDto(
         success: false,
-        message: '회원탈퇴 중 오류가 발생했습니다: $e',
+        message: data?['message'] ?? data?['msg'] ?? '로그아웃 중 오류가 발생했습니다.',
       );
+    } catch (e, stackTrace) {
+      debugPrint('logoutUser 예외 발생: $e');
+      debugPrint('스택 트레이스: $stackTrace');
+      return CommonDto(success: false, message: '로그아웃 중 오류가 발생했습니다: $e');
     }
   }
 
@@ -114,17 +141,17 @@ class UserRepository {
       debugPrint('restoreUser API 호출 시작');
       final response = await _api.restoreUser();
       debugPrint('restoreUser API 응답 받음: success=${response.success}');
-      
+
       // 성공 시 토큰 업데이트
       if (response.success && response.data != null) {
         debugPrint('토큰 업데이트 시작');
         _authRepository.updateTokens(
-          response.data!.accessToken,
-          response.data!.refreshToken,
+          response.data!.token?.accessToken ?? '',
+          response.data!.token?.refreshToken ?? '',
         );
         debugPrint('토큰 업데이트 완료');
       }
-      
+
       return response;
     } on DioException catch (e) {
       debugPrint('restoreUser DioException 발생: ${e.response?.statusCode}');

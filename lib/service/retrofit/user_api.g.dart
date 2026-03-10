@@ -104,6 +104,33 @@ class _UserApi implements UserApi {
   }
 
   @override
+  Future<CommonDto> logoutUser() async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<CommonDto>(
+      Options(method: 'DELETE', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/api/v1/user/logout',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late CommonDto _value;
+    try {
+      _value = CommonDto.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
   Future<CompleteRegistrationResponseDto> restoreUser() async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
@@ -119,20 +146,15 @@ class _UserApi implements UserApi {
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late CompleteRegistrationResponseDto _value;
     try {
-      final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-      late CompleteRegistrationResponseDto _value;
-      try {
-        _value = CompleteRegistrationResponseDto.fromJson(_result.data!);
-      } on Object catch (e, s) {
-        errorLogger?.logError(e, s, _options);
-        rethrow;
-      }
-      return _value;
-    } on DioException catch (e) {
-      // DioException을 그대로 전달하여 repository에서 처리하도록 함
+      _value = CompleteRegistrationResponseDto.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
       rethrow;
     }
+    return _value;
   }
 
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {

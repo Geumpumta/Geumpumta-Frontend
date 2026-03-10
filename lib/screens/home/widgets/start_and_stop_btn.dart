@@ -20,7 +20,7 @@ class _StartAndStopBtnState extends State<StartAndStopBtn> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 90,
+      height: 100,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,

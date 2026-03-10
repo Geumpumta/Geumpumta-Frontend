@@ -1,12 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geumpumta/repository/badge/badge_repository.dart';
 import 'package:geumpumta/repository/email/email_repository.dart';
 import 'package:geumpumta/repository/rank/rank_repository.dart';
+import 'package:geumpumta/repository/maintenance/maintenance_repository.dart';
 import 'package:geumpumta/repository/profile/profile_repository.dart';
 import 'package:geumpumta/repository/stats/daily_statistics_repository.dart';
 import 'package:geumpumta/repository/stats/grass_statistics_repository.dart';
 import 'package:geumpumta/repository/stats/monthly_statistics_repository.dart';
 import 'package:geumpumta/repository/stats/weekly_statistics_repository.dart';
 import 'package:geumpumta/repository/study/study_repository.dart';
+import 'package:geumpumta/repository/rank/season_rank_repository.dart';
 
 import '../repository/auth/auth_repository.dart';
 import '../repository/user/user_repository.dart';
@@ -67,4 +70,19 @@ final grassStatisticsRepositoryProvider = Provider<GrassStatisticsRepository>((
 ) {
   final api = ref.watch(grassStatisticsApiProvider);
   return GrassStatisticsRepository(api);
+});
+
+final seasonRankRepositoryProvider = Provider<SeasonRankRepository>((ref) {
+  final api = ref.watch(seasonRankApiProvider);
+  return SeasonRankRepository(seasonRankApi: api);
+});
+
+final badgeRepositoryProvider = Provider<BadgeRepository>((ref) {
+  final api = ref.watch(badgeApiProvider);
+  return BadgeRepository(api);
+});
+
+final maintenanceRepositoryProvider = Provider<MaintenanceRepository>((ref) {
+  final api = ref.watch(maintenanceApiProvider);
+  return MaintenanceRepository(api);
 });

@@ -17,6 +17,7 @@ import 'package:geumpumta/provider/repository_provider.dart';
 import 'package:geumpumta/core/navigation/app_navigator.dart';
 import 'package:geumpumta/screens/login/login.dart';
 import 'package:geumpumta/screens/main/main.dart';
+import 'package:geumpumta/screens/signin/sign_in_1.dart';
 import 'package:geumpumta/routes/app_routes.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart' as kakao;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -212,7 +213,15 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
 
     final user = ref.watch(userInfoStateProvider);
 
-    if (!_hasToken || user == null || user.userRole != 'USER') {
+    if (!_hasToken || user == null) {
+      return const LoginScreen();
+    }
+
+    final normalizedRole = (user.userRole ?? '').trim().toUpperCase();
+    if (normalizedRole == 'GUEST') {
+      return const SignIn1Screen();
+    }
+    if (normalizedRole != 'USER' && normalizedRole != 'ADMIN') {
       return const LoginScreen();
     }
 

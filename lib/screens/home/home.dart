@@ -245,7 +245,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   onStart: () async {
                     LoadingDialog.show(context);
                     try {
-                      final now = DateTime.now();
                       final wifi = await vm.getWIFIInfo();
 
                       final res = await vm.startStudyTime(
@@ -270,9 +269,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         } catch (_) {}
                       }
 
+                      final startedAt = DateTime.now();
                       setState(() {
                         _isTimerRunning = true;
-                        _sessionStartTime = now;
+                        _sessionStartTime = startedAt;
                         _accumulatedDuration = _timerDuration;
                       });
 

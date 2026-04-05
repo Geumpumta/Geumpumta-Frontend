@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,6 +25,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geumpumta/models/entity/user/user.dart';
 
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+final FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.instance;
+final FirebaseAnalyticsObserver firebaseAnalyticsObserver =
+    FirebaseAnalyticsObserver(analytics: firebaseAnalytics);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,7 +70,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: rootNavigatorKey,
-      navigatorObservers: [routeObserver],
+      navigatorObservers: [routeObserver, firebaseAnalyticsObserver],
       theme: ThemeData(
         useMaterial3: false,
         textTheme: GoogleFonts.ibmPlexSansKrTextTheme(
@@ -393,7 +397,11 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Image.asset('assets/splash/splash_logo.png', fit: BoxFit.contain,alignment: Alignment.topCenter,),
+          Image.asset(
+            'assets/splash/splash_logo.png',
+            fit: BoxFit.contain,
+            alignment: Alignment.topCenter,
+          ),
           if (_isChecking) const Center(child: CircularProgressIndicator()),
         ],
       ),

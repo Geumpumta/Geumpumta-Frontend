@@ -10,6 +10,17 @@ private let SELECTION_KEY = "focus_selection"
 
 private let STUDY_ACTIVITY_NAME = DeviceActivityName("study")
 
+enum FocusControlError: LocalizedError {
+    case unsupportedOS
+
+    var errorDescription: String? {
+        switch self {
+        case .unsupportedOS:
+            return "Family Controls requires iOS 16.0 or newer."
+        }
+    }
+}
+
 @MainActor
 final class FocusControl {
     static let shared = FocusControl()
@@ -18,7 +29,11 @@ final class FocusControl {
     private var selection = FamilyActivitySelection()
 
     func requestAuthorization() async throws {
-        try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+        if #available(iOS 16.0, *) {
+            try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+        } else {
+            throw FocusControlError.unsupportedOS
+        }
     }
 
     func selectApps(from vc: UIViewController) {
@@ -72,7 +87,12 @@ final class FocusControl {
 
         center.stopMonitoring([STUDY_ACTIVITY_NAME])
 
-        store.clearAllSettings()
+        if #available(iOS 16.0, *) {
+            store.clearAllSettings()
+        } else {
+            store.shield.applications = nil
+            store.shield.applicationCategories = nil
+        }
 
         print("stopFocus done")
     }

@@ -34,6 +34,11 @@ final class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     override func intervalDidEnd(for activity: DeviceActivityName) {
         super.intervalDidEnd(for: activity)
 
-        store.clearAllSettings()
+        if #available(iOS 16.0, *) {
+            store.clearAllSettings()
+        } else {
+            store.shield.applications = nil
+            store.shield.applicationCategories = nil
+        }
     }
 }

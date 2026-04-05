@@ -22,7 +22,7 @@ class LoginScreen extends ConsumerWidget {
               const SizedBox(height: 60),
               Image.asset(
                 'assets/image/login/main_img.png',
-                filterQuality: FilterQuality.high,
+                width: 280,
               ),
               const SizedBox(height: 80),
 

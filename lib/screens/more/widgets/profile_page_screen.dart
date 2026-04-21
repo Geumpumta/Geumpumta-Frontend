@@ -25,7 +25,7 @@ class ProfilePageScreen extends ConsumerWidget {
     final email = user.email;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -69,7 +69,7 @@ class ProfilePageScreen extends ConsumerWidget {
                                 width: 72,
                                 height: 72,
                                 decoration: const BoxDecoration(
-                                  color: Color(0xFFE6F7FF),
+                                  color: Colors.white,
                                   shape: BoxShape.circle,
                                 ),
                                 child: profileImageUrl != null &&

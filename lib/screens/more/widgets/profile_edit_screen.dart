@@ -408,7 +408,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           width: 120,
           height: 120,
           decoration: const BoxDecoration(
-            color: Color(0xFFE6F7FF),
+            color: Colors.white,
             shape: BoxShape.circle,
           ),
           child: ClipOval(child: imageWidget),

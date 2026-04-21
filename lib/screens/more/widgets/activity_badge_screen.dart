@@ -26,7 +26,7 @@ class _ActivityBadgeScreenState extends ConsumerState<ActivityBadgeScreen> {
     final badgeState = ref.watch(activityBadgeListViewModelProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [

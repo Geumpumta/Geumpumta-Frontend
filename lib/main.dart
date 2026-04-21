@@ -19,6 +19,7 @@ import 'package:geumpumta/core/navigation/app_navigator.dart';
 import 'package:geumpumta/screens/login/login.dart';
 import 'package:geumpumta/screens/main/main.dart';
 import 'package:geumpumta/screens/signin/sign_in_1.dart';
+import 'package:geumpumta/viewmodel/user/user_viewmodel.dart';
 import 'package:geumpumta/routes/app_routes.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart' as kakao;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -132,9 +133,13 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('accessToken');
       final userString = prefs.getString('userInfo');
+      final hasAccessToken = accessToken != null && accessToken.isNotEmpty;
 
-      final hasValidAuth =
-          accessToken != null && accessToken.isNotEmpty && userString != null;
+      var hasValidAuth = hasAccessToken && userString != null;
+
+      if (hasAccessToken && userString == null) {
+        hasValidAuth = await _restoreSessionFromStoredToken();
+      }
 
       if (mounted) {
         setState(() {
@@ -175,6 +180,32 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
         });
       }
     }
+  }
+
+  Future<bool> _restoreSessionFromStoredToken() async {
+    try {
+      final user = await ref.read(userViewModelProvider.notifier).loadUserProfile();
+      if (user == null) {
+        await _clearStoredAuth();
+        return false;
+      }
+
+      await ref.read(userInfoStateProvider.notifier).setUser(user);
+      return true;
+    } catch (error, stackTrace) {
+      debugPrint('Stored session restore failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      await _clearStoredAuth();
+      return false;
+    }
+  }
+
+  Future<void> _clearStoredAuth() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('accessToken');
+    await prefs.remove('refreshToken');
+    await prefs.remove('userInfo');
+    await ref.read(userInfoStateProvider.notifier).clear();
   }
 
   Future<void> _checkForAppUpdate() async {

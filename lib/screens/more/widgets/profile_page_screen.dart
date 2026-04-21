@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/department.dart';
 import 'package:geumpumta/provider/userState/user_info_state.dart';
 import 'package:geumpumta/routes/app_routes.dart';
+import 'package:geumpumta/screens/more/widgets/more_skeleton.dart';
 import 'package:geumpumta/widgets/text_header/text_header.dart';
 
 class ProfilePageScreen extends ConsumerWidget {
@@ -13,13 +14,24 @@ class ProfilePageScreen extends ConsumerWidget {
     final user = ref.watch(userInfoStateProvider);
 
     if (user == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: const [
+                SizedBox(height: 16),
+                ProfilePageSkeleton(),
+              ],
+            ),
+          ),
+        ),
       );
     }
 
     final nickname = user.nickName ?? '닉네임';
-    final department = user.department.koreanName ?? '학과 정보 없음';
+    final department = user.department.koreanName;
     final profileImageUrl = user.profileImage;
     final studentId = user.studentId;
     final email = user.email;
@@ -179,14 +191,10 @@ class _ProfileInfoRow extends StatelessWidget {
   const _ProfileInfoRow({
     required this.icon,
     required this.text,
-    this.subText,
-    this.isLink = false,
   });
 
   final IconData icon;
   final String text;
-  final String? subText;
-  final bool isLink;
 
   @override
   Widget build(BuildContext context) {
@@ -201,24 +209,11 @@ class _ProfileInfoRow extends StatelessWidget {
             children: [
               Text(
                 text,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
-                  color: isLink
-                      ? const Color(0xFF0BAEFF)
-                      : const Color(0xFF333333),
-                  decoration: isLink ? TextDecoration.underline : null,
+                  color: Color(0xFF333333),
                 ),
               ),
-              if (subText != null) ...[
-                const SizedBox(height: 2),
-                Text(
-                  subText!,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF999999),
-                  ),
-                ),
-              ],
             ],
           ),
         ),

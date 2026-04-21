@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/dto/board/board_list_item_dto.dart';
 import 'package:geumpumta/provider/api_provider.dart';
 import 'package:geumpumta/routes/app_routes.dart';
+import 'package:geumpumta/screens/more/widgets/more_skeleton.dart';
 import 'package:geumpumta/widgets/back_and_title/back_and_title.dart';
 
 class BoardListScreen extends ConsumerStatefulWidget {
@@ -71,7 +72,7 @@ class _BoardListScreenState extends ConsumerState<BoardListScreen> {
             const BackAndTitle(title: '공지사항'),
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const BoardListSkeleton()
                   : _error != null
                       ? Center(
                           child: Column(
@@ -162,4 +163,3 @@ class _BoardListScreenState extends ConsumerState<BoardListScreen> {
     );
   }
 }
-

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/dto/board/board_list_item_dto.dart';
 import 'package:geumpumta/provider/api_provider.dart';
 import 'package:geumpumta/routes/app_routes.dart';
+import 'package:geumpumta/screens/more/widgets/more_skeleton.dart';
 import 'package:geumpumta/widgets/section_title/section_title.dart';
 
 class NoticeSection extends ConsumerStatefulWidget {
@@ -59,16 +60,7 @@ class _NoticeSectionState extends ConsumerState<NoticeSection> {
         ),
         const SizedBox(height: 12),
         if (_isLoading)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
-            child: Center(
-              child: SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-          )
+          const NoticeSectionSkeleton()
         else if (_notices == null || _notices!.isEmpty)
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 10),
@@ -136,4 +128,3 @@ class _NoticeItem extends StatelessWidget {
     );
   }
 }
-

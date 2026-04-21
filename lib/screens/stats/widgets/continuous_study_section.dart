@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/screens/stats/widgets/contribution_grass.dart';
+import 'package:geumpumta/screens/stats/widgets/stats_skeleton.dart';
 import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ContinuousStudySection extends ConsumerStatefulWidget {
   const ContinuousStudySection({
@@ -35,15 +35,13 @@ class _ContinuousStudySectionState extends ConsumerState<ContinuousStudySection>
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.manualStreakDays == null) {
-        ref.refresh(currentStreakProvider(widget.targetUserId));
+        ref.invalidate(currentStreakProvider(widget.targetUserId));
       }
     });
   }
 
   @override
   void didUpdateWidget(covariant ContinuousStudySection oldWidget) {
-    print("didUpdateWidget called! new=${widget.selectedDate}");
-
     super.didUpdateWidget(oldWidget);
 
     final newDate = widget.selectedDate;
@@ -59,7 +57,7 @@ class _ContinuousStudySectionState extends ConsumerState<ContinuousStudySection>
       });
 
       if (widget.manualStreakDays == null) {
-        ref.refresh(currentStreakProvider(widget.targetUserId));
+        ref.invalidate(currentStreakProvider(widget.targetUserId));
       }
     }
   }
@@ -123,10 +121,7 @@ class _ContinuousStudySectionState extends ConsumerState<ContinuousStudySection>
                   ),
                 ],
               ),
-              loading: () => const SizedBox(
-                height: 40,
-                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-              ),
+              loading: () => const StatsValueSkeleton(),
               error: (error, stackTrace) {
                 return const Column(
                   children: [

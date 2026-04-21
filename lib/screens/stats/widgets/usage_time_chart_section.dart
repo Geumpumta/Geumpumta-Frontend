@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/entity/stats/daily_statistics.dart';
 import 'package:geumpumta/screens/stats/widgets/daily_usage_chart.dart';
+import 'package:geumpumta/screens/stats/widgets/stats_skeleton.dart';
 import 'package:geumpumta/viewmodel/stats/daily_stats_viewmodel.dart';
 
 class UsageTimeChartSection extends ConsumerStatefulWidget {
@@ -64,10 +65,7 @@ class _UsageTimeChartSectionState extends ConsumerState<UsageTimeChartSection> {
     return _buildContainer(
       child: dailyState.when(
         data: (stats) => DailyUsageChart(slots: stats.slots),
-        loading: () => const SizedBox(
-          height: 120,
-          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-        ),
+        loading: () => const StatsChartSkeleton(),
         error: (_, __) => const SizedBox(
           height: 120,
           child: Center(

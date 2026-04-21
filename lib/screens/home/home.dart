@@ -31,6 +31,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const MethodChannel platform = MethodChannel("network_monitor");
 
+  bool _isInitialLoading = true;
   bool _isTimerRunning = false;
 
   Duration _timerDuration = Duration.zero;
@@ -178,37 +179,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _refreshFromServer() async {
-    final response = await ref.read(studyViewmodelProvider).getStudyTime();
-    if (response == null) return;
+    try {
+      final response = await ref.read(studyViewmodelProvider).getStudyTime();
+      if (response == null) return;
 
-    final totalMillis = response.data.totalStudySession;
-    final isStudying = response.data.isStudying;
-    final totalDuration = Duration(milliseconds: totalMillis);
+      final totalMillis = response.data.totalStudySession;
+      final isStudying = response.data.isStudying;
+      final totalDuration = Duration(milliseconds: totalMillis);
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (isStudying) {
-      setState(() {
-        _isTimerRunning = true;
-        _accumulatedDuration = totalDuration;
-        _sessionStartTime = DateTime.now();
-        _timerDuration = totalDuration;
-      });
-      _startLocalTimer();
-      ref.read(studyRunningProvider.notifier).state = true;
-    } else {
-      _stopLocalTimer();
-      setState(() {
-        _isTimerRunning = false;
-        _sessionStartTime = null;
-        _accumulatedDuration = Duration.zero;
-        _sessionId = 0;
-        _timerDuration = totalDuration;
-      });
-      ref.read(studyRunningProvider.notifier).state = false;
+      if (isStudying) {
+        setState(() {
+          _isTimerRunning = true;
+          _accumulatedDuration = totalDuration;
+          _sessionStartTime = DateTime.now();
+          _timerDuration = totalDuration;
+        });
+        _startLocalTimer();
+        ref.read(studyRunningProvider.notifier).state = true;
+      } else {
+        _stopLocalTimer();
+        setState(() {
+          _isTimerRunning = false;
+          _sessionStartTime = null;
+          _accumulatedDuration = Duration.zero;
+          _sessionId = 0;
+          _timerDuration = totalDuration;
+        });
+        ref.read(studyRunningProvider.notifier).state = false;
+      }
+
+      ref.read(userInfoStateProvider.notifier).updateTotalMillis(totalMillis);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isInitialLoading = false;
+        });
+      }
     }
-
-    ref.read(userInfoStateProvider.notifier).updateTotalMillis(totalMillis);
   }
 
   @override
@@ -233,68 +242,158 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               children: [
                 Column(
                   children: [
-                    SizedBox(height: 100),
-                    CustomTimerWidget(duration: _timerDuration),
+                    const SizedBox(height: 100),
+                    _isInitialLoading
+                        ? const _HomeTimerSkeleton()
+                        : CustomTimerWidget(duration: _timerDuration),
                     const SizedBox(height: 40),
-                    TotalProgressDot(duration: _timerDuration),
+                    _isInitialLoading
+                        ? const _HomeProgressSkeleton()
+                        : TotalProgressDot(duration: _timerDuration),
                   ],
                 ),
                 const SetBlockAppIcon(),
-                StartAndStopBtn(
-                  isTimerRunning: _isTimerRunning,
-                  onStart: () async {
-                    LoadingDialog.show(context);
-                    try {
-                      final wifi = await vm.getWIFIInfo();
+                _isInitialLoading
+                    ? const _HomeButtonSkeleton()
+                    : StartAndStopBtn(
+                        isTimerRunning: _isTimerRunning,
+                        onStart: () async {
+                          LoadingDialog.show(context);
+                          try {
+                            final wifi = await vm.getWIFIInfo();
 
-                      final res = await vm.startStudyTime(
-                        StartStudyTimeRequestDto(
-                          gatewayIp: wifi['gatewayIp'] ?? '',
-                          clientIp: wifi['ip'] ?? '',
-                        ),
-                      );
+                            final res = await vm.startStudyTime(
+                              StartStudyTimeRequestDto(
+                                gatewayIp: wifi['gatewayIp'] ?? '',
+                                clientIp: wifi['ip'] ?? '',
+                              ),
+                            );
 
-                      LoadingDialog.hide(context);
+                            LoadingDialog.hide(context);
 
-                      if (res == null || !res.success) {
-                        ErrorDialog.show(context, "교내 WIFI로 연결되어야 합니다.");
-                        return;
-                      }
+                            if (res == null || !res.success) {
+                              ErrorDialog.show(context, "교내 WIFI로 연결되어야 합니다.");
+                              return;
+                            }
 
-                      _sessionId = res.data!.studySessionId;
+                            _sessionId = res.data!.studySessionId;
 
-                      if (defaultTargetPlatform == TargetPlatform.iOS) {
-                        try {
-                          await IosFocusControl.startFocus();
-                        } catch (_) {}
-                      }
+                            if (defaultTargetPlatform == TargetPlatform.iOS) {
+                              try {
+                                await IosFocusControl.startFocus();
+                              } catch (_) {}
+                            }
 
-                      final startedAt = DateTime.now();
-                      setState(() {
-                        _isTimerRunning = true;
-                        _sessionStartTime = startedAt;
-                        _accumulatedDuration = _timerDuration;
-                      });
+                            final startedAt = DateTime.now();
+                            setState(() {
+                              _isTimerRunning = true;
+                              _sessionStartTime = startedAt;
+                              _accumulatedDuration = _timerDuration;
+                            });
 
-                      ref.read(studyRunningProvider.notifier).state = true;
+                            ref.read(studyRunningProvider.notifier).state = true;
 
-                      _startLocalTimer();
-                    } catch (e) {
-                      LoadingDialog.hide(context);
-                      ErrorDialog.show(context, "시작 실패: $e");
-                    }
-                  },
-                  onStop: () async {
-                    LoadingDialog.show(context);
-                    await _endStudyInternal();
-                    LoadingDialog.hide(context);
-                  },
-                ),
+                            _startLocalTimer();
+                          } catch (e) {
+                            LoadingDialog.hide(context);
+                            ErrorDialog.show(context, "시작 실패: $e");
+                          }
+                        },
+                        onStop: () async {
+                          LoadingDialog.show(context);
+                          await _endStudyInternal();
+                          LoadingDialog.hide(context);
+                        },
+                      ),
               ],
             ),
 
             const Positioned(top: 0, left: 0, right: 0, child: TopLogoBar()),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeTimerSkeleton extends StatelessWidget {
+  const _HomeTimerSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 270,
+      height: 270,
+      alignment: Alignment.center,
+      decoration: const BoxDecoration(
+        color: Color(0xFFECF5F9),
+        borderRadius: BorderRadius.all(Radius.circular(150)),
+      ),
+      child: Container(
+        width: 230,
+        height: 230,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.45),
+          borderRadius: const BorderRadius.all(Radius.circular(150)),
+        ),
+        child: Center(
+          child: Container(
+            width: 150,
+            height: 30,
+            decoration: BoxDecoration(
+              color: const Color(0xFFBFE6FA),
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeProgressSkeleton extends StatelessWidget {
+  const _HomeProgressSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    final widths = <double>[10, 18, 10, 18, 10, 18, 10, 18];
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: widths
+          .map(
+            (width) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 7.5),
+              child: Container(
+                width: width,
+                height: width,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFDCEFF8),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _HomeButtonSkeleton extends StatelessWidget {
+  const _HomeButtonSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 100,
+      child: Center(
+        child: Container(
+          width: 200,
+          height: 50,
+          decoration: BoxDecoration(
+            color: const Color(0xFFDCEFF8),
+            borderRadius: BorderRadius.circular(50),
+          ),
         ),
       ),
     );

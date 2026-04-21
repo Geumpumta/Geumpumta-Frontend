@@ -111,7 +111,9 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
   Future<void> _checkInitialState() async {
     try {
       final maintenanceRepo = ref.read(maintenanceRepositoryProvider);
-      final maintenanceStatus = await maintenanceRepo.getMaintenanceStatus();
+      final maintenanceStatus = await maintenanceRepo
+          .getMaintenanceStatus()
+          .timeout(const Duration(seconds: 5));
 
       if (maintenanceStatus.isMaintenance) {
         if (mounted) {
@@ -126,8 +128,6 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
         }
         return;
       }
-
-      await _checkForAppUpdate();
 
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('accessToken');
@@ -152,6 +152,13 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
           }),
         );
       }
+
+      unawaited(
+        _checkForAppUpdate().catchError((Object error, StackTrace stackTrace) {
+          debugPrint('Deferred app update check failed: $error');
+          debugPrintStack(stackTrace: stackTrace);
+        }),
+      );
     } catch (error, stackTrace) {
       debugPrint('Auth check failed: $error');
       debugPrintStack(stackTrace: stackTrace);
@@ -181,7 +188,9 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
         iOSAppStoreCountry: 'kr',
       );
 
-      final status = await newVersion.getVersionStatus();
+      final status = await newVersion
+          .getVersionStatus()
+          .timeout(const Duration(seconds: 5));
       if (!mounted || status == null || !status.canUpdate) {
         return;
       }

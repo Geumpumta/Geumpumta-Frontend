@@ -290,7 +290,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                 Positioned(
                   left: 0,
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Color(0xFF0BAEFF)),
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -566,4 +566,3 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     });
   }
 }
-

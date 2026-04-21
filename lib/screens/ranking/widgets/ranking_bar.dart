@@ -62,6 +62,14 @@ class _RankingBarState extends State<RankingBar> {
                   height: 40,
                   width: 40,
                   fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) {
+                    return Image.asset(
+                      'assets/image/login/main_img.png',
+                      height: 40,
+                      width: 40,
+                      fit: BoxFit.cover,
+                    );
+                  },
                 ),
               ),
               Column(

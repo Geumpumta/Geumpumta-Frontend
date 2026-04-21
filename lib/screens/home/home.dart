@@ -13,7 +13,6 @@ import 'package:geumpumta/viewmodel/badge/unnotified_badge_check_viewmodel.dart'
 import 'package:geumpumta/viewmodel/study/study_viewmodel.dart';
 import 'package:geumpumta/widgets/badge/unnotified_badge_modal.dart';
 import 'package:geumpumta/widgets/error_dialog/error_dialog.dart';
-import 'package:geumpumta/widgets/loading_dialog/loading_dialog.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../provider/study/study_provider.dart';
@@ -32,6 +31,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const MethodChannel platform = MethodChannel("network_monitor");
 
   bool _isInitialLoading = true;
+  bool _isStartingStudy = false;
+  bool _isStoppingStudy = false;
   bool _isTimerRunning = false;
 
   Duration _timerDuration = Duration.zero;
@@ -257,8 +258,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ? const _HomeButtonSkeleton()
                     : StartAndStopBtn(
                         isTimerRunning: _isTimerRunning,
+                        isStarting: _isStartingStudy,
+                        isStopping: _isStoppingStudy,
                         onStart: () async {
-                          LoadingDialog.show(context);
+                          setState(() {
+                            _isStartingStudy = true;
+                          });
                           try {
                             final wifi = await vm.getWIFIInfo();
 
@@ -269,8 +274,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                             );
 
-                            LoadingDialog.hide(context);
-
+                            if (!mounted) return;
                             if (res == null || !res.success) {
                               ErrorDialog.show(context, "교내 WIFI로 연결되어야 합니다.");
                               return;
@@ -295,14 +299,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                             _startLocalTimer();
                           } catch (e) {
-                            LoadingDialog.hide(context);
+                            if (!mounted) return;
                             ErrorDialog.show(context, "시작 실패: $e");
+                          } finally {
+                            if (mounted) {
+                              setState(() {
+                                _isStartingStudy = false;
+                              });
+                            }
                           }
                         },
                         onStop: () async {
-                          LoadingDialog.show(context);
-                          await _endStudyInternal();
-                          LoadingDialog.hide(context);
+                          setState(() {
+                            _isStoppingStudy = true;
+                          });
+                          try {
+                            await _endStudyInternal();
+                          } finally {
+                            if (mounted) {
+                              setState(() {
+                                _isStoppingStudy = false;
+                              });
+                            }
+                          }
                         },
                       ),
               ],

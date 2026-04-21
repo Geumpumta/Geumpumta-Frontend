@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -92,7 +93,8 @@ class MyHomePage extends ConsumerStatefulWidget {
   ConsumerState<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends ConsumerState<MyHomePage> {
+class _MyHomePageState extends ConsumerState<MyHomePage>
+    with SingleTickerProviderStateMixin {
   bool _isChecking = true;
   bool _hasToken = false;
   bool _isMaintenance = false;
@@ -102,11 +104,22 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
   bool _didShowUpdateDialog = false;
   String? _updateStoreUrl;
   String? _latestStoreVersion;
+  late final AnimationController _loaderController;
 
   @override
   void initState() {
     super.initState();
+    _loaderController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1700),
+    )..repeat();
     _checkInitialState();
+  }
+
+  @override
+  void dispose() {
+    _loaderController.dispose();
+    super.dispose();
   }
 
   Future<void> _checkInitialState() async {
@@ -184,7 +197,9 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
 
   Future<bool> _restoreSessionFromStoredToken() async {
     try {
-      final user = await ref.read(userViewModelProvider.notifier).loadUserProfile();
+      final user = await ref
+          .read(userViewModelProvider.notifier)
+          .loadUserProfile();
       if (user == null) {
         await _clearStoredAuth();
         return false;
@@ -219,9 +234,9 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
         iOSAppStoreCountry: 'kr',
       );
 
-      final status = await newVersion
-          .getVersionStatus()
-          .timeout(const Duration(seconds: 5));
+      final status = await newVersion.getVersionStatus().timeout(
+        const Duration(seconds: 5),
+      );
       if (!mounted || status == null || !status.canUpdate) {
         return;
       }
@@ -442,9 +457,82 @@ class _MyHomePageState extends ConsumerState<MyHomePage> {
             fit: BoxFit.contain,
             alignment: Alignment.topCenter,
           ),
-          if (_isChecking) const Center(child: CircularProgressIndicator()),
+          if (_isChecking)
+            Center(child: _ModernCircularLoader(controller: _loaderController)),
         ],
       ),
     );
   }
+}
+
+class _ModernCircularLoader extends StatelessWidget {
+  const _ModernCircularLoader({required this.controller});
+
+  final Animation<double> controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 72,
+      height: 72,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          RotationTransition(
+            turns: controller,
+            child: CustomPaint(
+              size: const Size.square(72),
+              painter: _ModernCircularLoaderPainter(),
+            ),
+          ),
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: Color(0xFF97CDEE),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModernCircularLoaderPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Rect.fromCircle(
+      center: size.center(Offset.zero),
+      radius: size.width / 2 - 5,
+    );
+
+    final trackPaint = Paint()
+      ..color = const Color(0x1A7AAFCF)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+
+    final accentPaint = Paint()
+      ..shader = const SweepGradient(
+        startAngle: -math.pi / 2,
+        endAngle: math.pi * 1.5,
+        colors: [
+          Color(0x007AAFCF),
+          Color(0xFF7AAFCF),
+          Color(0xFFD4ECF8),
+          Color(0x007AAFCF),
+        ],
+        stops: [0.0, 0.46, 0.74, 1.0],
+      ).createShader(rect)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawArc(rect, 0, math.pi * 2, false, trackPaint);
+    canvas.drawArc(rect, -math.pi / 2, math.pi * 1.12, false, accentPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -14,6 +14,7 @@ import 'package:geumpumta/repository/rank/season_rank_repository.dart';
 import '../repository/auth/auth_repository.dart';
 import '../repository/user/user_repository.dart';
 import 'api_provider.dart';
+import 'dio_provider.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository();
@@ -27,7 +28,8 @@ final userRepositoryProvider = Provider<UserRepository>((ref) {
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   final api = ref.watch(profileApiProvider);
-  return ProfileRepository(api);
+  final dio = ref.watch(dioProvider);
+  return ProfileRepository(api, dio);
 });
 
 final emailRepositoryProvider = Provider<EmailRepository>((ref) {

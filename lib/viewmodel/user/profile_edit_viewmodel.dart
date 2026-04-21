@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/repository/profile/profile_repository.dart';
 import 'package:geumpumta/provider/repository_provider.dart';
@@ -27,10 +28,18 @@ class ProfileEditViewModel extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  Future<ImageUploadResult> uploadImage(File imageFile) async {
+  Future<ImageUploadResult> uploadImage(
+    File imageFile, {
+    CancelToken? cancelToken,
+    Duration timeout = const Duration(seconds: 5),
+  }) async {
     state = const AsyncLoading();
     try {
-      final result = await _profileRepository.uploadProfileImage(imageFile);
+      final result = await _profileRepository.uploadProfileImage(
+        imageFile,
+        cancelToken: cancelToken,
+        timeout: timeout,
+      );
       state = const AsyncData(null);
       return result;
     } catch (e, st) {
@@ -58,5 +67,4 @@ class ProfileEditViewModel extends StateNotifier<AsyncValue<void>> {
     }
   }
 }
-
 

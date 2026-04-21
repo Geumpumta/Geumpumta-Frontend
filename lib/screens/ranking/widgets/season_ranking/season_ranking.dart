@@ -7,6 +7,7 @@ import 'package:geumpumta/models/dto/rank/get_season_ranking_response_dto.dart';
 import 'package:geumpumta/screens/ranking/widgets/season_ranking/my_info_in_season_rank.dart';
 import 'package:geumpumta/screens/ranking/widgets/season_ranking/remain_time.dart';
 import 'package:geumpumta/screens/ranking/widgets/season_ranking/top_three_and_rankings.dart';
+import 'package:geumpumta/screens/ranking/widgets/ranking_skeleton.dart';
 import 'package:geumpumta/viewmodel/rank/season_rank_viewmodel.dart';
 import 'package:geumpumta/widgets/custom_dropdown/custom_dropdown.dart';
 import 'package:geumpumta/provider/userState/user_info_state.dart';
@@ -242,8 +243,8 @@ class _SeasonRankingState extends ConsumerState<SeasonRanking> {
             RemainTime(dueDate: dueDate),
             if (isLoading)
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: CircularProgressIndicator(),
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: SeasonMyInfoSkeleton(),
               )
             else
               MyInfoInSeasonRank(
@@ -255,8 +256,8 @@ class _SeasonRankingState extends ConsumerState<SeasonRanking> {
               ),
             if (isLoading)
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: CircularProgressIndicator(),
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: RankingListSkeleton(itemCount: 5),
               )
             else
               TopThreeAndRankings(rankings: rankings),

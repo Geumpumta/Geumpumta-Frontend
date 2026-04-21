@@ -33,32 +33,43 @@ class MonthlyStatisticsDataDto {
 }
 
 class MonthlyStatisticsDto {
-  final int totalMonthSeconds;
-  final int averageDailySeconds;
+  final int totalMonthMilliseconds;
+  final int averageDailyMilliseconds;
   final int studiedDays;
   final int maxConsecutiveStudyDays;
 
   MonthlyStatisticsDto({
-    required this.totalMonthSeconds,
-    required this.averageDailySeconds,
+    required this.totalMonthMilliseconds,
+    required this.averageDailyMilliseconds,
     required this.studiedDays,
     required this.maxConsecutiveStudyDays,
   });
 
   factory MonthlyStatisticsDto.fromJson(Map<String, dynamic> json) {
-    final totalSeconds = _parseInt(json, ['totalMonthSeconds', 'totalMonthlySeconds', 'total_monthly_seconds']);
-    final avgSeconds = _parseInt(json, ['averageDailySeconds', 'average_daily_seconds']);
+    final totalMilliseconds = _parseInt(json, [
+      'totalMonthMillis',
+      'totalMonthMilliseconds',
+      'total_month_millis',
+    ]);
+    final avgMilliseconds = _parseInt(json, [
+      'averageDailyMillis',
+      'averageDailyMilliseconds',
+      'average_daily_millis',
+    ]);
     final days = _parseInt(json, ['studiedDays', 'studied_days']);
-    final maxDays = _parseInt(json, ['maxConsecutiveStudyDays', 'max_consecutive_study_days']);
-    
+    final maxDays = _parseInt(json, [
+      'maxConsecutiveStudyDays',
+      'max_consecutive_study_days',
+    ]);
+
     return MonthlyStatisticsDto(
-      totalMonthSeconds: totalSeconds,
-      averageDailySeconds: avgSeconds,
+      totalMonthMilliseconds: totalMilliseconds,
+      averageDailyMilliseconds: avgMilliseconds,
       studiedDays: days,
       maxConsecutiveStudyDays: maxDays,
     );
   }
-  
+
   static int _parseInt(Map<String, dynamic> json, List<String> possibleKeys) {
     for (final key in possibleKeys) {
       final value = json[key];
@@ -74,5 +85,4 @@ class MonthlyStatisticsDto {
     return 0;
   }
 }
-
 

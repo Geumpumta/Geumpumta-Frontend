@@ -25,7 +25,7 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchWeeklyStats();
-      ref.refresh(currentStreakProvider(null));
+      ref.invalidate(currentStreakProvider(null));
     });
   }
 
@@ -139,9 +139,15 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     return state.when(
       data: (stats) => _buildStatsContainer(
         children: [
-          _buildStatRow("주간 총 공부 시간", _formatDuration(stats.totalWeekSeconds)),
+          _buildStatRow(
+            "주간 총 공부 시간",
+            _formatDuration(stats.totalWeekMilliseconds),
+          ),
           const SizedBox(height: 12),
-          _buildStatRow("평균 공부 시간", _formatDuration(stats.averageDailySeconds)),
+          _buildStatRow(
+            "평균 공부 시간",
+            _formatDuration(stats.averageDailyMilliseconds),
+          ),
           const SizedBox(height: 12),
           _buildStatRow("최대 연속 공부 일수", "${stats.maxConsecutiveStudyDays}일"),
         ],
@@ -216,8 +222,8 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     );
   }
 
-  String _formatDuration(int seconds) {
-    final d = Duration(seconds: seconds);
+  String _formatDuration(int milliseconds) {
+    final d = Duration(milliseconds: milliseconds);
     return "${d.inHours.toString().padLeft(2, '0')}:"
         "${(d.inMinutes % 60).toString().padLeft(2, '0')}:"
         "${(d.inSeconds % 60).toString().padLeft(2, '0')}";

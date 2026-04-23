@@ -52,9 +52,16 @@ android {
 
     buildTypes {
         release {
-            if (hasKeystore) {
-                signingConfig = signingConfigs.getByName("release")
-            }
+            // key.properties가 없을 때 release APK가 유효한 서명이 아닌 문제가 생김
+            // [release 빌드 시]
+            // 1.keystore 있으면  기존 release 사용. 
+            // 2.keystore 없으면 자동으로 debug fallback 으로 동작.
+            signingConfig =
+                if (hasKeystore) {
+                    signingConfigs.getByName("release")
+                } else {
+                    signingConfigs.getByName("debug")
+                }
 
             isMinifyEnabled = false
             isShrinkResources = false

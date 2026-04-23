@@ -25,7 +25,7 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchMonthlyStats();
-      ref.refresh(currentStreakProvider(null));
+      ref.invalidate(currentStreakProvider(null));
     });
   }
 
@@ -144,9 +144,15 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     return state.when(
       data: (stats) => _buildStatsContainer(
         children: [
-          _buildStatRow("월간 총 공부 시간", _formatDuration(stats.totalMonthSeconds)),
+          _buildStatRow(
+            "월간 총 공부 시간",
+            _formatDuration(stats.totalMonthMilliseconds),
+          ),
           const SizedBox(height: 12),
-          _buildStatRow("평균 공부 시간", _formatDuration(stats.averageDailySeconds)),
+          _buildStatRow(
+            "평균 공부 시간",
+            _formatDuration(stats.averageDailyMilliseconds),
+          ),
           const SizedBox(height: 12),
           _buildStatRow("이번 달 공부 일 수", "${stats.studiedDays} / $daysInMonth"),
           const SizedBox(height: 12),
@@ -230,8 +236,8 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     );
   }
 
-  String _formatDuration(int seconds) {
-    final d = Duration(seconds: seconds);
+  String _formatDuration(int milliseconds) {
+    final d = Duration(milliseconds: milliseconds);
     return "${d.inHours.toString().padLeft(2, '0')}:"
         "${(d.inMinutes % 60).toString().padLeft(2, '0')}:"
         "${(d.inSeconds % 60).toString().padLeft(2, '0')}";

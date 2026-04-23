@@ -19,7 +19,6 @@ class OAuthService {
       final authUrl =
           '$baseUrl/oauth2/authorization/$provider?redirect_uri=$redirectUri';
 
-
       final result = await FlutterWebAuth2.authenticate(
         url: authUrl,
         callbackUrlScheme: 'geumpumta',
@@ -37,21 +36,23 @@ class OAuthService {
       }
 
       final accessToken =
-          uri.queryParameters['accessToken'] ?? uri.queryParameters['access_token'];
+          uri.queryParameters['accessToken'] ??
+          uri.queryParameters['access_token'];
       final refreshToken =
-          uri.queryParameters['refreshToken'] ?? uri.queryParameters['refresh_token'];
+          uri.queryParameters['refreshToken'] ??
+          uri.queryParameters['refresh_token'];
 
       if (accessToken != null && refreshToken != null) {
-        return {
-          'accessToken': accessToken,
-          'refreshToken': refreshToken,
-        };
+        return {'accessToken': accessToken, 'refreshToken': refreshToken};
       }
 
       final code = uri.queryParameters['code'];
       if (code != null) {
-        final tokenData =
-        await exchangeCodeForToken(provider, code, redirectUri);
+        final tokenData = await exchangeCodeForToken(
+          provider,
+          code,
+          redirectUri,
+        );
         return tokenData;
       }
 
@@ -65,7 +66,10 @@ class OAuthService {
   }
 
   Future<Map<String, dynamic>> exchangeCodeForToken(
-      String provider, String code, String redirectUri) async {
+    String provider,
+    String code,
+    String redirectUri,
+  ) async {
     final response = await http.post(
       Uri.parse('$baseUrl/api/oauth/token'),
       headers: {'Content-Type': 'application/json'},

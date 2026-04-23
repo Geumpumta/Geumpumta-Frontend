@@ -1,11 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/provider/userState/user_info_state.dart';
 import 'package:geumpumta/repository/profile/profile_repository.dart';
 import 'package:geumpumta/viewmodel/user/profile_edit_viewmodel.dart';
 import 'package:geumpumta/viewmodel/user/user_viewmodel.dart';
 import 'package:geumpumta/widgets/text_header/text_header.dart';
+import 'package:geumpumta/widgets/error_dialog/error_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ProfileEditScreen extends ConsumerStatefulWidget {
@@ -19,6 +21,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   final TextEditingController _nicknameController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
+  CancelToken? _imageUploadCancelToken;
   File? _selectedImageFile;
   String? _currentImageUrl;
   String _currentPublicId = '';
@@ -42,6 +45,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
   @override
   void dispose() {
+    _imageUploadCancelToken?.cancel('profile_edit_disposed');
     _nicknameController.dispose();
     super.dispose();
   }
@@ -115,12 +119,23 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   Future<void> _uploadImage(File file) async {
+    _imageUploadCancelToken?.cancel('image_upload_replaced');
+    final cancelToken = CancelToken();
+    _imageUploadCancelToken = cancelToken;
+
     setState(() {
       _isUploadingImage = true;
     });
     try {
       final viewModel = ref.read(profileEditViewModelProvider.notifier);
-      final ImageUploadResult result = await viewModel.uploadImage(file);
+      final ImageUploadResult result = await viewModel.uploadImage(
+        file,
+        cancelToken: cancelToken,
+        timeout: const Duration(seconds: 5),
+      );
+      if (!mounted || _imageUploadCancelToken != cancelToken) {
+        return;
+      }
       setState(() {
         _selectedImageFile = file;
         _currentImageUrl = result.imageUrl;
@@ -128,15 +143,50 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _photoChanged = true;
       });
       _updateSaveButtonState();
+    } on ImageUploadTimeoutException {
+      if (mounted && _imageUploadCancelToken == cancelToken) {
+        ErrorDialog.show(
+          context,
+          '이미지 업로드에 실패했습니다. 잠시 후에 시도해주세요.',
+          title: '업로드 실패',
+        );
+      }
+    } on DioException catch (e) {
+      final isTimeoutCancel =
+          e.type == DioExceptionType.cancel &&
+          e.error == ImageUploadTimeoutException.cancelReason;
+      final isDisposeCancel =
+          e.type == DioExceptionType.cancel &&
+          (e.error == 'profile_edit_disposed' ||
+              e.error == 'image_upload_replaced');
+
+      if (isDisposeCancel) {
+        return;
+      }
+
+      if (mounted && _imageUploadCancelToken == cancelToken) {
+        ErrorDialog.show(
+          context,
+          isTimeoutCancel
+              ? '이미지 업로드에 실패했습니다. 잠시 후에 시도해주세요.'
+              : '이미지 업로드에 실패했습니다: $e',
+          title: '업로드 실패',
+        );
+      }
     } catch (e) {
-      if (mounted) {
-        _setStatusMessage(
-          '이미지 업로드에 실패했습니다: $e',
-          color: Colors.red.shade700,
+      if (mounted && _imageUploadCancelToken == cancelToken) {
+        ErrorDialog.show(
+          context,
+          '이미지 업로드에 실패했습니다. 잠시 후에 시도해주세요.',
+          title: '업로드 실패',
         );
       }
     } finally {
-      if (mounted) {
+      final isLatestRequest = _imageUploadCancelToken == cancelToken;
+      if (isLatestRequest) {
+        _imageUploadCancelToken = null;
+      }
+      if (mounted && isLatestRequest) {
         setState(() {
           _isUploadingImage = false;
         });
@@ -238,6 +288,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (serverUser != null) {
         userInfoNotifier.setUser(serverUser);
       }
+      if (!mounted) {
+        return;
+      }
       Navigator.pop(context);
     } catch (e) {
       // 실패 시 이전 상태로 복원
@@ -290,7 +343,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                 Positioned(
                   left: 0,
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Color(0xFF0BAEFF)),
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -316,7 +369,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, -2),
                   ),
@@ -355,7 +408,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           width: 120,
           height: 120,
           decoration: const BoxDecoration(
-            color: Color(0xFFE6F7FF),
+            color: Colors.white,
             shape: BoxShape.circle,
           ),
           child: ClipOval(child: imageWidget),
@@ -566,4 +619,3 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     });
   }
 }
-

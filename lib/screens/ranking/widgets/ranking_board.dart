@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/department.dart';
 import 'package:geumpumta/screens/ranking/widgets/period_option.dart';
 import 'package:geumpumta/screens/ranking/widgets/ranking_bar.dart';
+import 'package:geumpumta/screens/ranking/widgets/ranking_skeleton.dart';
 import 'package:geumpumta/screens/ranking/widgets/square_option_button.dart';
 
 import '../../../viewmodel/rank/rank_department_viewmodel.dart';
@@ -143,7 +144,7 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
     final asyncState = ref.watch(rankPersonalViewModelProvider);
 
     return asyncState.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const RankingListSkeleton(),
       error: (e, st) => Center(child: Text('오류가 발생했어요!')),
       data: (response) {
         if (response == null || response.data.topRanks.isEmpty) {
@@ -175,7 +176,7 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
     final asyncState = ref.watch(rankDepartmentViewModelProvider);
 
     return asyncState.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const RankingListSkeleton(),
       error: (e, st) => Center(child: Text('오류가 발생했어요!')),
       data: (response) {
         if (response == null || response.data.topRanks.isEmpty) {

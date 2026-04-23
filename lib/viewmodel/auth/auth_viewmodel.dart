@@ -57,7 +57,7 @@ class AuthViewModel extends StateNotifier<bool> {
       }
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('accessToken');
-      print("로그인 후 accessToken: $accessToken");
+      debugPrint("로그인 후 accessToken: $accessToken");
 
       // JWT 토큰에서 WITHDRAWN 필드 확인
       bool isWithdrawn = false;
@@ -194,38 +194,19 @@ class AuthViewModel extends StateNotifier<bool> {
         return false;
       }
 
-      ref.read(userInfoStateProvider.notifier).setUser(userInfo);
-
-      final jsonString = jsonEncode(userInfo.toJson());
-      await prefs.setString('userInfo', jsonString);
-      debugPrint("userInfo 저장 완료: $jsonString");
-
-      await ref.read(fcmServiceProvider).initAndRegisterToken();
-      await ref
-          .read(fcmServiceProvider)
-          .registerCurrentTokenToServer(reason: 'after_login');
-
-      if (userInfo.userRole == "GUEST") {
-        Navigator.pushNamed(context, AppRoutes.signin1);
-      } else {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.main,
-          (route) => false,
-        );
-      }
-
+      await _completeLogin(userInfo);
       return true;
     } on AlreadyLoggedInException {
-      debugPrint('$provider 이미 로그인된 계정');
-      if (context.mounted) {
+      debugPrint('$provider already_logged_in 응답 수신, 저장 토큰 복구 시도');
+      final restored = await _restoreStoredSession();
+      if (!restored && context.mounted) {
         ErrorDialog.show(
           context,
           '다른 계정에서 이미 로그인되어있습니다!',
           title: '로그인할 수 없습니다!',
         );
       }
-      return false;
+      return restored;
     } catch (e, st) {
       debugPrint('$provider 로그인 중 오류: $e\n$st');
       if (context.mounted) {
@@ -240,6 +221,67 @@ class AuthViewModel extends StateNotifier<bool> {
     } finally {
       state = false;
     }
+  }
+
+  Future<void> _completeLogin(User userInfo) async {
+    await ref.read(userInfoStateProvider.notifier).setUser(userInfo);
+
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = jsonEncode(userInfo.toJson());
+    await prefs.setString('userInfo', jsonString);
+    debugPrint("userInfo 저장 완료: $jsonString");
+
+    await ref.read(fcmServiceProvider).initAndRegisterToken();
+    await ref
+        .read(fcmServiceProvider)
+        .registerCurrentTokenToServer(reason: 'after_login');
+
+    final nav = rootNavigatorKey.currentState;
+    if (nav == null) {
+      return;
+    }
+    if (userInfo.userRole == "GUEST") {
+      nav.pushNamed(AppRoutes.signin1);
+    } else {
+      nav.pushNamedAndRemoveUntil(
+        AppRoutes.main,
+        (route) => false,
+      );
+    }
+  }
+
+  Future<bool> _restoreStoredSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('accessToken');
+    if (accessToken == null || accessToken.isEmpty) {
+      return false;
+    }
+
+    try {
+      final userInfo = await ref
+          .read(userViewModelProvider.notifier)
+          .loadUserProfile();
+
+      if (userInfo == null) {
+        await _clearStoredAuth();
+        return false;
+      }
+
+      await _completeLogin(userInfo);
+      return true;
+    } catch (e, st) {
+      debugPrint('저장 세션 복구 실패: $e\n$st');
+      await _clearStoredAuth();
+      return false;
+    }
+  }
+
+  Future<void> _clearStoredAuth() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('accessToken');
+    await prefs.remove('refreshToken');
+    await prefs.remove('userInfo');
+    await ref.read(userInfoStateProvider.notifier).clear();
   }
 
   Future<void> logout(BuildContext context) async {

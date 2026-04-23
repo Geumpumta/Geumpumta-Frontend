@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/dto/board/board_detail_dto.dart';
 import 'package:geumpumta/provider/api_provider.dart';
+import 'package:geumpumta/screens/more/widgets/more_skeleton.dart';
 import 'package:geumpumta/widgets/back_and_title/back_and_title.dart';
 
 class BoardDetailScreen extends ConsumerStatefulWidget {
@@ -76,7 +77,7 @@ class _BoardDetailScreenState extends ConsumerState<BoardDetailScreen> {
             BackAndTitle(title: _board?.title ?? '공지사항'),
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const BoardDetailSkeleton()
                   : _error != null
                       ? Center(
                           child: Column(
@@ -154,4 +155,3 @@ class _BoardDetailScreenState extends ConsumerState<BoardDetailScreen> {
     );
   }
 }
-

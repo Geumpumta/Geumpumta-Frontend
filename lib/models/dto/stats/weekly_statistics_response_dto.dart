@@ -33,24 +33,24 @@ class WeeklyStatisticsDataDto {
 }
 
 class WeeklyStatisticsDto {
-  final int totalWeekSeconds;
-  final int averageDailySeconds;
+  final int totalWeekMilliseconds;
+  final int averageDailyMilliseconds;
   final int maxConsecutiveStudyDays;
 
   WeeklyStatisticsDto({
-    required this.totalWeekSeconds,
-    required this.averageDailySeconds,
+    required this.totalWeekMilliseconds,
+    required this.averageDailyMilliseconds,
     required this.maxConsecutiveStudyDays,
   });
 
   factory WeeklyStatisticsDto.fromJson(Map<String, dynamic> json) {
     return WeeklyStatisticsDto(
-      totalWeekSeconds: (json['totalWeekSeconds'] as num?)?.toInt() ?? 0,
-      averageDailySeconds: (json['averageDailySeconds'] as num?)?.toInt() ?? 0,
+      totalWeekMilliseconds: (json['totalWeekMillis'] as num?)?.toInt() ?? 0,
+      averageDailyMilliseconds:
+          (json['averageDailyMillis'] as num?)?.toInt() ?? 0,
       maxConsecutiveStudyDays:
           (json['maxConsecutiveStudyDays'] as num?)?.toInt() ?? 0,
     );
   }
 }
-
 

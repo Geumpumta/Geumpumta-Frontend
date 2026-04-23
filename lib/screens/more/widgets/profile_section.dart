@@ -44,7 +44,7 @@ class _ProfileSectionContent extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFF0BAEFF).withValues(alpha: 0.2),
+            color: const Color(0xFFF0F0F0),
             width: 1,
           ),
         ),
@@ -128,7 +128,7 @@ class _ProfileSectionSkeleton extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF0BAEFF).withValues(alpha: 0.2),
+          color: const Color(0xFFF0F0F0),
           width: 1,
         ),
       ),

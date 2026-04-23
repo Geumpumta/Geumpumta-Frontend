@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geumpumta/util/ios_channels.dart';
+import 'package:geumpumta/widgets/error_dialog/error_dialog.dart';
 
 class SetBlockAppIcon extends StatelessWidget {
   const SetBlockAppIcon({super.key});
 
   Future<void> _openPicker(BuildContext context) async {
     if (defaultTargetPlatform != TargetPlatform.iOS) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('iOS에서만 지원되는 기능이에요.')),
+      ErrorDialog.show(
+        context,
+        'iOS에서만 지원되는 기능이에요.',
+        title: '지원하지 않는 기능이에요',
       );
       return;
     }
@@ -16,18 +19,15 @@ class SetBlockAppIcon extends StatelessWidget {
     try {
       await IosFocusControl.requestAuthorization();
       await IosFocusControl.selectApps();
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('차단 앱 선택 화면을 열었어요.')),
-        );
+    } catch (_) {
+      if (!context.mounted) {
+        return;
       }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('차단 앱 설정을 열지 못했어요: $e')),
-        );
-      }
+      ErrorDialog.show(
+        context,
+        'Family Controls API를 사용할 수 없어요.\n잠시 후 다시 시도해주세요.',
+        title: '차단 앱 설정을 열 수 없어요',
+      );
     }
   }
 

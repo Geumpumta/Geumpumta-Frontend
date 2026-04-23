@@ -23,30 +23,37 @@ class MenuItem extends StatelessWidget {
     final defaultTextColor = textColor ?? const Color(0xFF0BAEFF);
     final defaultIconColor = iconColor ?? const Color(0xFF0BAEFF);
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                color: defaultTextColor,
-              ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: defaultTextColor,
+                  ),
+                ),
+                if (showIcon)
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: defaultIconColor,
+                  ),
+              ],
             ),
-            if (showIcon)
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: defaultIconColor,
-              ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
-

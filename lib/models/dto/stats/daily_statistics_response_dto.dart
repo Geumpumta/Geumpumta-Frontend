@@ -70,10 +70,9 @@ class DaySummaryDto {
 
   factory DaySummaryDto.fromJson(Map<String, dynamic> json) {
     return DaySummaryDto(
-      totalStudyMilliseconds: (json['totalStudyMilliseconds'] as num?)?.toInt() ?? 0,
-      maxFocusMilliseconds: (json['maxFocusMilliseconds'] as num?)?.toInt() ?? 0,
+      totalStudyMilliseconds: (json['totalStudyMillis'] as num?)?.toInt() ?? 0,
+      maxFocusMilliseconds: (json['maxFocusMillis'] as num?)?.toInt() ?? 0,
     );
   }
 }
-
 

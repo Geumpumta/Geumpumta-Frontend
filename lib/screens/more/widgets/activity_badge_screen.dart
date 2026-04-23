@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/entity/badge/my_badge.dart';
+import 'package:geumpumta/screens/more/widgets/more_skeleton.dart';
 import 'package:geumpumta/viewmodel/badge/badge_viewmodel.dart';
 import 'package:geumpumta/widgets/text_header/text_header.dart';
 
@@ -26,7 +27,7 @@ class _ActivityBadgeScreenState extends ConsumerState<ActivityBadgeScreen> {
     final badgeState = ref.watch(activityBadgeListViewModelProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -47,8 +48,7 @@ class _ActivityBadgeScreenState extends ConsumerState<ActivityBadgeScreen> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: badgeState.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                  loading: () => const BadgeGridSkeleton(),
                   error: (error, stackTrace) => Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,

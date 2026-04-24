@@ -14,6 +14,7 @@ import 'package:geumpumta/viewmodel/study/study_viewmodel.dart';
 import 'package:geumpumta/widgets/badge/unnotified_badge_modal.dart';
 import 'package:geumpumta/widgets/error_dialog/error_dialog.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../provider/study/study_provider.dart';
 import '../../provider/userState/user_info_state.dart';
@@ -29,6 +30,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const MethodChannel platform = MethodChannel("network_monitor");
+  static const String _studySessionIdStorageKey = 'activeStudySessionId';
 
   bool _isInitialLoading = true;
   bool _isStartingStudy = false;
@@ -43,6 +45,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Timer? _timer;
   ProviderSubscription<bool>? _studyRunningSubscription;
   int _sessionId = 0;
+
+  Future<void> _saveSessionId(int sessionId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_studySessionIdStorageKey, sessionId);
+  }
+
+  Future<void> _loadPersistedSessionId() async {
+    final prefs = await SharedPreferences.getInstance();
+    _sessionId = prefs.getInt(_studySessionIdStorageKey) ?? 0;
+  }
+
+  Future<void> _clearPersistedSessionId() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_studySessionIdStorageKey);
+  }
+
+  Future<int> _resolveSessionIdForStop() async {
+    if (_sessionId != 0) return _sessionId;
+
+    await _loadPersistedSessionId();
+    return _sessionId;
+  }
 
   void _setupNetworkListener() {
     platform.setMethodCallHandler((call) async {
@@ -83,7 +107,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => _refreshFromServer());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _loadPersistedSessionId();
+      await _refreshFromServer();
+    });
   }
 
   @override
@@ -99,8 +126,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final vm = ref.read(studyViewmodelProvider);
 
     try {
+      final sessionId = await _resolveSessionIdForStop();
+      if (sessionId == 0) {
+        await _refreshFromServer();
+        if (!mounted) return;
+        ErrorDialog.show(context, "진행 중인 공부 세션 정보를 찾을 수 없습니다.");
+        return;
+      }
+
       final res = await vm.endStudyTime(
-        EndStudyRequestDto(studySessionId: _sessionId),
+        EndStudyRequestDto(studySessionId: sessionId),
       );
 
       if (res == null || !res.success) {
@@ -127,6 +162,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       ref.read(studyRunningProvider.notifier).state = false;
       _sessionId = 0;
+      await _clearPersistedSessionId();
 
       await _refreshFromServer();
       await _checkAndShowUnnotifiedBadges();
@@ -176,6 +212,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _accumulatedDuration = Duration.zero;
       _sessionId = 0;
     });
+    await _clearPersistedSessionId();
     await _refreshFromServer();
   }
 
@@ -208,6 +245,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _sessionId = 0;
           _timerDuration = totalDuration;
         });
+        await _clearPersistedSessionId();
         ref.read(studyRunningProvider.notifier).state = false;
       }
 
@@ -281,6 +319,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             }
 
                             _sessionId = res.data!.studySessionId;
+                            await _saveSessionId(_sessionId);
 
                             if (defaultTargetPlatform == TargetPlatform.iOS) {
                               try {
@@ -295,7 +334,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               _accumulatedDuration = _timerDuration;
                             });
 
-                            ref.read(studyRunningProvider.notifier).state = true;
+                            ref.read(studyRunningProvider.notifier).state =
+                                true;
 
                             _startLocalTimer();
                           } catch (e) {

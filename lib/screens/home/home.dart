@@ -194,8 +194,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (_sessionStartTime == null) return;
 
     setState(() {
+      final elapsed = DateTime.now().difference(_sessionStartTime!);
       _timerDuration =
-          _accumulatedDuration + DateTime.now().difference(_sessionStartTime!);
+          _accumulatedDuration + (elapsed.isNegative ? Duration.zero : elapsed);
     });
   }
 
@@ -223,18 +224,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       final totalMillis = response.data.totalStudySession;
       final isStudying = response.data.isStudying;
+      final startTime = response.data.startTime;
       final totalDuration = Duration(milliseconds: totalMillis);
 
       if (!mounted) return;
 
       if (isStudying) {
-        setState(() {
-          _isTimerRunning = true;
-          _accumulatedDuration = totalDuration;
-          _sessionStartTime = DateTime.now();
-          _timerDuration = totalDuration;
-        });
-        _startLocalTimer();
+        if (startTime != null) {
+          final elapsed = DateTime.now().difference(startTime);
+          final safeElapsed = elapsed.isNegative ? Duration.zero : elapsed;
+
+          setState(() {
+            _isTimerRunning = true;
+            _accumulatedDuration = totalDuration;
+            _sessionStartTime = startTime;
+            _timerDuration = totalDuration + safeElapsed;
+          });
+          _startLocalTimer();
+        } else {
+          _stopLocalTimer();
+          setState(() {
+            _isTimerRunning = false;
+            _accumulatedDuration = totalDuration;
+            _sessionStartTime = null;
+            _timerDuration = totalDuration;
+          });
+        }
         ref.read(studyRunningProvider.notifier).state = true;
       } else {
         _stopLocalTimer();

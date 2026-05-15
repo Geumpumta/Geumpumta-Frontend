@@ -93,6 +93,7 @@ flutter:
    - assets/image/signin/
    - assets/image/home/
    - assets/image/ranking/
+   - assets/image/banner/
    - assets/image/maintenance/
    - assets/splash/
    - .env

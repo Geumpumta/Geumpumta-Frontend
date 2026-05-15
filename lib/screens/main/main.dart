@@ -38,9 +38,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   void initState() {
     super.initState();
     // 앱 시작 시 광고 배너 표시 여부를 확인하는 콜백
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkAndShowAdBanner();
-      _checkUnnotifiedBadgesOnEnterIfNeeded();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _checkUnnotifiedBadgesOnEnterIfNeeded();
+      await _checkAndShowAdBanner();
     });
   }
 
@@ -67,6 +67,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final badges = await ref
         .read(unnotifiedBadgeCheckViewModelProvider.notifier)
         .checkUnnotifiedBadges();
+
+    final badgeCheckState = ref.read(unnotifiedBadgeCheckViewModelProvider);
+    if (badgeCheckState.hasError) {
+      debugPrint('UnnotifiedBadgeCheck: failed, skip saving check date');
+      return;
+    }
 
     await prefs.setString('lastUnnotifiedBadgeCheckDate', todayKey);
     debugPrint('UnnotifiedBadgeCheck: saved lastUnnotifiedBadgeCheckDate=$todayKey');

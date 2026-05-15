@@ -17,8 +17,7 @@ class SetBlockAppIcon extends StatelessWidget {
     }
 
     try {
-      await IosFocusControl.requestAuthorization();
-      await IosFocusControl.selectApps();
+      await IosFocusControl.openAppSelection();
     } catch (_) {
       if (!context.mounted) {
         return;

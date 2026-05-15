@@ -75,6 +75,20 @@ import Network
                         )
                     }
 
+                case "openAppSelection":
+                    do {
+                        try await FocusControl.shared.openAppSelection(from: controller)
+                        result(true)
+                    } catch {
+                        result(
+                            FlutterError(
+                                code: "OPEN_SELECTION_FAILED",
+                                message: "Family Controls app selection failed",
+                                details: nil
+                            )
+                        )
+                    }
+
                 case "selectApps":
                     FocusControl.shared.selectApps(from: controller)
                     result(true)

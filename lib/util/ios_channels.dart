@@ -11,6 +11,11 @@ class IosFocusControl {
     await _channel.invokeMethod('requestAuthorization');
   }
 
+  static Future<void> openAppSelection() async {
+    if (!_isIOS) return;
+    await _channel.invokeMethod('openAppSelection');
+  }
+
   static Future<void> selectApps() async {
     if (!_isIOS) return;
     await _channel.invokeMethod('selectApps');

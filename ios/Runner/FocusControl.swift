@@ -12,11 +12,14 @@ private let STUDY_ACTIVITY_NAME = DeviceActivityName("study")
 
 enum FocusControlError: LocalizedError {
     case unsupportedOS
+    case authorizationDenied
 
     var errorDescription: String? {
         switch self {
         case .unsupportedOS:
             return "Family Controls requires iOS 16.0 or newer."
+        case .authorizationDenied:
+            return "Family Controls authorization was denied."
         }
     }
 }
@@ -31,6 +34,25 @@ final class FocusControl {
     func requestAuthorization() async throws {
         if #available(iOS 16.0, *) {
             try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+        } else {
+            throw FocusControlError.unsupportedOS
+        }
+    }
+
+    func openAppSelection(from vc: UIViewController) async throws {
+        if #available(iOS 16.0, *) {
+            let center = AuthorizationCenter.shared
+
+            switch center.authorizationStatus {
+            case .approved:
+                break
+            case .notDetermined:
+                try await center.requestAuthorization(for: .individual)
+            default:
+                throw FocusControlError.authorizationDenied
+            }
+
+            selectApps(from: vc)
         } else {
             throw FocusControlError.unsupportedOS
         }

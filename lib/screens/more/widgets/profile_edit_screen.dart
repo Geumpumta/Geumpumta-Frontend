@@ -29,10 +29,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   bool _photoChanged = false;
   bool _isCheckingNickname = false;
   bool? _isNicknameAvailable;
+  String? _lastCheckedNickname;
   bool _isUploadingImage = false;
   bool _initialized = false;
-  bool _nicknameEdited = false;
-  bool _canSave = false;
   String? _statusMessage;
   Color _statusColor = const Color(0xFF0BAEFF);
   String? _initialNickname; // 초기 닉네임 저장
@@ -51,53 +50,43 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   void _onNicknameChanged() {
-    // 초기화가 완료되지 않았으면 무시
     if (!_initialized) return;
-    
+
     final currentNickname = _nicknameController.text.trim();
-    // 초기 닉네임과 다를 때만 수정된 것으로 간주
-    final isActuallyChanged = currentNickname != (_initialNickname ?? '');
-    
     setState(() {
-      _nicknameEdited = isActuallyChanged;
-      if (isActuallyChanged) {
+      if (currentNickname == (_initialNickname ?? '')) {
+        _isNicknameAvailable = null;
+        _lastCheckedNickname = null;
+      } else if (_lastCheckedNickname != currentNickname) {
         _isNicknameAvailable = null;
       }
-      _updateSaveButtonState();
     });
   }
 
-  void _updateSaveButtonState() {
-    // 저장 가능 조건:
-    // 1. 프로필만 수정 -> 저장 O
-    // 2. 닉네임만 수정 -> 중복검사 후 저장 O
-    // 3. 프로필 수정 + 닉네임 수정 후 중복검사 X -> 저장 X
-    // 4. 프로필 수정 + 닉네임 수정 후 중복검사 O -> 저장 O
-    final imageChanged = _photoChanged;
-    final nicknameChanged = _nicknameEdited;
-    
-    // 닉네임이 수정되었으면 반드시 중복검사를 통과해야 함
-    final nicknameValid = !nicknameChanged || (_isNicknameAvailable == true);
-    
-    setState(() {
-      // 프로필만 수정한 경우: 저장 가능
-      if (imageChanged && !nicknameChanged) {
-        _canSave = true;
-      }
-      // 닉네임만 수정한 경우: 중복검사 통과 시 저장 가능
-      else if (!imageChanged && nicknameChanged) {
-        _canSave = nicknameValid;
-      }
-      // 둘 다 수정한 경우: 닉네임 중복검사 통과 시 저장 가능
-      else if (imageChanged && nicknameChanged) {
-        _canSave = nicknameValid;
-      }
-      // 둘 다 수정하지 않은 경우: 저장 불가
-      else {
-        _canSave = false;
-      }
-    });
-  }
+  String get _currentNickname => _nicknameController.text.trim();
+
+  bool get _hasNicknameChange =>
+      _initialized && _currentNickname != (_initialNickname ?? '');
+
+  bool get _hasImageChange => _photoChanged;
+
+  bool get _hasAnyChange => _hasImageChange || _hasNicknameChange;
+
+  bool get _isNicknameCheckValid =>
+      _hasNicknameChange &&
+      _isNicknameAvailable == true &&
+      _lastCheckedNickname == _currentNickname;
+
+  bool get _canCheckNickname =>
+      !_isCheckingNickname &&
+      _hasNicknameChange &&
+      _currentNickname.isNotEmpty &&
+      !_isNicknameCheckValid;
+
+  bool get _canSave =>
+      !_isUploadingImage &&
+      _hasAnyChange &&
+      (!_hasNicknameChange || _isNicknameCheckValid);
 
   Future<void> _pickImage() async {
     try {
@@ -142,7 +131,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _currentPublicId = result.publicId;
         _photoChanged = true;
       });
-      _updateSaveButtonState();
     } on ImageUploadTimeoutException {
       if (mounted && _imageUploadCancelToken == cancelToken) {
         ErrorDialog.show(
@@ -195,7 +183,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   Future<void> _checkDuplication() async {
-    final nickname = _nicknameController.text.trim();
+    final nickname = _currentNickname;
     if (nickname.isEmpty) {
       _setStatusMessage(
         '닉네임을 입력해주세요.',
@@ -203,27 +191,33 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       );
       return;
     }
+    if (!_hasNicknameChange) {
+      _setStatusMessage(
+        '현재 닉네임과 동일합니다.',
+        color: Colors.orange.shade700,
+      );
+      return;
+    }
+    if (!_canCheckNickname) {
+      return;
+    }
 
     setState(() {
       _isCheckingNickname = true;
-});
+    });
 
     try {
       final viewModel = ref.read(profileEditViewModelProvider.notifier);
       final isAvailable = await viewModel.verifyNickname(nickname);
       if (mounted) {
         setState(() {
+          _lastCheckedNickname = nickname;
           _isNicknameAvailable = isAvailable;
-          // 닉네임이 사용 가능하면 _nicknameEdited를 true로 유지
-          if (isAvailable) {
-            _nicknameEdited = true;
-          }
         });
         _setStatusMessage(
           isAvailable ? '사용 가능한 닉네임입니다.' : '이미 사용 중인 닉네임입니다.',
           color: isAvailable ? Colors.green.shade600 : Colors.red.shade700,
         );
-        _updateSaveButtonState();
       }
     } catch (e) {
       if (mounted) {
@@ -237,14 +231,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         setState(() {
           _isCheckingNickname = false;
         });
-        _updateSaveButtonState();
       }
     }
   }
 
   Future<void> _saveProfile() async {
     if (!_canSave) return;
-    final nickname = _nicknameController.text.trim();
+    final nickname = _currentNickname;
     final imageUrl = _currentImageUrl ?? '';
     final publicId = _currentPublicId;
 
@@ -263,19 +256,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     );
     userInfoNotifier.setUser(updatedUser);
 
-    // UI 상태 업데이트
-    if (mounted) {
-      setState(() {
-        _photoChanged = false;
-        _isNicknameAvailable = null;
-        _nicknameEdited = false;
-        _canSave = false;
-        _statusMessage = '프로필이 저장되었습니다.';
-        _statusColor = Colors.green.shade600;
-      });
-    }
-
-    // API 요청을 백그라운드에서 처리
     try {
       await viewModel.updateProfile(
         nickname: nickname,
@@ -291,20 +271,19 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (!mounted) {
         return;
       }
+      setState(() {
+        _statusMessage = '프로필이 저장되었습니다.';
+        _statusColor = Colors.green.shade600;
+      });
       Navigator.pop(context);
     } catch (e) {
-      // 실패 시 이전 상태로 복원
       userInfoNotifier.setUser(currentUser);
-      
+
       if (mounted) {
         _setStatusMessage(
           '프로필 저장 중 오류가 발생했습니다: $e',
           color: Colors.red.shade700,
         );
-        // 저장 버튼 상태 복원
-        setState(() {
-          _canSave = true;
-        });
       }
     }
   }
@@ -547,7 +526,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton(
-            onPressed: _isCheckingNickname ? null : _checkDuplication,
+            onPressed: _canCheckNickname ? _checkDuplication : null,
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               side: const BorderSide(color: Color(0xFF0BAEFF), width: 1),

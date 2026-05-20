@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/entity/user/user.dart';
 import '../../provider/userState/user_info_state.dart';
+import '../../provider/signin/signin_provider.dart';
 import '../../provider/notification/fcm_provider.dart';
 import '../../provider/repository_provider.dart';
 import '../../repository/auth/auth_repository.dart';
@@ -313,6 +314,20 @@ class AuthViewModel extends StateNotifier<bool> {
         AppRoutes.login,
         (route) => false,
       );
+    }
+  }
+
+  Future<void> cancelGuestSignup() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('accessToken');
+    await prefs.remove('refreshToken');
+    await prefs.remove('userInfo');
+    await ref.read(userInfoStateProvider.notifier).clear();
+    ref.read(signUpProvider.notifier).reset();
+
+    final nav = rootNavigatorKey.currentState;
+    if (nav != null) {
+      nav.pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
     }
   }
 

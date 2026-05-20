@@ -1,16 +1,17 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geumpumta/models/department.dart';
+import 'package:geumpumta/screens/signin/widgets/department_scroll_down.dart';
 import 'package:geumpumta/viewmodel/auth/auth_viewmodel.dart';
 import 'package:geumpumta/viewmodel/email/email_viewmodel.dart';
+import 'package:geumpumta/widgets/custom_search_bar/custom_search_bar.dart';
+
 import '../../provider/signin/signin_provider.dart';
 import '../../widgets/back_and_progress/back_and_progress.dart';
 import '../../widgets/custom_button/custom_button.dart';
-import '../../widgets/custom_input/custom_input.dart';
-import '../../widgets/loading_dialog/loading_dialog.dart';
 import '../../widgets/error_dialog/error_dialog.dart';
-
-final isVerifyingProvider = StateProvider<bool>((ref) => false);
+import '../../widgets/loading_dialog/loading_dialog.dart';
 
 class SignIn2Screen extends ConsumerStatefulWidget {
   const SignIn2Screen({super.key});
@@ -20,12 +21,22 @@ class SignIn2Screen extends ConsumerStatefulWidget {
 }
 
 class _SignIn2ScreenState extends ConsumerState<SignIn2Screen> {
-  final codeController = TextEditingController();
-  bool isCodeValid = false;
+  final TextEditingController _searchController = TextEditingController();
+  String department = Department.none.koreanName;
+  String _searchText = "";
 
-  bool _validateCode(String code) {
-    final regex = RegExp(r'^\d{6}$');
-    return regex.hasMatch(code);
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() => _searchText = _searchController.text.trim());
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _handleCancelSignup() async {
@@ -55,19 +66,10 @@ class _SignIn2ScreenState extends ConsumerState<SignIn2Screen> {
   }
 
   @override
-  void dispose() {
-    codeController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final email = ModalRoute.of(context)!.settings.arguments as String;
     final emailViewModel = ref.watch(emailViewModelProvider);
     final signUpState = ref.watch(signUpProvider);
-    final isVerifying = ref.watch(isVerifyingProvider);
-
-    final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+    final signUpNotifier = ref.read(signUpProvider.notifier);
 
     return PopScope(
       canPop: false,
@@ -84,12 +86,12 @@ class _SignIn2ScreenState extends ConsumerState<SignIn2Screen> {
           resizeToAvoidBottomInset: true,
           backgroundColor: Colors.white,
           body: SafeArea(
-            child: Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       BackAndProgress(percent: 0.3, onBack: _handleCancelSignup),
@@ -97,103 +99,65 @@ class _SignIn2ScreenState extends ConsumerState<SignIn2Screen> {
                       const Padding(
                         padding: EdgeInsets.all(15),
                         child: Text(
-                          '학교 이메일로 인증번호\n6자리를 보냈어요',
+                          '학과 선택',
                           style: TextStyle(
                             fontSize: 26,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                       ),
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 100),
-                        transitionBuilder: (child, animation) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: SlideTransition(
-                              position: Tween<Offset>(
-                                begin: const Offset(0, 0.1),
-                                end: Offset.zero,
-                              ).animate(animation),
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: !isKeyboardVisible
-                            ? Container(
-                                key: const ValueKey('image_visible'),
-                                width: MediaQuery.of(context).size.width,
-                                alignment: Alignment.center,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(left: 25),
-                                  child: Image.asset(
-                                    'assets/image/signin/verification_code_img.png',
-                                    width: 150,
-                                  ),
-                                ),
-                              )
-                            : const SizedBox(key: ValueKey('image_hidden')),
+                      CustomSearchBar(
+                        controller: _searchController,
+                        value: _searchController.text,
+                        onActive: () => print(_searchController.text),
                       ),
-                      CustomInput(
-                        title: '인증번호',
-                        value: codeController.text,
-                        controller: codeController,
-                        hintText: '123456',
-                        onChanged: (v) {
-                          final valid = _validateCode(v);
-                          setState(() {
-                            isCodeValid = valid;
-                          });
-                        },
-                        onReLoad: () => emailViewModel.sendEmailVerification(email),
-                        inputType: InputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(6),
-                        ],
-                        errorText: codeController.text.isEmpty || isCodeValid
-                            ? null
-                            : '인증번호는 6자리 숫자여야 합니다.',
+                      Expanded(
+                        child: DepartmentScrollDown(
+                          searchText: _searchText,
+                          onDepartmentSelected: (dept) {
+                            setState(() {
+                              department = dept.koreanName;
+                            });
+                          },
+                          selected: department,
+                        ),
                       ),
                     ],
                   ),
-                  CustomButton(
-                    buttonText: '확인',
-                    onActive: isCodeValid && !isVerifying,
-                    onPressed: () async {
-                      ref.read(isVerifyingProvider.notifier).state = true;
+                ),
+                CustomButton(
+                  buttonText: '다음',
+                  onActive: department != Department.none.koreanName,
+                  onPressed: () async {
+                    LoadingDialog.show(context);
 
-                      LoadingDialog.show(context);
+                    try {
+                      signUpNotifier.setStep3(department);
+                      await emailViewModel.sendEmailVerification(signUpState.email);
 
-                      try {
-                        final result = await emailViewModel.verifyCode(
-                          signUpState.email,
-                          codeController.text.trim(),
-                        );
+                      LoadingDialog.hide(context);
 
-                        LoadingDialog.hide(context);
+                      Flushbar(
+                        message: "인증 메일을 전송했어요!",
+                        backgroundColor: Colors.green.shade600,
+                        flushbarPosition: FlushbarPosition.TOP,
+                        margin: const EdgeInsets.all(10),
+                        borderRadius: BorderRadius.circular(10),
+                        duration: const Duration(seconds: 2),
+                        icon: const Icon(
+                          Icons.check_circle,
+                          color: Colors.white,
+                        ),
+                      ).show(context);
 
-                        if (result) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("인증 성공!"),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-
-                          Navigator.pushNamed(context, '/signin3');
-                        } else {
-                          ErrorDialog.show(context, "인증번호가 올바르지 않습니다.");
-                        }
-                      } catch (e) {
-                        LoadingDialog.hide(context);
-                        ErrorDialog.show(context, "인증 오류: $e");
-                      } finally {
-                        ref.read(isVerifyingProvider.notifier).state = false;
-                      }
-                    },
-                  ),
-                ],
-              ),
+                      Navigator.pushNamed(context, '/signin3');
+                    } catch (e) {
+                      LoadingDialog.hide(context);
+                      ErrorDialog.show(context, "메일 전송 실패: $e");
+                    }
+                  },
+                ),
+              ],
             ),
           ),
         ),

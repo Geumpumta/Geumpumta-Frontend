@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geumpumta/models/department.dart';
-import 'package:geumpumta/screens/signin/widgets/department_scroll_down.dart';
 import 'package:geumpumta/viewmodel/auth/auth_viewmodel.dart';
+import 'package:geumpumta/viewmodel/email/email_viewmodel.dart';
 import 'package:geumpumta/viewmodel/user/user_viewmodel.dart';
-import 'package:geumpumta/widgets/custom_search_bar/custom_search_bar.dart';
+
 import '../../provider/signin/signin_provider.dart';
 import '../../widgets/back_and_progress/back_and_progress.dart';
 import '../../widgets/custom_button/custom_button.dart';
+import '../../widgets/custom_input/custom_input.dart';
+import '../../widgets/error_dialog/error_dialog.dart';
+import '../../widgets/loading_dialog/loading_dialog.dart';
+
+final isVerifyingProvider = StateProvider<bool>((ref) => false);
 
 class SignIn3Screen extends ConsumerStatefulWidget {
   const SignIn3Screen({super.key});
@@ -17,21 +22,17 @@ class SignIn3Screen extends ConsumerStatefulWidget {
 }
 
 class _SignIn3ScreenState extends ConsumerState<SignIn3Screen> {
-  final TextEditingController _searchController = TextEditingController();
-  String department = Department.none.koreanName;
-  String _searchText = "";
+  final codeController = TextEditingController();
+  bool isCodeValid = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _searchController.addListener(() {
-      setState(() => _searchText = _searchController.text.trim());
-    });
+  bool _validateCode(String code) {
+    final regex = RegExp(r'^\d{6}$');
+    return regex.hasMatch(code);
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
+    codeController.dispose();
     super.dispose();
   }
 
@@ -63,8 +64,11 @@ class _SignIn3ScreenState extends ConsumerState<SignIn3Screen> {
 
   @override
   Widget build(BuildContext context) {
+    final emailViewModel = ref.watch(emailViewModelProvider);
     final userViewmodel = ref.watch(userViewModelProvider.notifier);
     final signUpState = ref.watch(signUpProvider);
+    final isVerifying = ref.watch(isVerifyingProvider);
+    final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return PopScope(
       canPop: false,
@@ -81,12 +85,12 @@ class _SignIn3ScreenState extends ConsumerState<SignIn3Screen> {
           resizeToAvoidBottomInset: true,
           backgroundColor: Colors.white,
           body: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
+            child: Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       BackAndProgress(percent: 0.6, onBack: _handleCancelSignup),
@@ -94,50 +98,106 @@ class _SignIn3ScreenState extends ConsumerState<SignIn3Screen> {
                       const Padding(
                         padding: EdgeInsets.all(15),
                         child: Text(
-                          '학과 선택',
+                          '학교 이메일로 인증번호\n6자리를 보냈어요',
                           style: TextStyle(
                             fontSize: 26,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                       ),
-                      CustomSearchBar(
-                        controller: _searchController,
-                        value: _searchController.text,
-                        onActive: () => print(_searchController.text),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 100),
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: SlideTransition(
+                              position: Tween<Offset>(
+                                begin: const Offset(0, 0.1),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: !isKeyboardVisible
+                            ? Container(
+                                key: const ValueKey('image_visible'),
+                                width: MediaQuery.of(context).size.width,
+                                alignment: Alignment.center,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(left: 25),
+                                  child: Image.asset(
+                                    'assets/image/signin/verification_code_img.png',
+                                    width: 150,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox(key: ValueKey('image_hidden')),
                       ),
-                      Expanded(
-                        child: DepartmentScrollDown(
-                          searchText: _searchText,
-                          onDepartmentSelected: (dept) {
-                            print('선택된 학과: ${dept.koreanName}');
-                            setState(() {
-                              department = dept.koreanName;
-                            });
-                          },
-                          selected: department,
-                        ),
+                      CustomInput(
+                        title: '인증번호',
+                        value: codeController.text,
+                        controller: codeController,
+                        hintText: '123456',
+                        onChanged: (v) {
+                          final valid = _validateCode(v);
+                          setState(() {
+                            isCodeValid = valid;
+                          });
+                        },
+                        onReLoad: () => emailViewModel.sendEmailVerification(signUpState.email),
+                        inputType: InputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(6),
+                        ],
+                        errorText: codeController.text.isEmpty || isCodeValid
+                            ? null
+                            : '인증번호는 6자리 숫자여야 합니다.',
                       ),
                     ],
                   ),
-                ),
-                CustomButton(
-                  buttonText: '확인',
-                  onActive: department != Department.none.koreanName,
-                  onPressed: () async {
-                    final res = await userViewmodel.completeRegistration(
-                      context,
-                      signUpState.email,
-                      signUpState.studentId,
-                      department,
-                    );
+                  CustomButton(
+                    buttonText: '확인',
+                    onActive: isCodeValid && !isVerifying,
+                    onPressed: () async {
+                      ref.read(isVerifyingProvider.notifier).state = true;
+                      LoadingDialog.show(context);
 
-                    if (res == null || !res.success) {
-                      return;
-                    }
-                  },
-                ),
-              ],
+                      try {
+                        final result = await emailViewModel.verifyCode(
+                          signUpState.email,
+                          codeController.text.trim(),
+                        );
+
+                        if (!result) {
+                          LoadingDialog.hide(context);
+                          ErrorDialog.show(context, "인증번호가 올바르지 않습니다.");
+                          return;
+                        }
+
+                        LoadingDialog.hide(context);
+
+                        final res = await userViewmodel.completeRegistration(
+                          context,
+                          signUpState.email,
+                          signUpState.studentId,
+                          signUpState.department,
+                        );
+
+                        if (res == null || !res.success) {
+                          return;
+                        }
+                      } catch (e) {
+                        LoadingDialog.hide(context);
+                        ErrorDialog.show(context, "인증 오류: $e");
+                      } finally {
+                        ref.read(isVerifyingProvider.notifier).state = false;
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),

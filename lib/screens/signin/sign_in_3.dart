@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:geumpumta/viewmodel/auth/auth_viewmodel.dart';
 import 'package:geumpumta/viewmodel/email/email_viewmodel.dart';
 import 'package:geumpumta/viewmodel/user/user_viewmodel.dart';
@@ -22,8 +24,13 @@ class SignIn3Screen extends ConsumerStatefulWidget {
 }
 
 class _SignIn3ScreenState extends ConsumerState<SignIn3Screen> {
+  static const int _resendCooldownSeconds = 120;
+
   final codeController = TextEditingController();
   bool isCodeValid = false;
+  Timer? _resendTimer;
+  int _remainingResendSeconds = _resendCooldownSeconds;
+  bool _isResending = false;
 
   bool _validateCode(String code) {
     final regex = RegExp(r'^\d{6}$');
@@ -31,9 +38,101 @@ class _SignIn3ScreenState extends ConsumerState<SignIn3Screen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _startResendCooldown();
+  }
+
+  @override
   void dispose() {
+    _resendTimer?.cancel();
     codeController.dispose();
     super.dispose();
+  }
+
+  void _startResendCooldown() {
+    _resendTimer?.cancel();
+    setState(() {
+      _remainingResendSeconds = _resendCooldownSeconds;
+    });
+
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      if (_remainingResendSeconds <= 1) {
+        timer.cancel();
+        setState(() {
+          _remainingResendSeconds = 0;
+        });
+        return;
+      }
+
+      setState(() {
+        _remainingResendSeconds -= 1;
+      });
+    });
+  }
+
+  String get _reloadLabel {
+    if (_isResending) {
+      return '전송중';
+    }
+    if (_remainingResendSeconds == 0) {
+      return '재전송';
+    }
+
+    final minutes = (_remainingResendSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (_remainingResendSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
+  Future<void> _handleResendEmail() async {
+    if (_isResending || _remainingResendSeconds > 0) {
+      return;
+    }
+
+    setState(() {
+      _isResending = true;
+    });
+
+    final emailViewModel = ref.read(emailViewModelProvider);
+    final signUpState = ref.read(signUpProvider);
+
+    try {
+      await emailViewModel.sendEmailVerification(signUpState.email);
+      _startResendCooldown();
+
+      if (!mounted) {
+        return;
+      }
+
+      Flushbar(
+        message: "인증 메일을 다시 전송했어요!",
+        backgroundColor: Colors.green.shade600,
+        flushbarPosition: FlushbarPosition.TOP,
+        margin: const EdgeInsets.all(10),
+        borderRadius: BorderRadius.circular(10),
+        duration: const Duration(seconds: 2),
+        icon: const Icon(
+          Icons.check_circle,
+          color: Colors.white,
+        ),
+      ).show(context);
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ErrorDialog.show(context, "메일 전송 실패: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isResending = false;
+        });
+      }
+    }
   }
 
   Future<void> _handleCancelSignup() async {
@@ -145,7 +244,10 @@ class _SignIn3ScreenState extends ConsumerState<SignIn3Screen> {
                             isCodeValid = valid;
                           });
                         },
-                        onReLoad: () => emailViewModel.sendEmailVerification(signUpState.email),
+                        onReLoad: _handleResendEmail,
+                        reloadLabel: _reloadLabel,
+                        isReloadEnabled:
+                            !_isResending && _remainingResendSeconds == 0,
                         inputType: InputType.number,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,

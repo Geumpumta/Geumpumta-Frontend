@@ -15,6 +15,8 @@ class CustomInput extends StatelessWidget {
     this.inputFormatters,
     this.errorText,
     this.onReLoad,
+    this.reloadLabel = '재전송',
+    this.isReloadEnabled = true,
   });
 
   final String title;
@@ -26,6 +28,8 @@ class CustomInput extends StatelessWidget {
   final String? errorText;
   final List<TextInputFormatter>? inputFormatters;
   final VoidCallback? onReLoad;
+  final String reloadLabel;
+  final bool isReloadEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +82,12 @@ class CustomInput extends StatelessWidget {
               focusedBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: Color(0xFF0BAEFF)),
               ),
-              suffixIcon: onReLoad!=null?TextButton(onPressed: onReLoad, child: const Text('재전송')):null
+              suffixIcon: onReLoad != null
+                  ? TextButton(
+                      onPressed: isReloadEnabled ? onReLoad : null,
+                      child: Text(reloadLabel),
+                    )
+                  : null,
             ),
           ),
         ],

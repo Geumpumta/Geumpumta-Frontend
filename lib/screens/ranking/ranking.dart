@@ -5,7 +5,6 @@ import 'package:geumpumta/screens/ranking/widgets/season_ranking/season_ranking.
 
 import '../../widgets/custom_dropdown/custom_dropdown.dart';
 
-
 enum RankingTab { ranking, season }
 
 extension RankingTabExtension on RankingTab {
@@ -25,7 +24,9 @@ RankingTab _tabFromLabel(String v) {
 }
 
 class RankingScreen extends ConsumerStatefulWidget {
-  const RankingScreen({super.key});
+  const RankingScreen({super.key, required this.refreshToken});
+
+  final int refreshToken;
 
   @override
   ConsumerState<RankingScreen> createState() => _RankingScreenState();
@@ -56,8 +57,8 @@ class _RankingScreenState extends ConsumerState<RankingScreen> {
             ),
             Expanded(
               child: _selectedTab == RankingTab.ranking
-                  ? const DefaultRanking()
-                  : const SeasonRanking(),
+                  ? DefaultRanking(refreshToken: widget.refreshToken)
+                  : SeasonRanking(refreshToken: widget.refreshToken),
             ),
           ],
         ),

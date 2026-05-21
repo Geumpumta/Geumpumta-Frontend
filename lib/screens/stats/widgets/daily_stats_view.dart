@@ -10,7 +10,9 @@ import 'package:geumpumta/viewmodel/stats/daily_stats_viewmodel.dart';
 import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 
 class DailyStatsView extends ConsumerStatefulWidget {
-  const DailyStatsView({super.key});
+  const DailyStatsView({super.key, required this.refreshToken});
+
+  final int refreshToken;
 
   @override
   ConsumerState<DailyStatsView> createState() => _DailyStatsViewState();
@@ -41,6 +43,17 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
       // 연속공부현황 provider 새로고침
       ref.invalidate(currentStreakProvider(null));
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant DailyStatsView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.refreshToken != widget.refreshToken) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fetchDailyStats();
+        ref.invalidate(currentStreakProvider(null));
+      });
+    }
   }
 
   void _fetchDailyStats() {
@@ -83,11 +96,20 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
     return state.when(
       data: (stats) => _buildStatsContainer(
         children: [
-          _buildStatRow('총 공부 시간', _formatDuration(stats.totalStudyMilliseconds)),
+          _buildStatRow(
+            '총 공부 시간',
+            _formatDuration(stats.totalStudyMilliseconds),
+          ),
           const SizedBox(height: 12),
-          _buildStatRow('최대 집중 시간', _formatDuration(stats.maxFocusMilliseconds)),
+          _buildStatRow(
+            '최대 집중 시간',
+            _formatDuration(stats.maxFocusMilliseconds),
+          ),
           const SizedBox(height: 12),
-          _buildStatRow('집중 시간 합계', _formatDuration(stats.totalStudyMilliseconds)),
+          _buildStatRow(
+            '집중 시간 합계',
+            _formatDuration(stats.totalStudyMilliseconds),
+          ),
         ],
       ),
       loading: () => _buildStatsContainer(
@@ -124,7 +146,10 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
 
   Widget _buildUsageTimeChart(AsyncValue<DailyStatistics> state) {
     return state.when(
-      data: (stats) => UsageTimeChartSection(slots: stats.slots, selectedDate: _selectedDate,),
+      data: (stats) => UsageTimeChartSection(
+        slots: stats.slots,
+        selectedDate: _selectedDate,
+      ),
       loading: () => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -222,7 +247,8 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
       data: (stats) {
         // 12시간 = 43200000ms
         const targetMilliseconds = 12 * 3600 * 1000;
-        final missedMilliseconds = targetMilliseconds - stats.totalStudyMilliseconds;
+        final missedMilliseconds =
+            targetMilliseconds - stats.totalStudyMilliseconds;
         final missedDuration = Duration(
           milliseconds: missedMilliseconds < 0 ? 0 : missedMilliseconds,
         );

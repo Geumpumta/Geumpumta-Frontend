@@ -23,15 +23,10 @@ class MainScreen extends ConsumerStatefulWidget {
 
 class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
+  int _statsRefreshToken = 0;
+  int _rankingRefreshToken = 0;
   bool _showAdBanner = true;
   bool _didCheckUnnotifiedOnEnter = false;
-
-  final List<Widget> _pages = const [
-    HomeScreen(),
-    StatsScreen(),
-    RankingScreen(),
-    MoreScreen(),
-  ];
 
   @override
   void initState() {
@@ -96,6 +91,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     if (isInteractionLocked) {
       return;
+    }
+
+    if (index == 1) {
+      _statsRefreshToken++;
+    } else if (index == 2) {
+      _rankingRefreshToken++;
     }
 
     // 통계 탭으로 이동할 때마다 연속공부현황 provider 새로고침
@@ -169,7 +170,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           Column(
             children: [
               Expanded(
-                child: IndexedStack(index: _selectedIndex, children: _pages),
+                child: IndexedStack(
+                  index: _selectedIndex,
+                  children: [
+                    const HomeScreen(),
+                    StatsScreen(refreshToken: _statsRefreshToken),
+                    RankingScreen(refreshToken: _rankingRefreshToken),
+                    const MoreScreen(),
+                  ],
+                ),
               ),
               _buildBottomNavBar(),
             ],

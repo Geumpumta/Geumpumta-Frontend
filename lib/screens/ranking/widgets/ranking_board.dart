@@ -17,6 +17,7 @@ class RankingBoard extends ConsumerStatefulWidget {
     required this.periodOption,
     required this.selectedDate,
     required this.selectedGroup,
+    required this.refreshToken,
     required this.onGroupChanged,
     required this.onDateChanged,
   });
@@ -24,6 +25,7 @@ class RankingBoard extends ConsumerStatefulWidget {
   final PeriodOption periodOption;
   final DateTime selectedDate;
   final GroupOption selectedGroup;
+  final int refreshToken;
 
   final void Function(GroupOption) onGroupChanged;
   final void Function(DateTime) onDateChanged;
@@ -58,7 +60,8 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
 
     if (oldWidget.periodOption != widget.periodOption ||
         oldWidget.selectedDate != widget.selectedDate ||
-        oldWidget.selectedGroup != widget.selectedGroup) {
+        oldWidget.selectedGroup != widget.selectedGroup ||
+        oldWidget.refreshToken != widget.refreshToken) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _fetchRanking();
       });

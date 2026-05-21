@@ -13,7 +13,9 @@ import 'package:geumpumta/widgets/custom_dropdown/custom_dropdown.dart';
 import 'package:geumpumta/provider/userState/user_info_state.dart';
 
 class SeasonRanking extends ConsumerStatefulWidget {
-  const SeasonRanking({super.key});
+  const SeasonRanking({super.key, required this.refreshToken});
+
+  final int refreshToken;
 
   @override
   ConsumerState<SeasonRanking> createState() => _SeasonRankingState();
@@ -33,8 +35,39 @@ class _SeasonRankingState extends ConsumerState<SeasonRanking> {
 
     _loadCurrentUserId();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await ref.read(seasonRankViewModelProvider.notifier).getCurrentSeasonRanking();
+      await ref
+          .read(seasonRankViewModelProvider.notifier)
+          .getCurrentSeasonRanking();
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant SeasonRanking oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.refreshToken != widget.refreshToken) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final isCurrentSeason =
+            _selectedYear == _currentSeasonLabelYear &&
+            _selectedSeasonNumber == _currentSeasonNumber;
+        if (isCurrentSeason) {
+          await ref
+              .read(seasonRankViewModelProvider.notifier)
+              .getCurrentSeasonRanking();
+          return;
+        }
+
+        final selectedSeasonNumber = _selectedSeasonNumber;
+        if (selectedSeasonNumber == null) return;
+        final targetSeasonId = _seasonIdFromSelection(
+          selectedSeasonNumber,
+          _selectedYear,
+        );
+        if (targetSeasonId == null) return;
+        await ref
+            .read(seasonRankViewModelProvider.notifier)
+            .getClosedSeasonRanking(targetSeasonId);
+      });
+    }
   }
 
   Future<void> _loadCurrentUserId() async {
@@ -129,10 +162,12 @@ class _SeasonRankingState extends ConsumerState<SeasonRanking> {
       _selectedSeasonNumber = seasonNumber;
     });
 
-    final isCurrentSeason = year == _currentSeasonLabelYear &&
-        seasonNumber == _currentSeasonNumber;
+    final isCurrentSeason =
+        year == _currentSeasonLabelYear && seasonNumber == _currentSeasonNumber;
     if (isCurrentSeason) {
-      await ref.read(seasonRankViewModelProvider.notifier).getCurrentSeasonRanking();
+      await ref
+          .read(seasonRankViewModelProvider.notifier)
+          .getCurrentSeasonRanking();
       return;
     }
 
@@ -144,8 +179,7 @@ class _SeasonRankingState extends ConsumerState<SeasonRanking> {
   }
 
   void _syncCurrentSeasonState(SeasonRankingData data) {
-    final currentByDate =
-        DateTime.tryParse(data.startDate) ?? DateTime.now();
+    final currentByDate = DateTime.tryParse(data.startDate) ?? DateTime.now();
     _currentSeasonId ??= data.seasonId;
     _currentSeasonLabelYear ??= currentByDate.year;
     _currentSeasonNumber ??= _seasonNumberFromDate(currentByDate);
@@ -208,15 +242,16 @@ class _SeasonRankingState extends ConsumerState<SeasonRanking> {
     final myImageUrl = myRanking?.imageUrl.isNotEmpty == true
         ? myRanking!.imageUrl
         : (userInfo?.profileImage?.isNotEmpty == true
-            ? userInfo!.profileImage!
-            : 'https://picsum.photos/100?my-season');
+              ? userInfo!.profileImage!
+              : 'https://picsum.photos/100?my-season');
     final myNickname = myRanking?.username.isNotEmpty == true
         ? myRanking!.username
         : (userInfo?.nickName ?? '');
     final myRank = myRanking?.rank ?? 0;
     final myDuration = Duration(milliseconds: myRanking?.totalMillis ?? 0);
-    final myPercentage =
-        myRanking == null ? '0.0%' : _percentageText(myRanking.rank, rankings.length);
+    final myPercentage = myRanking == null
+        ? '0.0%'
+        : _percentageText(myRanking.rank, rankings.length);
     final dueDate = DateTime.tryParse(data?.endDate ?? '') ?? DateTime.now();
 
     return SingleChildScrollView(

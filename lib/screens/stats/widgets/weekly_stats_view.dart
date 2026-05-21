@@ -9,7 +9,9 @@ import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 import '../../ranking/widgets/period_option.dart';
 
 class WeeklyStatsView extends ConsumerStatefulWidget {
-  const WeeklyStatsView({super.key});
+  const WeeklyStatsView({super.key, required this.refreshToken});
+
+  final int refreshToken;
 
   @override
   ConsumerState<WeeklyStatsView> createState() => _WeeklyStatsViewState();
@@ -29,13 +31,25 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     });
   }
 
+  @override
+  void didUpdateWidget(covariant WeeklyStatsView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.refreshToken != widget.refreshToken) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fetchWeeklyStats();
+        ref.invalidate(currentStreakProvider(null));
+      });
+    }
+  }
+
   DateTime _startOfWeek(DateTime date) {
     return date.subtract(Duration(days: date.weekday - 1));
   }
 
   void _fetchWeeklyStats() {
     final formattedDate = _formatDateForApi(_selectedWeekStart);
-    ref.read(weeklyStatsViewModelProvider.notifier)
+    ref
+        .read(weeklyStatsViewModelProvider.notifier)
         .loadWeeklyStatistics(date: formattedDate);
   }
 
@@ -90,37 +104,42 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
           GestureDetector(
             onTap: canGoPrev
                 ? () {
-              setState(() {
-                _selectedWeekStart = prevWeek;
-              });
-              _fetchWeeklyStats();
-            }
+                    setState(() {
+                      _selectedWeekStart = prevWeek;
+                    });
+                    _fetchWeeklyStats();
+                  }
                 : null,
-            child: Icon(Icons.arrow_back_ios,
-                size: 16,
-                color: canGoPrev ? const Color(0xFF666666) : Colors.grey.shade300),
+            child: Icon(
+              Icons.arrow_back_ios,
+              size: 16,
+              color: canGoPrev ? const Color(0xFF666666) : Colors.grey.shade300,
+            ),
           ),
 
           Text(
             weekStr,
             style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF666666),
-                fontWeight: FontWeight.w500),
+              fontSize: 16,
+              color: Color(0xFF666666),
+              fontWeight: FontWeight.w500,
+            ),
           ),
 
           GestureDetector(
             onTap: canGoNext
                 ? () {
-              setState(() {
-                _selectedWeekStart = nextWeek;
-              });
-              _fetchWeeklyStats();
-            }
+                    setState(() {
+                      _selectedWeekStart = nextWeek;
+                    });
+                    _fetchWeeklyStats();
+                  }
                 : null,
-            child: Icon(Icons.arrow_forward_ios,
-                size: 16,
-                color: canGoNext ? const Color(0xFF666666) : Colors.grey.shade300),
+            child: Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: canGoNext ? const Color(0xFF666666) : Colors.grey.shade300,
+            ),
           ),
         ],
       ),
@@ -186,8 +205,9 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-          color: const Color(0xFFF5F5F5),
-          borderRadius: BorderRadius.circular(12)),
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(children: children),
     );
   }
@@ -196,12 +216,17 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(fontSize: 14, color: Color(0xFF333333))),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
+        ),
         Container(
           width: 80,
           height: 16,
           decoration: BoxDecoration(
-              color: Colors.white, borderRadius: BorderRadius.circular(4)),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(4),
+          ),
         ),
       ],
     );
@@ -211,13 +236,18 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title,
-            style: const TextStyle(fontSize: 14, color: Color(0xFF333333))),
-        Text(value,
-            style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF0BAEFF),
-                fontWeight: FontWeight.w600)),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF0BAEFF),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
@@ -238,8 +268,9 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     final month = weekStart.month;
 
     final firstDay = DateTime(year, month, 1);
-    final firstMonday =
-    firstDay.weekday == 1 ? firstDay : firstDay.add(Duration(days: 8 - firstDay.weekday));
+    final firstMonday = firstDay.weekday == 1
+        ? firstDay
+        : firstDay.add(Duration(days: 8 - firstDay.weekday));
 
     final weekNumber = ((weekStart.difference(firstMonday).inDays) ~/ 7) + 1;
 

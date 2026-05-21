@@ -9,7 +9,9 @@ import 'package:geumpumta/viewmodel/stats/monthly_stats_viewmodel.dart';
 import '../../ranking/widgets/period_option.dart';
 
 class MonthlyStatsView extends ConsumerStatefulWidget {
-  const MonthlyStatsView({super.key});
+  const MonthlyStatsView({super.key, required this.refreshToken});
+
+  final int refreshToken;
 
   @override
   ConsumerState<MonthlyStatsView> createState() => _MonthlyStatsViewState();
@@ -27,6 +29,17 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
       _fetchMonthlyStats();
       ref.invalidate(currentStreakProvider(null));
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant MonthlyStatsView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.refreshToken != widget.refreshToken) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _fetchMonthlyStats();
+        ref.invalidate(currentStreakProvider(null));
+      });
+    }
   }
 
   void _fetchMonthlyStats() {
@@ -101,15 +114,17 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
           GestureDetector(
             onTap: canGoPrev
                 ? () {
-              setState(() {
-                _selectedMonth = prevMonth;
-              });
-              _fetchMonthlyStats();
-            }
+                    setState(() {
+                      _selectedMonth = prevMonth;
+                    });
+                    _fetchMonthlyStats();
+                  }
                 : null,
-            child: Icon(Icons.arrow_back_ios,
-                size: 16,
-                color: canGoPrev ? const Color(0xFF666666) : Colors.grey.shade300),
+            child: Icon(
+              Icons.arrow_back_ios,
+              size: 16,
+              color: canGoPrev ? const Color(0xFF666666) : Colors.grey.shade300,
+            ),
           ),
           Text(
             monthStr,
@@ -122,15 +137,17 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
           GestureDetector(
             onTap: canGoNext
                 ? () {
-              setState(() {
-                _selectedMonth = nextMonth;
-              });
-              _fetchMonthlyStats();
-            }
+                    setState(() {
+                      _selectedMonth = nextMonth;
+                    });
+                    _fetchMonthlyStats();
+                  }
                 : null,
-            child: Icon(Icons.arrow_forward_ios,
-                size: 16,
-                color: canGoNext ? const Color(0xFF666666) : Colors.grey.shade300),
+            child: Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: canGoNext ? const Color(0xFF666666) : Colors.grey.shade300,
+            ),
           ),
         ],
       ),
@@ -138,9 +155,9 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
   }
 
   Widget _buildMonthlyStatsCard(
-      AsyncValue<MonthlyStatistics> state,
-      int daysInMonth,
-      ) {
+    AsyncValue<MonthlyStatistics> state,
+    int daysInMonth,
+  ) {
     return state.when(
       data: (stats) => _buildStatsContainer(
         children: [
@@ -206,7 +223,10 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(fontSize: 14, color: Color(0xFF333333))),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
+        ),
         Container(
           width: 80,
           height: 16,
@@ -223,7 +243,10 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(fontSize: 14, color: Color(0xFF333333))),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
+        ),
         Text(
           value,
           style: const TextStyle(

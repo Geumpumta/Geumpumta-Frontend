@@ -33,6 +33,16 @@ class RankingBoard extends ConsumerStatefulWidget {
 }
 
 class _RankingBoardState extends ConsumerState<RankingBoard> {
+  DateTime _startOfDay(DateTime date) =>
+      DateTime(date.year, date.month, date.day);
+
+  DateTime _startOfWeek(DateTime date) {
+    final normalized = _startOfDay(date);
+    return normalized.subtract(Duration(days: normalized.weekday - 1));
+  }
+
+  DateTime _startOfMonth(DateTime date) => DateTime(date.year, date.month, 1);
+
   @override
   void initState() {
     super.initState();
@@ -58,33 +68,25 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
   DateTime? _convertDateForRequest(DateTime date, PeriodOption period) {
     final now = DateTime.now();
 
-    bool isSameDay(DateTime a, DateTime b) =>
-        a.year == b.year && a.month == b.month && a.day == b.day;
-
-    bool isSameWeek(DateTime a, DateTime b) {
-      int week(DateTime d) => ((d.day - d.weekday + 10) ~/ 7);
-      return a.year == b.year && week(a) == week(b);
-    }
-
-    bool isSameMonth(DateTime a, DateTime b) =>
-        a.year == b.year && a.month == b.month;
-
     switch (period) {
       case PeriodOption.daily:
-        if (isSameDay(date, now)) return null;
-        return date;
+        final targetDay = _startOfDay(date);
+        if (targetDay == _startOfDay(now)) return null;
+        return targetDay;
 
       case PeriodOption.weekly:
-        if (isSameWeek(date, now)) return null;
-        return date;
+        final targetWeek = _startOfWeek(date);
+        if (targetWeek == _startOfWeek(now)) return null;
+        return targetWeek;
 
       case PeriodOption.monthly:
-        if (isSameMonth(date, now)) return null;
-        return date;
+        final targetMonth = _startOfMonth(date);
+        if (targetMonth == _startOfMonth(now)) return null;
+        return targetMonth;
     }
   }
 
-  String _convertDeletedNickname(String nickname){
+  String _convertDeletedNickname(String nickname) {
     return nickname.replaceAll('deleted_', '');
   }
 
@@ -162,7 +164,7 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
               dateTime: widget.selectedDate,
               ranking: data.rank,
               imgUrl: data.imageUrl,
-              nickname: _convertDeletedNickname(data.username??'알 수 없음'),
+              nickname: _convertDeletedNickname(data.username ?? '알 수 없음'),
               recordedTime: Duration(milliseconds: data.totalMillis),
               userId: data.userId,
             );

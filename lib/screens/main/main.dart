@@ -175,7 +175,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         children: [
           Column(
             children: [
-              Expanded(child: _pages[_selectedIndex]),
+              Expanded(
+                child: IndexedStack(index: _selectedIndex, children: _pages),
+              ),
               _buildBottomNavBar(),
             ],
           ),

@@ -332,14 +332,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                             );
 
-                            if (!context.mounted) return;
                             if (res == null || !res.success) {
+                              if (!context.mounted) return;
                               ErrorDialog.show(context, "교내 WIFI로 연결되어야 합니다.");
                               return;
                             }
 
                             _sessionId = res.data!.studySessionId;
                             await _saveSessionId(_sessionId);
+
+                            if (!mounted) return;
 
                             if (defaultTargetPlatform == TargetPlatform.iOS) {
                               try {

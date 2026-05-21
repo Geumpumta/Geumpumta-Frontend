@@ -7,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../provider/study/study_provider.dart';
 import '../../viewmodel/stats/grass_stats_viewmodel.dart';
-import '../../widgets/error_dialog/error_dialog.dart';
 import '../../widgets/bottom_ad_banner/bottom_ad_banner.dart';
 import '../more/more.dart';
 import '../ranking/ranking.dart';
@@ -94,14 +93,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   void _onItemTapped(int index) {
     final isInteractionLocked = ref.read(appInteractionLockedProvider);
-    final isRunning = ref.read(studyRunningProvider);
 
     if (isInteractionLocked) {
-      return;
-    }
-
-    if (isRunning && index != 0) {
-      ErrorDialog.show(context, "공부 중에는 이동할 수 없어요!");
       return;
     }
 

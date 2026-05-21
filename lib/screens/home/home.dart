@@ -277,10 +277,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final vm = ref.watch(studyViewmodelProvider);
+    final interactionLock = ref.read(appInteractionLockProvider.notifier);
+    final isInteractionLocked = ref.watch(appInteractionLockedProvider);
 
     return WillPopScope(
       onWillPop: () async {
-        if (_isTimerRunning) {
+        if (_isTimerRunning || isInteractionLocked) {
           ErrorDialog.show(context, "공부 중에는 이동할 수 없어요!");
           return false;
         }
@@ -314,6 +316,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         isStarting: _isStartingStudy,
                         isStopping: _isStoppingStudy,
                         onStart: () async {
+                          if (isInteractionLocked) return;
+
+                          interactionLock.lock();
                           setState(() {
                             _isStartingStudy = true;
                           });
@@ -327,7 +332,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                             );
 
-                            if (!mounted) return;
+                            if (!context.mounted) return;
                             if (res == null || !res.success) {
                               ErrorDialog.show(context, "교내 WIFI로 연결되어야 합니다.");
                               return;
@@ -354,9 +359,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                             _startLocalTimer();
                           } catch (e) {
-                            if (!mounted) return;
+                            if (!context.mounted) return;
                             ErrorDialog.show(context, "시작 실패: $e");
                           } finally {
+                            interactionLock.unlock();
                             if (mounted) {
                               setState(() {
                                 _isStartingStudy = false;
@@ -365,12 +371,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           }
                         },
                         onStop: () async {
+                          if (isInteractionLocked) return;
+
+                          interactionLock.lock();
                           setState(() {
                             _isStoppingStudy = true;
                           });
                           try {
                             await _endStudyInternal();
                           } finally {
+                            interactionLock.unlock();
                             if (mounted) {
                               setState(() {
                                 _isStoppingStudy = false;

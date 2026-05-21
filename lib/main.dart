@@ -16,6 +16,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:geumpumta/provider/userState/user_info_state.dart';
 import 'package:geumpumta/provider/notification/fcm_provider.dart';
 import 'package:geumpumta/provider/repository_provider.dart';
+import 'package:geumpumta/provider/study/study_provider.dart';
 import 'package:geumpumta/core/navigation/app_navigator.dart';
 import 'package:geumpumta/screens/login/login.dart';
 import 'package:geumpumta/screens/main/main.dart';
@@ -65,11 +66,13 @@ void main() async {
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isInteractionLocked = ref.watch(appInteractionLockedProvider);
+
     return MaterialApp(
       navigatorKey: rootNavigatorKey,
       navigatorObservers: [routeObserver, firebaseAnalyticsObserver],
@@ -80,6 +83,19 @@ class MyApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            if (child != null) child,
+            if (isInteractionLocked)
+              const Positioned.fill(
+                child: AbsorbPointer(
+                  child: ColoredBox(color: Colors.transparent),
+                ),
+              ),
+          ],
+        );
+      },
       home: const MyHomePage(),
       routes: AppRoutes.routes,
     );

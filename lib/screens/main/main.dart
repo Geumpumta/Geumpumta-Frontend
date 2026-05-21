@@ -51,8 +51,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
     final prefs = await SharedPreferences.getInstance();
     final todayKey = _localDateKey(DateTime.now());
-    final lastCheckedDate =
-        prefs.getString('lastUnnotifiedBadgeCheckDate');
+    final lastCheckedDate = prefs.getString('lastUnnotifiedBadgeCheckDate');
     final isFirstLaunchToday = lastCheckedDate != todayKey;
     final shouldCheck =
         widget.checkUnnotifiedBadgesOnEnter || isFirstLaunchToday;
@@ -75,7 +74,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     }
 
     await prefs.setString('lastUnnotifiedBadgeCheckDate', todayKey);
-    debugPrint('UnnotifiedBadgeCheck: saved lastUnnotifiedBadgeCheckDate=$todayKey');
+    debugPrint(
+      'UnnotifiedBadgeCheck: saved lastUnnotifiedBadgeCheckDate=$todayKey',
+    );
     if (!mounted || badges.isEmpty) return;
     await UnnotifiedBadgeModal.showSequence(context, badges);
   }
@@ -92,7 +93,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   }
 
   void _onItemTapped(int index) {
+    final isInteractionLocked = ref.read(appInteractionLockedProvider);
     final isRunning = ref.read(studyRunningProvider);
+
+    if (isInteractionLocked) {
+      return;
+    }
 
     if (isRunning && index != 0) {
       ErrorDialog.show(context, "공부 중에는 이동할 수 없어요!");

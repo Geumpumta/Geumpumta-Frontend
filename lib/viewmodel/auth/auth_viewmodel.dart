@@ -10,12 +10,11 @@ import '../../provider/signin/signin_provider.dart';
 import '../../provider/notification/fcm_provider.dart';
 import '../../provider/repository_provider.dart';
 import '../../repository/auth/auth_repository.dart';
-import '../../service/auth/auth_service.dart';
 import '../../repository/user/user_repository.dart';
+import '../../core/auth/auth_session_manager.dart';
 import '../../viewmodel/user/user_viewmodel.dart';
 import '../../routes/app_routes.dart';
 import '../../core/navigation/app_navigator.dart';
-import '../../widgets/error_dialog/error_dialog.dart';
 
 final authViewModelProvider = StateNotifierProvider<AuthViewModel, bool>(
   (ref) => AuthViewModel(ref),
@@ -80,6 +79,9 @@ class AuthViewModel extends StateNotifier<bool> {
         if (context.mounted) {
           final shouldRestore = await _showRestoreAccountDialog(context);
           if (shouldRestore == true) {
+            if (!context.mounted) {
+              return false;
+            }
             // 계정 복구 시도
             debugPrint('복구 다이얼로그에서 복구하기 선택됨');
             final restored = await _restoreAccount(context);
@@ -151,6 +153,9 @@ class AuthViewModel extends StateNotifier<bool> {
             if (context.mounted) {
               final shouldRestore = await _showRestoreAccountDialog(context);
               if (shouldRestore == true) {
+                if (!context.mounted) {
+                  return false;
+                }
                 // 계정 복구 시도
                 final restored = await _restoreAccount(context);
                 if (restored) {
@@ -197,17 +202,6 @@ class AuthViewModel extends StateNotifier<bool> {
 
       await _completeLogin(userInfo);
       return true;
-    } on AlreadyLoggedInException {
-      debugPrint('$provider already_logged_in 응답 수신, 저장 토큰 복구 시도');
-      final restored = await _restoreStoredSession();
-      if (!restored && context.mounted) {
-        ErrorDialog.show(
-          context,
-          '다른 계정에서 이미 로그인되어있습니다!',
-          title: '로그인할 수 없습니다!',
-        );
-      }
-      return restored;
     } catch (e, st) {
       debugPrint('$provider 로그인 중 오류: $e\n$st');
       if (context.mounted) {
@@ -233,9 +227,6 @@ class AuthViewModel extends StateNotifier<bool> {
     debugPrint("userInfo 저장 완료: $jsonString");
 
     await ref.read(fcmServiceProvider).initAndRegisterToken();
-    await ref
-        .read(fcmServiceProvider)
-        .registerCurrentTokenToServer(reason: 'after_login');
 
     final nav = rootNavigatorKey.currentState;
     if (nav == null) {
@@ -244,45 +235,8 @@ class AuthViewModel extends StateNotifier<bool> {
     if (userInfo.userRole == "GUEST") {
       nav.pushNamed(AppRoutes.signin1);
     } else {
-      nav.pushNamedAndRemoveUntil(
-        AppRoutes.main,
-        (route) => false,
-      );
+      nav.pushNamedAndRemoveUntil(AppRoutes.main, (route) => false);
     }
-  }
-
-  Future<bool> _restoreStoredSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('accessToken');
-    if (accessToken == null || accessToken.isEmpty) {
-      return false;
-    }
-
-    try {
-      final userInfo = await ref
-          .read(userViewModelProvider.notifier)
-          .loadUserProfile();
-
-      if (userInfo == null) {
-        await _clearStoredAuth();
-        return false;
-      }
-
-      await _completeLogin(userInfo);
-      return true;
-    } catch (e, st) {
-      debugPrint('저장 세션 복구 실패: $e\n$st');
-      await _clearStoredAuth();
-      return false;
-    }
-  }
-
-  Future<void> _clearStoredAuth() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('accessToken');
-    await prefs.remove('refreshToken');
-    await prefs.remove('userInfo');
-    await ref.read(userInfoStateProvider.notifier).clear();
   }
 
   Future<void> logout(BuildContext context) async {
@@ -296,10 +250,7 @@ class AuthViewModel extends StateNotifier<bool> {
     }
 
     await ref.read(fcmServiceProvider).deleteTokenOnServer();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('accessToken');
-    await prefs.remove('refreshToken');
-    await prefs.remove('userInfo');
+    await AuthSessionManager.clearLocalSession();
     await ref.read(userInfoStateProvider.notifier).clear();
 
     final nav = rootNavigatorKey.currentState;
@@ -318,10 +269,7 @@ class AuthViewModel extends StateNotifier<bool> {
   }
 
   Future<void> cancelGuestSignup() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('accessToken');
-    await prefs.remove('refreshToken');
-    await prefs.remove('userInfo');
+    await AuthSessionManager.clearLocalSession();
     await ref.read(userInfoStateProvider.notifier).clear();
     ref.read(signUpProvider.notifier).reset();
 
@@ -342,8 +290,7 @@ class AuthViewModel extends StateNotifier<bool> {
       );
 
       // 회원탈퇴 성공 여부와 관계없이 모든 데이터 삭제
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.clear();
+      await AuthSessionManager.clearLocalSession();
       ref.read(userInfoStateProvider.notifier).clear();
       debugPrint('회원탈퇴: 로컬 데이터 삭제 완료');
 

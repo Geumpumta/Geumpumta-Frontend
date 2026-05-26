@@ -1,13 +1,8 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http/http.dart' as http;
-
-/// 서버가 redirect_uri?error=already_logged_in 으로 보낼 때 던지는 예외
-class AlreadyLoggedInException implements Exception {
-  @override
-  String toString() => 'AlreadyLoggedInException';
-}
 
 class OAuthService {
   String get baseUrl => dotenv.env['BASE_URL'] ?? '';
@@ -29,10 +24,8 @@ class OAuthService {
       // 서버가 error 쿼리로 리다이렉트한 경우 (중복 로그인 등)
       final errorParam = uri.queryParameters['error'];
       if (errorParam != null) {
-        print('OAuth redirect with error: $errorParam, fullUri: $result');
-        if (errorParam == 'already_logged_in') {
-          throw AlreadyLoggedInException();
-        }
+        debugPrint('OAuth redirect with error: $errorParam, fullUri: $result');
+        return null;
       }
 
       final accessToken =
@@ -55,12 +48,9 @@ class OAuthService {
         );
         return tokenData;
       }
-
       return null;
-    } on AlreadyLoggedInException {
-      rethrow;
     } catch (e) {
-      print('OAuth 로그인 실패: $e');
+      debugPrint('OAuth 로그인 실패: $e');
       return null;
     }
   }

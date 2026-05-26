@@ -1,9 +1,15 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../core/auth/auth_session_manager.dart';
 import '../core/maintenance/maintenance_guard.dart';
 
 class TokenInterceptor extends Interceptor {
+  static const String _sessionInvalidCode = 'S007';
+
   final Dio dio;
   bool _isRefreshing = false;
   final List<_PendingRequest> _pendingRequests = [];
@@ -43,6 +49,39 @@ class TokenInterceptor extends Interceptor {
     }
 
     if (err.response?.statusCode == 401) {
+      final errorCode = _extractErrorCode(err.response?.data);
+      if (errorCode == _sessionInvalidCode) {
+        final prefs = await SharedPreferences.getInstance();
+        final storedAccessToken = prefs.getString('accessToken');
+        final storedRefreshToken = prefs.getString('refreshToken');
+        final requestUri = err.requestOptions.uri;
+        debugPrint(
+          '[AUTH][S007] api=${err.requestOptions.method} '
+          '${err.requestOptions.path} '
+          '(url=$requestUri)',
+        );
+        debugPrint(
+          '[AUTH][S007] response='
+          'status=${err.response?.statusCode}, '
+          'code=$errorCode, '
+          'message=${_extractErrorMessage(err.response?.data)}, '
+          'data=${err.response?.data}',
+        );
+        debugPrint(
+          '[AUTH][S007] storedTokens='
+          'access=${_maskToken(storedAccessToken)}, '
+          'refresh=${_maskToken(storedRefreshToken)}',
+        );
+
+        _isRefreshing = false;
+        _rejectPendingRequests(err);
+        await AuthSessionManager.handleSessionExpiry(
+          message: _extractErrorMessage(err.response?.data),
+          showDialog: true,
+        );
+        return handler.next(err);
+      }
+
       // 이미 갱신 중이면 대기열에 추가
       if (_isRefreshing) {
         return _addToPendingRequests(err, handler);
@@ -57,6 +96,7 @@ class TokenInterceptor extends Interceptor {
       if (refreshToken == null || oldAccessToken == null) {
         _isRefreshing = false;
         _rejectPendingRequests(err);
+        await AuthSessionManager.handleSessionExpiry();
         return handler.next(err);
       }
 
@@ -100,7 +140,7 @@ class TokenInterceptor extends Interceptor {
 
         if (newAccessToken != null) {
           await prefs.setString('accessToken', newAccessToken);
-          if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
+          if (newRefreshToken != null) {
             await prefs.setString('refreshToken', newRefreshToken);
           }
 
@@ -121,15 +161,12 @@ class TokenInterceptor extends Interceptor {
         } else {
           _isRefreshing = false;
           _rejectPendingRequests(err);
+          await AuthSessionManager.handleSessionExpiry();
         }
       } catch (e) {
-        // 토큰 갱신 실패 시 모든 토큰 삭제 (갱신 실패하면 로그아웃 처리)
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.remove('accessToken');
-        await prefs.remove('refreshToken');
-        await prefs.remove('userInfo');
         _isRefreshing = false;
         _rejectPendingRequests(err);
+        await AuthSessionManager.handleSessionExpiry();
       }
     }
 
@@ -168,6 +205,50 @@ class TokenInterceptor extends Interceptor {
       pending.handler.next(err);
     }
     _pendingRequests.clear();
+  }
+
+  String? _extractErrorCode(dynamic payload) {
+    final map = _toMap(payload);
+    return map?['code']?.toString();
+  }
+
+  String? _extractErrorMessage(dynamic payload) {
+    final map = _toMap(payload);
+    return (map?['message'] ?? map?['msg'])?.toString();
+  }
+
+  String _maskToken(String? token) {
+    if (token == null || token.isEmpty) {
+      return 'missing';
+    }
+    if (token.length <= 12) {
+      return token;
+    }
+    return '${token.substring(0, 6)}...${token.substring(token.length - 6)}';
+  }
+
+  Map<String, dynamic>? _toMap(dynamic payload) {
+    if (payload is Map<String, dynamic>) {
+      return payload;
+    }
+
+    if (payload is Map) {
+      return payload.map((key, value) => MapEntry(key.toString(), value));
+    }
+
+    if (payload is String && payload.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(payload);
+        if (decoded is Map<String, dynamic>) {
+          return decoded;
+        }
+        if (decoded is Map) {
+          return decoded.map((key, value) => MapEntry(key.toString(), value));
+        }
+      } catch (_) {}
+    }
+
+    return null;
   }
 }
 

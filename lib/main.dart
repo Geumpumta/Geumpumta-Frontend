@@ -16,7 +16,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:geumpumta/provider/userState/user_info_state.dart';
 import 'package:geumpumta/provider/notification/fcm_provider.dart';
 import 'package:geumpumta/provider/repository_provider.dart';
+import 'package:geumpumta/provider/signin/signin_provider.dart';
 import 'package:geumpumta/provider/study/study_provider.dart';
+import 'package:geumpumta/core/auth/auth_session_manager.dart';
 import 'package:geumpumta/core/navigation/app_navigator.dart';
 import 'package:geumpumta/screens/login/login.dart';
 import 'package:geumpumta/screens/main/main.dart';
@@ -71,6 +73,12 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    AuthSessionManager.onSessionCleared = () async {
+      await ref.read(userInfoStateProvider.notifier).clear();
+      ref.read(signUpProvider.notifier).reset();
+      ref.read(studyRunningProvider.notifier).state = false;
+    };
+
     final isInteractionLocked = ref.watch(appInteractionLockedProvider);
 
     return MaterialApp(

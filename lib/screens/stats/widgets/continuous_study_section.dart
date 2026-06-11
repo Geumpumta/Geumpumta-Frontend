@@ -33,11 +33,6 @@ class _ContinuousStudySectionState extends ConsumerState<ContinuousStudySection>
         ? DateTime(widget.selectedDate!.year, widget.selectedDate!.month)
         : DateTime.now();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.manualStreakDays == null) {
-        ref.invalidate(currentStreakProvider(widget.targetUserId));
-      }
-    });
   }
 
   @override
@@ -55,10 +50,6 @@ class _ContinuousStudySectionState extends ConsumerState<ContinuousStudySection>
       setState(() {
         _viewMonth = DateTime(newDate.year, newDate.month);
       });
-
-      if (widget.manualStreakDays == null) {
-        ref.invalidate(currentStreakProvider(widget.targetUserId));
-      }
     }
   }
 

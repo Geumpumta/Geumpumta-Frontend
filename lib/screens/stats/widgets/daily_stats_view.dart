@@ -7,8 +7,6 @@ import 'package:geumpumta/screens/stats/widgets/motivational_message.dart';
 import 'package:geumpumta/screens/stats/widgets/stats_skeleton.dart';
 import 'package:geumpumta/screens/stats/widgets/usage_time_chart_section.dart';
 import 'package:geumpumta/viewmodel/stats/daily_stats_viewmodel.dart';
-import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
-
 class DailyStatsView extends ConsumerStatefulWidget {
   const DailyStatsView({super.key, required this.refreshToken});
 
@@ -40,8 +38,6 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchDailyStats();
-      // 연속공부현황 provider 새로고침
-      ref.invalidate(currentStreakProvider(null));
     });
   }
 
@@ -51,7 +47,6 @@ class _DailyStatsViewState extends ConsumerState<DailyStatsView> {
     if (oldWidget.refreshToken != widget.refreshToken) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _fetchDailyStats();
-        ref.invalidate(currentStreakProvider(null));
       });
     }
   }

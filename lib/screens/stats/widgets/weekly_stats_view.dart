@@ -4,8 +4,6 @@ import 'package:geumpumta/models/entity/stats/weekly_statistics.dart';
 import 'package:geumpumta/screens/stats/widgets/continuous_study_section.dart';
 import 'package:geumpumta/screens/stats/widgets/make_motivation_highlight_text.dart';
 import 'package:geumpumta/viewmodel/stats/weekly_stats_viewmodel.dart';
-import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
-
 import '../../ranking/widgets/period_option.dart';
 
 class WeeklyStatsView extends ConsumerStatefulWidget {
@@ -27,7 +25,6 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchWeeklyStats();
-      ref.invalidate(currentStreakProvider(null));
     });
   }
 
@@ -37,7 +34,6 @@ class _WeeklyStatsViewState extends ConsumerState<WeeklyStatsView> {
     if (oldWidget.refreshToken != widget.refreshToken) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _fetchWeeklyStats();
-        ref.invalidate(currentStreakProvider(null));
       });
     }
   }

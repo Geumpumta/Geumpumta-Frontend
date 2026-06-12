@@ -184,7 +184,11 @@ class _MyHomePageState extends ConsumerState<MyHomePage>
         });
       }
 
-      if (hasValidAuth) {
+      final authenticatedUser = ref.read(userInfoStateProvider);
+      final shouldRegisterFcm =
+          hasValidAuth && authenticatedUser?.userRole != 'GUEST';
+
+      if (shouldRegisterFcm) {
         unawaited(
           ref.read(fcmServiceProvider).initAndRegisterToken().catchError((
             Object error,

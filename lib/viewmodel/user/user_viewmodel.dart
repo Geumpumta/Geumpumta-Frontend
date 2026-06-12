@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/dto/user/complete_registration_response_dto.dart';
 
 import '../../models/entity/user/user.dart';
+import '../../provider/notification/fcm_provider.dart';
 import '../../provider/repository_provider.dart';
 import '../../provider/userState/user_info_state.dart';
 import '../../repository/user/user_repository.dart';
@@ -75,6 +76,15 @@ class UserViewModel extends StateNotifier<void> {
         arguments: {'checkUnnotifiedBadgesOnEnter': true},
       );
       unawaited(updateUserInfo());
+      unawaited(
+        ref.read(fcmServiceProvider).initAndRegisterToken().catchError((
+          Object error,
+          StackTrace stackTrace,
+        ) {
+          debugPrint('FCM init after signup failed: $error');
+          debugPrintStack(stackTrace: stackTrace);
+        }),
+      );
 
       return response;
     } on DioException catch (e) {

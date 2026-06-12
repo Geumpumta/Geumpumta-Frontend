@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/models/entity/stats/monthly_statistics.dart';
 import 'package:geumpumta/screens/stats/widgets/continuous_study_section.dart';
 import 'package:geumpumta/screens/stats/widgets/make_motivation_highlight_text.dart';
-import 'package:geumpumta/viewmodel/stats/grass_stats_viewmodel.dart';
 import 'package:geumpumta/viewmodel/stats/monthly_stats_viewmodel.dart';
 
 import '../../ranking/widgets/period_option.dart';
@@ -27,7 +26,6 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchMonthlyStats();
-      ref.invalidate(currentStreakProvider(null));
     });
   }
 
@@ -37,7 +35,6 @@ class _MonthlyStatsViewState extends ConsumerState<MonthlyStatsView> {
     if (oldWidget.refreshToken != widget.refreshToken) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _fetchMonthlyStats();
-        ref.invalidate(currentStreakProvider(null));
       });
     }
   }

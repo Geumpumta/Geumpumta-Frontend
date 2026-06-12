@@ -6,7 +6,6 @@ import 'package:geumpumta/widgets/badge/unnotified_badge_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../provider/study/study_provider.dart';
-import '../../viewmodel/stats/grass_stats_viewmodel.dart';
 import '../../widgets/bottom_ad_banner/bottom_ad_banner.dart';
 import '../more/more.dart';
 import '../ranking/ranking.dart';
@@ -97,11 +96,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       _statsRefreshToken++;
     } else if (index == 2) {
       _rankingRefreshToken++;
-    }
-
-    // 통계 탭으로 이동할 때마다 연속공부현황 provider 새로고침
-    if (index == 1) {
-      final _ = ref.refresh(currentStreakProvider(null));
     }
 
     setState(() => _selectedIndex = index);

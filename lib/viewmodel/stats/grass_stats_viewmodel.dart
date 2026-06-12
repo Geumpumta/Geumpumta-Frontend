@@ -50,12 +50,8 @@ FutureProvider.autoDispose.family<int, (int? userId, DateTime month)>((ref, para
   final userId = params.$1;
   final selectedMonth = params.$2;
 
-  final repo = ref.watch(grassStatisticsRepositoryProvider);
-
-  final stats = await repo.fetchGrassStatistics(
-    date: _formatMonth(selectedMonth),
-    targetUserId: userId,
-  );
+  // grassStatisticsProvider 캐시 공유 - 별도 API 호출 없이 캐시된 데이터 활용
+  final stats = await ref.watch(grassStatisticsProvider((selectedMonth, userId)).future);
 
   // 해당 월의 데이터만 필터링
   final monthStart = DateTime(selectedMonth.year, selectedMonth.month, 1);
@@ -84,7 +80,6 @@ FutureProvider.autoDispose.family<int, (int? userId, DateTime month)>((ref, para
 
 
 final currentStreakProvider = FutureProvider.autoDispose.family<int, int?>((ref, targetUserId) async {
-  final repo = ref.watch(grassStatisticsRepositoryProvider);
   final today = DateTime.now();
   final currentMonth = DateTime(today.year, today.month, 1);
   final previousMonth = DateTime(
@@ -93,17 +88,12 @@ final currentStreakProvider = FutureProvider.autoDispose.family<int, int?>((ref,
     1,
   );
 
+  // grassStatisticsProvider 캐시 공유 - 별도 API 호출 없이 캐시된 데이터 활용
+  final current = await ref.watch(grassStatisticsProvider((currentMonth, targetUserId)).future);
+  final prev = await ref.watch(grassStatisticsProvider((previousMonth, targetUserId)).future);
+
   final entries = <GrassEntry>[];
-  final current = await repo.fetchGrassStatistics(
-    date: _formatMonth(currentMonth),
-    targetUserId: targetUserId,
-  );
   entries.addAll(current.entries);
-  
-  final prev = await repo.fetchGrassStatistics(
-    date: _formatMonth(previousMonth),
-    targetUserId: targetUserId,
-  );
   entries.addAll(prev.entries);
 
   final byDate = <String, int>{

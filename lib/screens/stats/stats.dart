@@ -38,8 +38,6 @@ class _StatsScreenState extends ConsumerState<StatsScreen> {
   }
 
   void _refreshSupportingData() {
-    ref.invalidate(currentStreakProvider(null));
-
     final now = DateTime.now();
     final currentMonth = DateTime(now.year, now.month, 1);
     final previousMonth = DateTime(

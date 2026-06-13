@@ -81,13 +81,22 @@ class _DefaultRankingState extends ConsumerState<DefaultRanking> {
           ),
         ),
 
-        DetailRanking(
-          selectedTime: _selectedDate,
-          nickname: userInfoState?.nickName ?? '알 수 없음',
-          imageUrl:
-              userInfoState?.profileImage ??
-              'https://i.namu.wiki/i/65UQVcoBA0aPl5FwSu5OvRT9v_B_yNBVs1VHah0ULM8ucqv95vBcMuzDDc8fb1ejGcrKNoa-IhsnMq5n7YEqwQ.webp',
-          recordedTime: Duration(milliseconds: _getMyTotalMillis() ?? 0),
+        DecoratedBox(
+          decoration: const BoxDecoration(
+            color: Color(0xFFFFFFFF),
+            border: Border(top: BorderSide(color: Color(0xFFEFEFEF))),
+          ),
+          child: Transform.translate(
+            offset: const Offset(0, 8),
+            child: DetailRanking(
+              selectedTime: _selectedDate,
+              nickname: userInfoState?.nickName ?? '알 수 없음',
+              imageUrl:
+                  userInfoState?.profileImage ??
+                  'https://i.namu.wiki/i/65UQVcoBA0aPl5FwSu5OvRT9v_B_yNBVs1VHah0ULM8ucqv95vBcMuzDDc8fb1ejGcrKNoa-IhsnMq5n7YEqwQ.webp',
+              recordedTime: Duration(milliseconds: _getMyTotalMillis() ?? 0),
+            ),
+          ),
         ),
       ],
     );

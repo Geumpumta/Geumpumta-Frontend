@@ -30,22 +30,8 @@ class _DetailRankingState extends State<DetailRanking> {
 
     String formattedDuration = '$hours:$minutes:$seconds';
     return Container(
-      decoration: BoxDecoration(
-        color: Color(0xFFFFFFFF),
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(20),
-          topLeft: Radius.circular(20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 8,
-            spreadRadius: 3,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+      color: const Color(0xFFFFFFFF),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,

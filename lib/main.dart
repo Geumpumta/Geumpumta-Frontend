@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -135,8 +134,9 @@ class _MyHomePageState extends ConsumerState<MyHomePage>
     super.initState();
     _loaderController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1700),
-    )..repeat();
+      duration: const Duration(milliseconds: 1400),
+    );
+    unawaited(_loaderController.animateTo(0.9, curve: Curves.easeOutCubic));
     _checkInitialState();
   }
 
@@ -184,7 +184,11 @@ class _MyHomePageState extends ConsumerState<MyHomePage>
         });
       }
 
-      if (hasValidAuth) {
+      final authenticatedUser = ref.read(userInfoStateProvider);
+      final shouldRegisterFcm =
+          hasValidAuth && authenticatedUser?.userRole != 'GUEST';
+
+      if (shouldRegisterFcm) {
         unawaited(
           ref.read(fcmServiceProvider).initAndRegisterToken().catchError((
             Object error,
@@ -211,6 +215,14 @@ class _MyHomePageState extends ConsumerState<MyHomePage>
         });
       }
     } finally {
+      if (mounted) {
+        await _loaderController.animateTo(
+          1,
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOutCubic,
+        );
+      }
+
       if (mounted) {
         setState(() {
           _isChecking = false;
@@ -482,81 +494,75 @@ class _MyHomePageState extends ConsumerState<MyHomePage>
             alignment: Alignment.topCenter,
           ),
           if (_isChecking)
-            Center(child: _ModernCircularLoader(controller: _loaderController)),
+            Positioned(
+              left: 36,
+              right: 36,
+              bottom: MediaQuery.of(context).padding.bottom + 36,
+              child: _SplashProgressBar(controller: _loaderController),
+            ),
         ],
       ),
     );
   }
 }
 
-class _ModernCircularLoader extends StatelessWidget {
-  const _ModernCircularLoader({required this.controller});
+class _SplashProgressBar extends StatelessWidget {
+  const _SplashProgressBar({required this.controller});
 
   final Animation<double> controller;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 72,
-      height: 72,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          RotationTransition(
-            turns: controller,
-            child: CustomPaint(
-              size: const Size.square(72),
-              painter: _ModernCircularLoaderPainter(),
+    return Semantics(
+      label: '초기 화면 로딩 중',
+      child: SizedBox(
+        height: 4,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(999),
+          child: ColoredBox(
+            color: const Color(0x337AAFCF),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.maxWidth;
+
+                return AnimatedBuilder(
+                  animation: controller,
+                  builder: (context, child) {
+                    final progressWidth = width * controller.value;
+
+                    return Stack(
+                      clipBehavior: Clip.hardEdge,
+                      children: [
+                        Positioned(
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          width: progressWidth,
+                          child: child!,
+                        ),
+                      ],
+                    );
+                  },
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999),
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0x007AAFCF),
+                          Color(0xFF559ECC),
+                          Color(0xFFFFFFFF),
+                          Color(0x007AAFCF),
+                        ],
+                        stops: [0.0, 0.34, 0.68, 1.0],
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
-          Container(
-            width: 6,
-            height: 6,
-            decoration: const BoxDecoration(
-              color: Color(0xFF97CDEE),
-              shape: BoxShape.circle,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
-}
-
-class _ModernCircularLoaderPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromCircle(
-      center: size.center(Offset.zero),
-      radius: size.width / 2 - 5,
-    );
-
-    final trackPaint = Paint()
-      ..color = const Color(0x1A7AAFCF)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4
-      ..strokeCap = StrokeCap.round;
-
-    final accentPaint = Paint()
-      ..shader = const SweepGradient(
-        startAngle: -math.pi / 2,
-        endAngle: math.pi * 1.5,
-        colors: [
-          Color(0x007AAFCF),
-          Color(0xFF7AAFCF),
-          Color(0xFFD4ECF8),
-          Color(0x007AAFCF),
-        ],
-        stops: [0.0, 0.46, 0.74, 1.0],
-      ).createShader(rect)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(rect, 0, math.pi * 2, false, trackPaint);
-    canvas.drawArc(rect, -math.pi / 2, math.pi * 1.12, false, accentPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

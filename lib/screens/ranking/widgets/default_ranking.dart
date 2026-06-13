@@ -25,71 +25,6 @@ class _DefaultRankingState extends ConsumerState<DefaultRanking> {
   DateTime _selectedDate = DateTime.now();
   GroupOption _selectedGroup = GroupOption.personal;
 
-  @override
-  void initState() {
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final vm = ref.read(rankPersonalViewModelProvider.notifier);
-      vm.getDailyPersonalRanking(null);
-    });
-  }
-
-  @override
-  void didUpdateWidget(covariant DefaultRanking oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.refreshToken != widget.refreshToken) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _fetchMyRanking());
-    }
-  }
-
-  void _fetchMyRanking() {
-    final vm = ref.read(rankPersonalViewModelProvider.notifier);
-    switch (_selectedPeriod) {
-      case PeriodOption.daily:
-        vm.getDailyPersonalRanking(
-          _normalizeDateForRequest(_selectedDate, _selectedPeriod),
-        );
-        break;
-      case PeriodOption.weekly:
-        vm.getWeeklyPersonalRanking(
-          _normalizeDateForRequest(_selectedDate, _selectedPeriod),
-        );
-        break;
-      case PeriodOption.monthly:
-        vm.getMonthlyPersonalRanking(
-          _normalizeDateForRequest(_selectedDate, _selectedPeriod),
-        );
-        break;
-    }
-  }
-
-  DateTime? _normalizeDateForRequest(DateTime date, PeriodOption period) {
-    final now = DateTime.now();
-    switch (period) {
-      case PeriodOption.daily:
-        final target = DateTime(date.year, date.month, date.day);
-        final today = DateTime(now.year, now.month, now.day);
-        return target == today ? null : target;
-      case PeriodOption.weekly:
-        final target = DateTime(
-          date.year,
-          date.month,
-          date.day,
-        ).subtract(Duration(days: date.weekday - 1));
-        final thisWeek = DateTime(
-          now.year,
-          now.month,
-          now.day,
-        ).subtract(Duration(days: now.weekday - 1));
-        return target == thisWeek ? null : target;
-      case PeriodOption.monthly:
-        final target = DateTime(date.year, date.month, 1);
-        final thisMonth = DateTime(now.year, now.month, 1);
-        return target == thisMonth ? null : target;
-    }
-  }
-
   int? _getMyTotalMillis() {
     final asyncState = ref.watch(rankPersonalViewModelProvider);
 
@@ -146,13 +81,22 @@ class _DefaultRankingState extends ConsumerState<DefaultRanking> {
           ),
         ),
 
-        DetailRanking(
-          selectedTime: _selectedDate,
-          nickname: userInfoState?.nickName ?? '알 수 없음',
-          imageUrl:
-              userInfoState?.profileImage ??
-              'https://i.namu.wiki/i/65UQVcoBA0aPl5FwSu5OvRT9v_B_yNBVs1VHah0ULM8ucqv95vBcMuzDDc8fb1ejGcrKNoa-IhsnMq5n7YEqwQ.webp',
-          recordedTime: Duration(milliseconds: _getMyTotalMillis() ?? 0),
+        DecoratedBox(
+          decoration: const BoxDecoration(
+            color: Color(0xFFFFFFFF),
+            border: Border(top: BorderSide(color: Color(0xFFEFEFEF))),
+          ),
+          child: Transform.translate(
+            offset: const Offset(0, 8),
+            child: DetailRanking(
+              selectedTime: _selectedDate,
+              nickname: userInfoState?.nickName ?? '알 수 없음',
+              imageUrl:
+                  userInfoState?.profileImage ??
+                  'https://i.namu.wiki/i/65UQVcoBA0aPl5FwSu5OvRT9v_B_yNBVs1VHah0ULM8ucqv95vBcMuzDDc8fb1ejGcrKNoa-IhsnMq5n7YEqwQ.webp',
+              recordedTime: Duration(milliseconds: _getMyTotalMillis() ?? 0),
+            ),
+          ),
         ),
       ],
     );

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
@@ -226,17 +227,26 @@ class AuthViewModel extends StateNotifier<bool> {
     await prefs.setString('userInfo', jsonString);
     debugPrint("userInfo 저장 완료: $jsonString");
 
-    await ref.read(fcmServiceProvider).initAndRegisterToken();
-
     final nav = rootNavigatorKey.currentState;
     if (nav == null) {
       return;
     }
+
     if (userInfo.userRole == "GUEST") {
       nav.pushNamed(AppRoutes.signin1);
-    } else {
-      nav.pushNamedAndRemoveUntil(AppRoutes.main, (route) => false);
+      return;
     }
+
+    nav.pushNamedAndRemoveUntil(AppRoutes.main, (route) => false);
+    unawaited(
+      ref.read(fcmServiceProvider).initAndRegisterToken().catchError((
+        Object error,
+        StackTrace stackTrace,
+      ) {
+        debugPrint('FCM init after login failed: $error');
+        debugPrintStack(stackTrace: stackTrace);
+      }),
+    );
   }
 
   Future<void> logout(BuildContext context) async {

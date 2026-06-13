@@ -30,6 +30,17 @@ class RankingBar extends StatefulWidget {
 }
 
 class _RankingBarState extends State<RankingBar> {
+  static const double _rankSlotWidth = 28;
+
+  double _rankFontSize(int ranking) {
+    final digitCount = ranking.abs().toString().length;
+
+    if (digitCount <= 2) return 18;
+    if (digitCount == 3) return 15;
+    if (digitCount == 4) return 12.5;
+    return 10.5;
+  }
+
   @override
   Widget build(BuildContext context) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
@@ -39,61 +50,81 @@ class _RankingBarState extends State<RankingBar> {
     final seconds = twoDigits(widget.recordedTime.inSeconds.remainder(60));
 
     String formattedDuration = '$hours:$minutes:$seconds';
+    final rankingText = widget.ranking.toString();
+    final rankFontSize = _rankFontSize(widget.ranking);
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Row(
-        spacing: 16,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        spacing: 12,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            spacing: 18,
-            children: [
-              Text(
-                widget.ranking.toString(),
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-              ),
-              ClipOval(
-                child: Image.network(
-                  widget.imgUrl,
-                  height: 40,
-                  width: 40,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) {
-                    return Image.asset(
-                      'assets/image/login/main_img.png',
-                      height: 40,
-                      width: 40,
-                      fit: BoxFit.cover,
-                    );
-                  },
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 12,
+              children: [
+                SizedBox(
+                  width: _rankSlotWidth,
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        rankingText,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: rankFontSize,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.nickname,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFF898989),
-                      fontWeight: FontWeight.w800,
-                    ),
+                ClipOval(
+                  child: Image.network(
+                    widget.imgUrl,
+                    height: 40,
+                    width: 40,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) {
+                      return Image.asset(
+                        'assets/image/login/main_img.png',
+                        height: 40,
+                        width: 40,
+                        fit: BoxFit.cover,
+                      );
+                    },
                   ),
-                  Text(
-                    formattedDuration,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFF0BAEFF),
-                      fontWeight: FontWeight.w500,
-                    ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.nickname,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF898989),
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      Text(
+                        formattedDuration,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF0BAEFF),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
           (widget.isDetailAvailable == true)
               ? TextButton(
@@ -117,7 +148,8 @@ class _RankingBarState extends State<RankingBar> {
                       builder: (context) {
                         return DetailsInModal(
                           periodOption: widget.periodOption,
-                          selectedDate: widget.dateTime ?? DateTime(2002,11,19),
+                          selectedDate:
+                              widget.dateTime ?? DateTime(2002, 11, 19),
                           nickname: widget.nickname,
                           recordedTime: widget.recordedTime,
                           imageUrl: widget.imgUrl,

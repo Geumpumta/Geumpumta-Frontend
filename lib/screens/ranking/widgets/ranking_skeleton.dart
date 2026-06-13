@@ -44,15 +44,15 @@ class RankingListSkeleton extends StatelessWidget {
           children: [
             Row(
               children: const [
-                RankingSkeletonBlock(width: 18, height: 18, radius: 6),
-                SizedBox(width: 18),
+                RankingSkeletonBlock(width: 28, height: 18, radius: 6),
+                SizedBox(width: 12),
                 RankingSkeletonBlock(
                   width: 40,
                   height: 40,
                   radius: 20,
                   color: Color(0xFFE7F4FB),
                 ),
-                SizedBox(width: 18),
+                SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

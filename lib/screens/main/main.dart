@@ -24,8 +24,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   int _selectedIndex = 0;
   int _statsRefreshToken = 0;
   int _rankingRefreshToken = 0;
-  bool _showAdBanner = true;
   bool _didCheckUnnotifiedOnEnter = false;
+  bool _didShowAdBanner = false;
 
   @override
   void initState() {
@@ -33,7 +33,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     // 앱 시작 시 광고 배너 표시 여부를 확인하는 콜백
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await _checkUnnotifiedBadgesOnEnterIfNeeded();
-      await _checkAndShowAdBanner();
+      await _showAdBannerIfNeeded();
     });
   }
 
@@ -74,15 +74,28 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     await UnnotifiedBadgeModal.showSequence(context, badges);
   }
 
-  Future<void> _checkAndShowAdBanner() async {
+  Future<void> _showAdBannerIfNeeded() async {
+    if (_didShowAdBanner) {
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final hideAdBanner = prefs.getBool('hideAdBanner') ?? false;
-
-    if (mounted) {
-      setState(() {
-        _showAdBanner = !hideAdBanner;
-      });
+    if (hideAdBanner || !mounted) {
+      return;
     }
+
+    _didShowAdBanner = true;
+    await showModalBottomSheet<void>(
+      context: context,
+      isDismissible: true,
+      enableDrag: true,
+      isScrollControlled: true,
+      useSafeArea: false,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
+      builder: (_) => const BottomAdBanner(),
+    );
   }
 
   void _onItemTapped(int index) {
@@ -159,32 +172,20 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      body: Column(
         children: [
-          Column(
-            children: [
-              Expanded(
-                child: IndexedStack(
-                  index: _selectedIndex,
-                  children: [
-                    const HomeScreen(),
-                    StatsScreen(refreshToken: _statsRefreshToken),
-                    RankingScreen(refreshToken: _rankingRefreshToken),
-                    const MoreScreen(),
-                  ],
-                ),
-              ),
-              _buildBottomNavBar(),
-            ],
-          ),
-          if (_showAdBanner)
-            BottomAdBanner(
-              onClosed: () {
-                setState(() {
-                  _showAdBanner = false;
-                });
-              },
+          Expanded(
+            child: IndexedStack(
+              index: _selectedIndex,
+              children: [
+                const HomeScreen(),
+                StatsScreen(refreshToken: _statsRefreshToken),
+                RankingScreen(refreshToken: _rankingRefreshToken),
+                const MoreScreen(),
+              ],
             ),
+          ),
+          _buildBottomNavBar(),
         ],
       ),
     );

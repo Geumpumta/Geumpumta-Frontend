@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${SKIP_PR_HOOK:-}" == "1" || "${CREATE_PR_ON_PUSH:-}" != "1" ]]; then
+  exit 0
+fi
+
+repo_root="$(git rev-parse --show-toplevel)"
+branch="$(git -C "$repo_root" branch --show-current)"
+
+if [[ -z "$branch" ]]; then
+  exit 0
+fi
+
+case "$branch" in
+  main|master|develop|dev)
+    exit 0
+    ;;
+esac
+
+if ! command -v gh >/dev/null 2>&1; then
+  echo "warning: gh command not found. Skipping PR creation." >&2
+  exit 0
+fi
+
+if ! git -C "$repo_root" rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' >/dev/null 2>&1; then
+  echo "warning: upstream is not set yet. Run scripts/create-pr.sh after the first push." >&2
+  exit 0
+fi
+
+SKIP_PR_HOOK=1 "$repo_root/scripts/create-pr.sh" --no-push

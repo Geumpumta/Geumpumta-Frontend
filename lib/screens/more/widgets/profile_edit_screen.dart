@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geumpumta/provider/userState/user_info_state.dart';
@@ -36,6 +37,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   Color _statusColor = const Color(0xFF0BAEFF);
   String? _initialNickname; // 초기 닉네임 저장
 
+  static final RegExp _nicknameRegExp = RegExp(r'^[가-힣a-zA-Z0-9 ]{2,11}$');
+  static const String _nicknameValidationMessage =
+      '닉네임은 한글, 영어, 숫자, 공백 포함 2~11자 이내여야 합니다.';
+
   @override
   void initState() {
     super.initState();
@@ -57,8 +62,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (currentNickname == (_initialNickname ?? '')) {
         _isNicknameAvailable = null;
         _lastCheckedNickname = null;
+        _statusMessage = null;
       } else if (_lastCheckedNickname != currentNickname) {
         _isNicknameAvailable = null;
+        _statusMessage = null;
       }
     });
   }
@@ -100,10 +107,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         await _uploadImage(File(image.path));
       }
     } catch (e) {
-      _setStatusMessage(
-        '이미지 선택 중 오류가 발생했습니다: $e',
-        color: Colors.red.shade700,
-      );
+      _setStatusMessage('이미지 선택 중 오류가 발생했습니다: $e', color: Colors.red.shade700);
     }
   }
 
@@ -185,15 +189,16 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   Future<void> _checkDuplication() async {
     final nickname = _currentNickname;
     if (nickname.isEmpty) {
-      _setStatusMessage(
-        '닉네임을 입력해주세요.',
-        color: Colors.orange.shade700,
-      );
+      _setStatusMessage('닉네임을 입력해주세요.', color: Colors.orange.shade700);
       return;
     }
     if (!_hasNicknameChange) {
+      _setStatusMessage('현재 닉네임과 동일합니다.', color: Colors.orange.shade700);
+      return;
+    }
+    if (!_nicknameRegExp.hasMatch(nickname)) {
       _setStatusMessage(
-        '현재 닉네임과 동일합니다.',
+        _nicknameValidationMessage,
         color: Colors.orange.shade700,
       );
       return;
@@ -262,7 +267,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         imageUrl: imageUrl,
         publicId: publicId,
       );
-      
+
       // 성공 시 서버에서 최신 정보를 가져와서 동기화
       final serverUser = await userViewModel.loadUserProfile();
       if (serverUser != null) {
@@ -291,7 +296,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(userInfoStateProvider);
-    
+
     // 사용자 정보가 있고 아직 초기화되지 않았다면 초기화
     if (user != null && !_initialized) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -308,7 +313,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     }
 
     final editState = ref.watch(profileEditViewModelProvider);
-    final isSaving = editState.isLoading && !_isCheckingNickname && !_isUploadingImage;
+    final isSaving =
+        editState.isLoading && !_isCheckingNickname && !_isUploadingImage;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -366,20 +372,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     final imageWidget = _selectedImageFile != null
         ? Image.file(_selectedImageFile!, fit: BoxFit.cover)
         : (_currentImageUrl != null && _currentImageUrl!.isNotEmpty)
-            ? Image.network(
-                _currentImageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(
-                  Icons.person,
-                  size: 60,
-                  color: Color(0xFF0BAEFF),
-                ),
-              )
-            : const Icon(
-                Icons.person,
-                size: 60,
-                color: Color(0xFF0BAEFF),
-              );
+        ? Image.network(
+            _currentImageUrl!,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) =>
+                const Icon(Icons.person, size: 60, color: Color(0xFF0BAEFF)),
+          )
+        : const Icon(Icons.person, size: 60, color: Color(0xFF0BAEFF));
 
     return Column(
       children: [
@@ -425,10 +424,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           const SizedBox(height: 8),
           const Text(
             '사진이 변경되었습니다',
-            style: TextStyle(
-              color: Color(0xFF0BAEFF),
-              fontSize: 12,
-            ),
+            style: TextStyle(color: Color(0xFF0BAEFF), fontSize: 12),
           ),
         ],
       ],
@@ -450,18 +446,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         const SizedBox(height: 8),
         const Text(
           '닉네임은 언제든 변경할 수 있습니다',
-          style: TextStyle(
-            fontSize: 12,
-            color: Color(0xFF999999),
-          ),
+          style: TextStyle(fontSize: 12, color: Color(0xFF999999)),
         ),
         const SizedBox(height: 16),
         TextField(
           controller: _nicknameController,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Color(0xFF333333),
-          ),
+          inputFormatters: [LengthLimitingTextInputFormatter(11)],
+          style: const TextStyle(fontSize: 16, color: Color(0xFF333333)),
           decoration: InputDecoration(
             enabledBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: Color(0xFF0BAEFF), width: 1),
@@ -484,10 +475,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               SizedBox(width: 8),
               Text(
                 '닉네임 확인 중...',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF0BAEFF),
-                ),
+                style: TextStyle(fontSize: 12, color: Color(0xFF0BAEFF)),
               ),
             ],
           ),
@@ -499,10 +487,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               SizedBox(width: 8),
               Text(
                 '사용 가능한 닉네임입니다',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.green,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.green),
               ),
             ],
           ),
@@ -514,12 +499,15 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               SizedBox(width: 8),
               Text(
                 '이미 사용 중인 닉네임입니다',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.red,
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.red),
               ),
             ],
+          ),
+        ] else if (_statusMessage != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            _statusMessage!,
+            style: TextStyle(fontSize: 12, color: _statusColor),
           ),
         ],
         const SizedBox(height: 16),

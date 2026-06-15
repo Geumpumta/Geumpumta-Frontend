@@ -43,12 +43,12 @@ class MoreScreen extends ConsumerWidget {
                           MenuItemData(
                             title: '이벤트',
                             onTap: () =>
-                                _navigateToPlaceholder(context, '이벤트'),
+                                Navigator.pushNamed(context, AppRoutes.event),
                           ),
                           MenuItemData(
                             title: '고객센터',
                             onTap: () =>
-                                _navigateToPlaceholder(context, '고객센터'),
+                                Navigator.pushNamed(context, AppRoutes.customerCenter),
                           ),
                         ],
                       ),

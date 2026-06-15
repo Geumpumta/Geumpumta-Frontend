@@ -11,6 +11,8 @@ import 'package:geumpumta/screens/more/widgets/profile_page_screen.dart';
 import 'package:geumpumta/screens/more/widgets/activity_badge_screen.dart';
 import 'package:geumpumta/screens/board/board_list_screen.dart';
 import 'package:geumpumta/screens/board/board_detail_screen.dart';
+import 'package:geumpumta/screens/more/widgets/event_screen.dart';
+import 'package:geumpumta/screens/more/widgets/customer_center_screen.dart';
 
 class AppRoutes{
   static const String login = '/login';
@@ -25,6 +27,8 @@ class AppRoutes{
   static const String activityBadge = '/activity_badge';
   static const String boardList = '/board_list';
   static const String boardDetail = '/board_detail';
+  static const String event = '/event';
+  static const String customerCenter = '/customer_center';
 
   static Map<String, WidgetBuilder> routes = {
     login:(context) => const LoginScreen(),
@@ -55,5 +59,7 @@ class AppRoutes{
       final boardId = args?['boardId'] as int? ?? 0;
       return BoardDetailScreen(boardId: boardId);
     },
+    event : (context) => const EventScreen(),
+    customerCenter : (context) => const CustomerCenterScreen(),
   };
 }

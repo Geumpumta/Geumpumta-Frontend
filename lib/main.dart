@@ -337,42 +337,35 @@ class _MyHomePageState extends ConsumerState<MyHomePage>
         context: context,
         barrierDismissible: false,
         builder: (dialogContext) {
-          return AlertDialog(
-            title: const Text(
-              '새 업데이트가 있어요',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-            content: Text(
-              _latestStoreVersion == null
-                  ? '더 좋은 사용성을 위해 최신 버전으로 업데이트해 주세요.'
-                  : '최신 버전(v$_latestStoreVersion)이 출시되었습니다.\n업데이트 후 더 안정적으로 이용할 수 있어요.',
-              style: const TextStyle(fontSize: 15, height: 1.5),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text(
-                  '나중에 하기',
-                  style: TextStyle(
-                    color: Color(0xFF888888),
-                    fontWeight: FontWeight.w600,
+          return PopScope(
+            canPop: false,
+            child: AlertDialog(
+              title: const Text(
+                '업데이트가 필요해요',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
+              content: Text(
+                _latestStoreVersion == null
+                    ? '최신 버전으로 업데이트해야 앱을 이용할 수 있어요.'
+                    : '최신 버전(v$_latestStoreVersion)이 출시되었습니다.\n업데이트 후 앱을 이용할 수 있어요.',
+                style: const TextStyle(fontSize: 15, height: 1.5),
+              ),
+              actions: [
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: _openStoreForUpdate,
+                    child: const Text(
+                      '업데이트 하러가기',
+                      style: TextStyle(
+                        color: Color(0xFF0BAEFF),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              TextButton(
-                onPressed: () async {
-                  Navigator.of(dialogContext).pop();
-                  await _openStoreForUpdate();
-                },
-                child: const Text(
-                  '업데이트 하러가기',
-                  style: TextStyle(
-                    color: Color(0xFF0BAEFF),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       );

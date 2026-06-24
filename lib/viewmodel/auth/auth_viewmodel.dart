@@ -233,7 +233,7 @@ class AuthViewModel extends StateNotifier<bool> {
     }
 
     if (userInfo.userRole == "GUEST") {
-      nav.pushNamed(AppRoutes.signin1);
+      nav.pushNamed(AppRoutes.signinTerms);
       return;
     }
 

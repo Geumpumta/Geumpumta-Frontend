@@ -162,12 +162,17 @@ class _RankingBoardState extends ConsumerState<RankingBoard> {
           itemCount: list.length,
           itemBuilder: (context, index) {
             final data = list[index];
+            final departmentName = data.department == Department.none
+                ? null
+                : data.department.koreanName;
+
             return RankingBar(
               periodOption: widget.periodOption,
               dateTime: widget.selectedDate,
               ranking: data.rank,
               imgUrl: data.imageUrl,
               nickname: _convertDeletedNickname(data.username ?? '알 수 없음'),
+              departmentName: departmentName,
               recordedTime: Duration(milliseconds: data.totalMillis),
               userId: data.userId,
             );

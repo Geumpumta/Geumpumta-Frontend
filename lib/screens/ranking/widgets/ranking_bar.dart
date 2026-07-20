@@ -10,6 +10,7 @@ class RankingBar extends StatefulWidget {
     required this.imgUrl,
     required this.nickname,
     required this.recordedTime,
+    this.departmentName,
     this.userId,
     this.dateTime,
     this.isDetailAvailable = true,
@@ -20,6 +21,7 @@ class RankingBar extends StatefulWidget {
   final String imgUrl;
   final String nickname;
   final Duration recordedTime;
+  final String? departmentName;
   final int? userId;
   final DateTime? dateTime;
   final bool? isDetailAvailable;
@@ -52,6 +54,9 @@ class _RankingBarState extends State<RankingBar> {
     String formattedDuration = '$hours:$minutes:$seconds';
     final rankingText = widget.ranking.toString();
     final rankFontSize = _rankFontSize(widget.ranking);
+    final departmentName = widget.departmentName;
+    final hasDepartment =
+        departmentName != null && departmentName.trim().isNotEmpty;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -100,6 +105,17 @@ class _RankingBarState extends State<RankingBar> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (hasDepartment)
+                        Text(
+                          departmentName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFFB0B0B0),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       Text(
                         widget.nickname,
                         maxLines: 1,
